@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yalla — Interface Fabricant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B1220;
+    --bg:#F5F6F4;
+    --panel:#FFFFFF;
+    --amber:#FF7A1A;
+    --teal:#0E7C7B;
+    --danger:#E4483B;
+    --success:#17A672;
+    --ink:#10151F;
+    --dim:rgba(16,21,31,0.58);
+    --border:rgba(16,21,31,0.10);
+    --ff-display:'Sora', sans-serif;
+    --ff-body:'Inter', sans-serif;
+    --ff-mono:'IBM Plex Mono', monospace;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{
+    background:#E7E5E0; font-family:var(--ff-body); color:var(--ink);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:36px 16px;
+  }
+  a{ color:inherit; text-decoration:none; }
+  ul{ list-style:none; }
+  button{ font:inherit; cursor:pointer; }
+  ::selection{ background:var(--amber); color:#fff; }
+  :focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+
+  /* ---------- PHONE FRAME ---------- */
+  .device{
+    width:390px; height:844px; background:var(--navy); border-radius:52px; padding:14px;
+    box-shadow:0 30px 60px rgba(11,18,32,.35), 0 4px 12px rgba(11,18,32,.2);
+    flex-shrink:0;
+  }
+  .screen{
+    width:100%; height:100%; background:var(--bg); border-radius:38px; overflow:hidden;
+    position:relative; display:flex; flex-direction:column;
+  }
+  .notch{
+    position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:26px;
+    background:var(--navy); border-radius:0 0 16px 16px; z-index:50;
+  }
+  .status-row{
+    display:flex; justify-content:space-between; align-items:center; padding:16px 26px 4px;
+    font-family:var(--ff-mono); font-size:12px; font-weight:600; color:var(--ink); flex-shrink:0;
+  }
+
+  .app-top{ padding:6px 20px 14px; flex-shrink:0; }
+  .app-top .greet{ font-size:12px; color:var(--dim); font-weight:600; }
+  .app-top .brand-row{ display:flex; align-items:center; justify-content:space-between; margin-top:2px; }
+  .app-top h1{ font-family:var(--ff-display); font-size:21px; font-weight:700; }
+  .avatar{
+    width:34px; height:34px; border-radius:50%; background:var(--teal); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:var(--ff-display); font-weight:700; font-size:12px;
+  }
+
+  .app-body{ flex:1; overflow-y:auto; padding:0 20px 100px; -webkit-overflow-scrolling:touch; }
+  .app-body::-webkit-scrollbar{ display:none; }
+
+  .eyebrow{ font-family:var(--ff-mono); font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--teal); margin:18px 0 8px; font-weight:600; }
+  .eyebrow:first-child{ margin-top:4px; }
+
+  /* KPI strip */
+  .kpi-scroll{ display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; margin:0 -20px; padding-left:20px; padding-right:20px; }
+  .kpi-scroll::-webkit-scrollbar{ display:none; }
+  .kpi-card{
+    flex-shrink:0; width:132px; background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px;
+  }
+  .kpi-card .lbl{ font-size:11px; color:var(--dim); font-weight:600; margin-bottom:8px; }
+  .kpi-card .val{ font-family:var(--ff-mono); font-size:19px; font-weight:600; }
+  .kpi-card .delta{ font-size:10.5px; font-weight:600; margin-top:4px; }
+  .kpi-card .delta.up{ color:var(--success); }
+  .kpi-card .delta.warn{ color:var(--amber); }
+
+  /* mini map */
+  .mini-map{
+    height:150px; border-radius:14px; position:relative; overflow:hidden; margin-top:2px;
+    background:
+      repeating-linear-gradient(0deg, rgba(14,124,123,.08) 0 1px, transparent 1px 34px),
+      repeating-linear-gradient(90deg, rgba(14,124,123,.08) 0 1px, transparent 1px 34px),
+      linear-gradient(160deg, #EAF3F1, #EFF4F0 60%);
+    border:1px solid var(--border);
+  }
+  .mini-map .pin{ position:absolute; width:10px; height:10px; border-radius:50%; border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+  .mini-map .pin.ok{ background:var(--teal); }
+  .mini-map .pin.rupture{ background:var(--amber); animation:pulse 1.8s ease-out infinite; }
+  @keyframes pulse{ 0%,100%{ box-shadow:0 1px 3px rgba(0,0,0,.25); } 50%{ box-shadow:0 0 0 5px rgba(255,122,26,.25); } }
+  .mini-map .tag{
+    position:absolute; bottom:8px; left:8px; background:rgba(11,18,32,.85); color:#fff; font-family:var(--ff-mono);
+    font-size:10px; padding:4px 8px; border-radius:6px;
+  }
+
+  /* rupture card */
+  .rupture-card{
+    display:flex; gap:12px; background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:12px; margin-bottom:10px;
+    align-items:center;
+  }
+  .rupture-thumb{
+    width:52px; height:52px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, rgba(255,122,26,.18), rgba(228,72,59,.14));
+  }
+  .rupture-thumb svg{ width:24px; height:24px; color:var(--amber); }
+  .rupture-info{ flex:1; min-width:0; }
+  .rupture-info p{ font-family:var(--ff-display); font-weight:600; font-size:13.5px; }
+  .rupture-info span{ font-size:11.5px; color:var(--dim); }
+  .rupture-badge{
+    font-size:10px; font-weight:700; font-family:var(--ff-mono); color:var(--amber); background:rgba(255,122,26,.12);
+    padding:3px 8px; border-radius:999px; flex-shrink:0;
+  }
+
+  /* product row */
+  .product-row{
+    display:flex; align-items:center; gap:12px; background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding:11px 12px; margin-bottom:9px;
+  }
+  .product-thumb{ width:44px; height:44px; border-radius:9px; background:var(--bg); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .product-thumb svg{ width:20px; height:20px; color:var(--teal); }
+  .product-info{ flex:1; min-width:0; }
+  .product-info p{ font-family:var(--ff-display); font-weight:600; font-size:13px; }
+  .product-info span{ font-size:11px; color:var(--dim); }
+  .product-remove{
+    width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:var(--panel);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .product-remove svg{ width:13px; height:13px; color:var(--danger); }
+
+  .add-btn{
+    width:100%; margin-top:6px; padding:13px; border-radius:12px; border:1.5px dashed var(--border); background:none;
+    display:flex; align-items:center; justify-content:center; gap:8px; font-family:var(--ff-display); font-weight:600; font-size:13px; color:var(--dim);
+  }
+  .add-btn svg{ width:15px; height:15px; }
+
+  /* livreur row */
+  .livreur-row{
+    display:flex; align-items:center; gap:12px; background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding:12px; margin-bottom:9px;
+  }
+  .livreur-avatar{
+    width:40px; height:40px; border-radius:50%; background:var(--navy); color:#fff; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-family:var(--ff-display); font-weight:700; font-size:12px;
+  }
+  .livreur-info{ flex:1; min-width:0; }
+  .livreur-info p{ font-family:var(--ff-display); font-weight:600; font-size:13px; }
+  .livreur-info span{ font-size:11px; color:var(--dim); }
+  .livreur-ca{ text-align:right; flex-shrink:0; }
+  .livreur-ca b{ font-family:var(--ff-mono); font-size:12.5px; display:block; }
+  .livreur-ca span{ font-size:10px; color:var(--dim); }
+  .status-dot{ width:7px; height:7px; border-radius:50%; background:var(--success); display:inline-block; margin-right:5px; }
+
+  /* section card generic */
+  .card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:10px; }
+  .card h4{ font-family:var(--ff-display); font-weight:700; font-size:13.5px; margin-bottom:4px; }
+  .card p.sub{ font-size:11.5px; color:var(--dim); }
+
+  /* notif */
+  .notif-row{ display:flex; gap:10px; padding:11px 0; border-bottom:1px solid var(--border); }
+  .notif-row:last-child{ border-bottom:none; }
+  .notif-dot{ width:8px; height:8px; border-radius:50%; background:var(--amber); margin-top:5px; flex-shrink:0; }
+  .notif-row p{ font-size:12.5px; line-height:1.4; }
+  .notif-row span{ font-size:10.5px; color:var(--dim); font-family:var(--ff-mono); }
+
+  /* ---------- BOTTOM TAB BAR ---------- */
+  .tabbar{
+    position:absolute; left:0; right:0; bottom:0; background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
+    border-top:1px solid var(--border); display:flex; padding:10px 8px 22px; z-index:40;
+  }
+  .tab{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none;
+    color:var(--dim); font-family:var(--ff-display); font-weight:600; font-size:10px;
+  }
+  .tab svg{ width:20px; height:20px; }
+  .tab.active{ color:var(--amber); }
+
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  @media (max-width:430px){
+    body{ padding:0; align-items:stretch; }
+    .device{ width:100%; height:100svh; border-radius:0; padding:0; }
+    .screen{ border-radius:0; }
+    .notch{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="device">
+  <div class="screen">
+    <div class="notch"></div>
+    <div class="status-row"><span>9:41</span><span>Yalla — Fabricant</span><span>100%</span></div>
+
+    <div class="app-top">
+      <p class="greet">Bonjour,</p>
+      <div class="brand-row">
+        <h1 id="screenTitle">Ivoire Boissons</h1>
+        <div class="avatar">IB</div>
+      </div>
+    </div>
+
+    <div class="app-body">
+
+      <!-- ============ ACCUEIL ============ -->
+      <div class="view active" id="view-accueil">
+        <p class="eyebrow">Aujourd'hui</p>
+        <div class="kpi-scroll">
+          <div class="kpi-card"><div class="lbl">CA temps réel</div><div class="val">812 400 F</div><div class="delta up">▲ 8,2 %</div></div>
+          <div class="kpi-card"><div class="lbl">Ruptures actives</div><div class="val">6</div><div class="delta warn">sur mon catalogue</div></div>
+          <div class="kpi-card"><div class="lbl">Livreurs affiliés</div><div class="val">9</div><div class="delta up">2 en course</div></div>
+          <div class="kpi-card"><div class="lbl">Points attribués</div><div class="val">84</div><div class="delta up">▲ 3 nouveaux</div></div>
+        </div>
+
+        <p class="eyebrow">Mon réseau attribué</p>
+        <div class="mini-map">
+          <div class="pin ok" style="left:20%; top:35%;"></div>
+          <div class="pin rupture" style="left:55%; top:20%;"></div>
+          <div class="pin ok" style="left:70%; top:55%;"></div>
+          <div class="pin ok" style="left:38%; top:65%;"></div>
+          <div class="pin rupture" style="left:80%; top:38%;"></div>
+          <div class="tag">84 points · 6 en rupture</div>
+        </div>
+
+        <p class="eyebrow">Ruptures récentes</p>
+        <div class="rupture-card">
+          <div class="rupture-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.7 17.5A1.5 1.5 0 0 0 4 20h16a1.5 1.5 0 0 0 1.3-2.5L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg></div>
+          <div class="rupture-info"><p>Jus Ivoire Mangue 1L</p><span>Alimentation Le Bon Coin — Plateau</span></div>
+          <div class="rupture-badge">2 min</div>
+        </div>
+        <div class="rupture-card">
+          <div class="rupture-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.7 17.5A1.5 1.5 0 0 0 4 20h16a1.5 1.5 0 0 0 1.3-2.5L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg></div>
+          <div class="rupture-info"><p>Eau Ivoire 1,5L</p><span>Dépôt Yao — Yopougon</span></div>
+          <div class="rupture-badge">14 min</div>
+        </div>
+      </div>
+
+      <!-- ============ RUPTURES ============ -->
+      <div class="view" id="view-ruptures">
+        <p class="eyebrow">Sur mon catalogue uniquement</p>
+        <div class="mini-map" style="height:170px;">
+          <div class="pin rupture" style="left:55%; top:20%;"></div>
+          <div class="pin rupture" style="left:80%; top:38%;"></div>
+          <div class="pin rupture" style="left:30%; top:60%;"></div>
+          <div class="pin rupture" style="left:65%; top:70%;"></div>
+          <div class="pin rupture" style="left:22%; top:30%;"></div>
+          <div class="pin rupture" style="left:45%; top:45%;"></div>
+          <div class="tag">6 points en rupture</div>
+        </div>
+        <p class="eyebrow">Détail des ruptures</p>
+        <div class="rupture-card"><div class="rupture-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.7 17.5A1.5 1.5 0 0 0 4 20h16a1.5 1.5 0 0 0 1.3-2.5L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg></div><div class="rupture-info"><p>Jus Ivoire Mangue 1L</p><span>Alimentation Le Bon Coin — Plateau</span></div><div class="rupture-badge">2 min</div></div>
+        <div class="rupture-card"><div class="rupture-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.7 17.5A1.5 1.5 0 0 0 4 20h16a1.5 1.5 0 0 0 1.3-2.5L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg></div><div class="rupture-info"><p>Eau Ivoire 1,5L</p><span>Dépôt Yao — Yopougon</span></div><div class="rupture-badge">14 min</div></div>
+        <div class="rupture-card"><div class="rupture-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.7 17.5A1.5 1.5 0 0 0 4 20h16a1.5 1.5 0 0 0 1.3-2.5L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg></div><div class="rupture-info"><p>Soda Ivoire Cola 33cl</p><span>Mini-marché Adjamé Nord</span></div><div class="rupture-badge">26 min</div></div>
+        <div class="rupture-card"><div class="rupture-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.7 17.5A1.5 1.5 0 0 0 4 20h16a1.5 1.5 0 0 0 1.3-2.5L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg></div><div class="rupture-info"><p>Jus Ivoire Mangue 1L</p><span>Boutique Aya — Koumassi</span></div><div class="rupture-badge">31 min</div></div>
+      </div>
+
+      <!-- ============ CATALOGUE ============ -->
+      <div class="view" id="view-catalogue">
+        <p class="eyebrow">Mon catalogue — 18 produits</p>
+        <div class="product-row"><div class="product-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16l-1 9H5L4 3z"/><path d="M4 3 3 1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></div><div class="product-info"><p>Jus Ivoire Mangue 1L</p><span>Réf. IB-204 · En rupture sur 4 points</span></div><button class="product-remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div>
+        <div class="product-row"><div class="product-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16l-1 9H5L4 3z"/><path d="M4 3 3 1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></div><div class="product-info"><p>Eau Ivoire 1,5L</p><span>Réf. IB-118 · En rupture sur 2 points</span></div><button class="product-remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div>
+        <div class="product-row"><div class="product-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16l-1 9H5L4 3z"/><path d="M4 3 3 1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></div><div class="product-info"><p>Soda Ivoire Cola 33cl</p><span>Réf. IB-076 · Disponible partout</span></div><button class="product-remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div>
+        <div class="product-row"><div class="product-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16l-1 9H5L4 3z"/><path d="M4 3 3 1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></div><div class="product-info"><p>Sirop Ivoire Grenadine</p><span>Réf. IB-152 · Disponible partout</span></div><button class="product-remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div>
+        <button class="add-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Ajouter un produit</button>
+      </div>
+
+      <!-- ============ LIVREURS ============ -->
+      <div class="view" id="view-livreurs">
+        <p class="eyebrow">Livreurs affiliés — 9</p>
+        <div class="livreur-row"><div class="livreur-avatar">KO</div><div class="livreur-info"><p><span class="status-dot"></span>Koffi A.</p><span>12 livraisons — 7 jours</span></div><div class="livreur-ca"><b>96 400 F</b><span>CA généré</span></div></div>
+        <div class="livreur-row"><div class="livreur-avatar">AD</div><div class="livreur-info"><p><span class="status-dot"></span>Aminata D.</p><span>9 livraisons — 7 jours</span></div><div class="livreur-ca"><b>71 200 F</b><span>CA généré</span></div></div>
+        <div class="livreur-row"><div class="livreur-avatar">YB</div><div class="livreur-info"><p style="color:var(--dim);"><span class="status-dot" style="background:var(--dim);"></span>Yao B.</p><span>Hors ligne</span></div><div class="livreur-ca"><b>54 800 F</b><span>CA généré</span></div></div>
+        <div class="livreur-row"><div class="livreur-avatar">SK</div><div class="livreur-info"><p><span class="status-dot"></span>Salimata K.</p><span>6 livraisons — 7 jours</span></div><div class="livreur-ca"><b>38 900 F</b><span>CA généré</span></div></div>
+        <button class="add-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Affilier un livreur</button>
+
+        <p class="eyebrow">Cartographie du réseau de livreurs</p>
+        <div class="mini-map">
+          <div class="pin ok" style="left:25%; top:30%;"></div>
+          <div class="pin ok" style="left:60%; top:50%;"></div>
+          <div class="pin ok" style="left:75%; top:25%;"></div>
+          <div class="tag">3 livreurs en course</div>
+        </div>
+      </div>
+
+      <!-- ============ PROFIL ============ -->
+      <div class="view" id="view-profil">
+        <div class="card">
+          <h4>Ivoire Boissons</h4>
+          <p class="sub">Fabricant · Réseau attribué : Abidjan (84 points de vente)</p>
+        </div>
+        <p class="eyebrow">Notifications de rupture</p>
+        <div class="card">
+          <div class="notif-row"><div class="notif-dot"></div><div><p><b>Rupture</b> — Jus Ivoire Mangue 1L, Plateau</p><span>il y a 2 min</span></div></div>
+          <div class="notif-row"><div class="notif-dot"></div><div><p><b>Rupture</b> — Eau Ivoire 1,5L, Yopougon</p><span>il y a 14 min</span></div></div>
+          <div class="notif-row"><div class="notif-dot"></div><div><p><b>Rupture</b> — Soda Ivoire Cola 33cl, Adjamé</p><span>il y a 26 min</span></div></div>
+        </div>
+        <p class="eyebrow">Compte</p>
+        <div class="card"><h4>Coordonnées</h4><p class="sub">contact@ivoireboissons.ci · +225 07 00 00 00 00</p></div>
+        <div class="card"><h4>Se déconnecter</h4><p class="sub">Fermer la session sur cet appareil</p></div>
+      </div>
+
+    </div>
+
+    <div class="tabbar">
+      <button class="tab active" data-view="accueil" data-title="Ivoire Boissons">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Accueil
+      </button>
+      <button class="tab" data-view="ruptures" data-title="Ruptures">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.7 17.5A1.5 1.5 0 0 0 4 20h16a1.5 1.5 0 0 0 1.3-2.5L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg>Ruptures
+      </button>
+      <button class="tab" data-view="catalogue" data-title="Mon catalogue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7 12 3 4 7l8 4 8-4z"/><path d="M4 7v10l8 4 8-4V7"/><path d="M12 11v10"/></svg>Catalogue
+      </button>
+      <button class="tab" data-view="livreurs" data-title="Mes livreurs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="15" height="12" rx="2"/><path d="M16 10h4l3 3v5h-7"/><circle cx="6" cy="18" r="2"/><circle cx="18.5" cy="18" r="2"/></svg>Livreurs
+      </button>
+      <button class="tab" data-view="profil" data-title="Profil">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>Profil
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const views = document.querySelectorAll('.view');
+  const title = document.getElementById('screenTitle');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    views.forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + t.dataset.view).classList.add('active');
+    title.textContent = t.dataset.title;
+    document.querySelector('.app-body').scrollTop = 0;
+  }));
+
+  document.querySelectorAll('[data-switch]').forEach(sw => sw.addEventListener('click', () => sw.classList.toggle('on')));
+</script>
+
+</body>
+</html>

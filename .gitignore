@@ -1,0 +1,41 @@
+# ── Dépendances ───────────────────────────────────────────────────────────
+node_modules/
+.pub-cache/
+.dart_tool/
+.packages
+
+# ── Build ─────────────────────────────────────────────────────────────────
+dist/
+build/
+*.tsbuildinfo
+mobile/android/app/debug/
+mobile/android/app/profile/
+mobile/android/app/release/
+*.apk
+*.aab
+*.ipa
+
+# ── Secrets et configuration locale ───────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+google-services.json
+GoogleService-Info.plist
+
+# ── Outils ────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# ── Système ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ──────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*

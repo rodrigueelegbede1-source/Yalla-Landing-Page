@@ -1,0 +1,28 @@
+# Le dépôt est édité sous Windows mais exécuté sous Linux (Devin, CI, serveur).
+# On normalise les fins de ligne pour éviter qu'un script committé en CRLF
+# échoue à l'exécution avec « \r: command not found ».
+
+* text=auto eol=lf
+
+# Scripts : LF obligatoire, sans exception.
+*.sh text eol=lf
+
+# Code et configuration
+*.ts    text eol=lf
+*.js    text eol=lf
+*.dart  text eol=lf
+*.sql   text eol=lf
+*.json  text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.html  text eol=lf
+*.css   text eol=lf
+*.md    text eol=lf
+
+# Binaires : ne jamais convertir
+*.jpeg binary
+*.jpg  binary
+*.png  binary
+*.ico  binary
+*.docx binary
+*.pdf  binary

@@ -1,0 +1,21 @@
+{
+  "name": "yalla",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Yalla — géolocalisation, signalement de ruptures et caisse enregistreuse pour la distribution de proximité en Côte d'Ivoire",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "lint": "bash scripts/lint.sh",
+    "test": "bash scripts/test.sh",
+    "dev:backend": "npm run start:dev --prefix backend",
+    "dev:landing": "node landing/server.js",
+    "build:backend": "npm run build --prefix backend",
+    "db:migrate": "bash -c 'for f in database/migrations/*.sql; do echo \"→ $f\"; psql \"${DATABASE_URL:-postgres://localhost/yalla}\" -v ON_ERROR_STOP=1 -f \"$f\" || exit 1; done'",
+    "db:seed": "psql \"${DATABASE_URL:-postgres://localhost/yalla}\" -v ON_ERROR_STOP=1 -f database/seed/seed_dev.sql"
+  },
+  "workspaces": [],
+  "license": "UNLICENSED"
+}
