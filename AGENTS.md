@@ -46,6 +46,8 @@ npm run dev:landing    # landing page sur http://localhost:4173
 npm run build:backend  # compile le backend
 npm run lint           # vérifications disponibles
 npm test               # tests (voir §7 : il n'y en a pas encore)
+npm run audit:schema   # vérifie l'alignement entités TypeORM / migrations SQL
+npm run db:provision   # crée la base, applique migrations + seed (psql requis)
 ```
 
 Les scripts sous `scripts/` sont conçus pour ne jamais échouer sur un outil absent
@@ -113,22 +115,31 @@ optimisation : un fabricant ne doit jamais voir la rupture d'un concurrent.
 
 ## 7. État réel du projet — à lire avant de promettre quoi que ce soit
 
-Ce qui a été **vérifié** au moment de la mise en dépôt (2026-08-16) :
+Ce qui a été **vérifié par exécution** (2026-08-16) :
 
 | Vérification | Résultat |
 |---|---|
 | `npm install` sur `backend/` | passe — 513 paquets |
 | `tsc --noEmit` sur tout le backend | passe, aucune erreur de typage |
 | `nest build` | passe, `backend/dist/` produit |
+| Chargement de `bcrypt` (module natif) | **OK** — `require` + `hashSync` fonctionnent |
+| Amorçage NestJS | **tous les modules s'initialisent** (App, TypeOrm, Passport, Jwt, Config) |
+| Alignement entités ↔ migrations SQL | **18 tables, 119 colonnes, 0 désalignement** (`npm run audit:schema`) |
 | Landing servie sur `:4173` | 200 sur HTML/CSS/JS, MIME corrects, 404 géré |
 | Tests automatisés | **aucun** — 0 `.spec.ts`, 0 `_test.dart` |
 
+Autrement dit : le seul obstacle au démarrage de l'API est **l'absence de base**.
+Aucun autre blocage n'a été trouvé dans le code.
+
 Ce qui reste **non vérifié** :
 
-- Le backend **n'a jamais tourné contre une vraie base**. Il compile, mais aucun
-  démarrage n'a été fait faute de PostgreSQL + PostGIS provisionné. Les erreurs
-  d'exécution (connexion, entités désalignées du SQL) restent à découvrir.
-- Les migrations SQL n'ont **jamais été appliquées** sur une base réelle.
+- Le backend **n'a jamais tourné contre une vraie base**. Il compile et s'amorce
+  jusqu'à la connexion TypeORM, puis boucle sur « Unable to connect to the
+  database ». Les erreurs d'exécution réelles restent à découvrir.
+- Les migrations SQL n'ont **jamais été appliquées** sur une base réelle. L'audit
+  statique confirme leur cohérence avec les entités, pas leur exécutabilité
+  (ordre des dépendances, triggers, index spatiaux).
+- Aucun endpoint HTTP n'a jamais répondu.
 - Le mobile n'a **jamais été compilé** — SDK Flutter absent de l'environnement.
 - **Aucun test automatisé n'existe.** `npm test` liste ce constat au lieu de
   sortir vert en silence. Si tu ajoutes une fonctionnalité, ajoute les tests
@@ -175,8 +186,15 @@ NindoHost.** `.gitignore` couvre les cas courants, vérifie avant de committer.
   signalement doivent fonctionner sans connexion, avec synchronisation différée.
 - La landing page masque ses éléments animés derrière une classe `js` posée par
   le script. Si tu retires ce mécanisme, la page reste blanche sans JavaScript.
-- **`bcrypt` est un module natif.** Selon la configuration npm, son script
-  d'installation (`node-pre-gyp`) peut être bloqué : l'installation réussit, puis
-  `require('bcrypt')` échoue au démarrage. Si tu vois une erreur de binding au
-  boot, c'est ça — réinstalle en autorisant les scripts, ou bascule sur
-  `bcryptjs` (pur JS, même API) si l'environnement interdit la compilation native.
+- **`bcrypt` est un module natif.** Il a été vérifié comme fonctionnel ici
+  (`require` + `hashSync` OK). Mais selon la configuration npm, son script
+  `node-pre-gyp` peut être bloqué : l'installation réussit, puis `require('bcrypt')`
+  échoue au démarrage. Si tu vois une erreur de binding au boot, c'est ça —
+  réinstalle en autorisant les scripts, ou bascule sur `bcryptjs` (pur JS, même API).
+- **Provisionner PostgreSQL sous Windows peut buter sur la locale.** Si le compte
+  utilise une locale dont le nom contient une apostrophe typographique — cas de
+  « French_Côte d'Ivoire.1252 », donc très probable sur ce projet — `initdb`
+  échoue avec « failed to restore old locale ». C'est une limite du CRT Microsoft,
+  pas un bug PostgreSQL, et Windows met la locale en cache pour toute la session :
+  il faut la changer **puis rouvrir la session**. Sous Linux (donc chez Devin),
+  le problème n'existe pas.

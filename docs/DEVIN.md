@@ -61,13 +61,16 @@ L'API ne démarre pas sans PostgreSQL **avec l'extension PostGIS** — les colon
 ```bash
 sudo apt-get install -y postgresql postgis
 sudo service postgresql start
-sudo -u postgres createdb yalla
-sudo -u postgres psql -d yalla -c "CREATE EXTENSION IF NOT EXISTS postgis;"
-npm run db:migrate
-npm run db:seed
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+PGPASSWORD=postgres npm run db:provision
 ```
 
-Vous pouvez ajouter ce bloc à la commande de setup une fois validé.
+`db:provision` crée la base, active PostGIS, applique les 10 migrations dans
+l'ordre et charge le seed, en s'arrêtant à la première erreur SQL. Une fois
+validé, vous pouvez ajouter ce bloc à la commande de setup.
+
+Le blocage `initdb` lié à la locale (voir README) est **spécifique à Windows** :
+il ne se produira pas dans l'environnement Linux de Devin.
 
 ---
 
@@ -80,9 +83,10 @@ l'agent les découvre par l'échec :
    `false`. Une évolution = un nouveau fichier numéroté dans `database/migrations/`.
 2. **Le domaine est en français** (`points_de_vente`, `rupture`, `livreur_id`).
    Ne pas angliciser les noms de tables, colonnes, entités ou routes.
-3. **Rien n'a jamais été exécuté** dans ce dépôt : pas de build validé, pas de
-   test, pas de déploiement. Les premières exécutions révéleront des erreurs —
-   c'est attendu, ce n'est pas une régression introduite par l'agent.
+3. **Le code compile et s'amorce, mais n'a jamais parlé à une base.** Les modules
+   NestJS s'initialisent tous et l'audit entités/SQL est propre ; ce qui reste
+   inconnu, c'est le comportement à l'exécution contre PostgreSQL. Les premières
+   erreurs sont attendues — ce ne sont pas des régressions introduites par l'agent.
 
 ---
 

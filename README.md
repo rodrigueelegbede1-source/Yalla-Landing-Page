@@ -1,4 +1,4 @@
-# Yalla
+| [`scripts/`](scripts/) | Setup, lint, test, audit de schéma, provisionnement de la base |# Yalla
 
 Plateforme de distribution de proximité pour la Côte d'Ivoire — **géolocalisation
 temps réel**, **signalement de ruptures de stock** et **caisse enregistreuse**,
@@ -87,14 +87,28 @@ Les migrations SQL sont la **source de vérité du schéma**. TypeORM tourne ave
 colonnes PostGIS, des vues, et un trigger qui crée automatiquement une rupture
 lorsqu'une vente vide un stock.
 
+Avec un serveur PostgreSQL démarré et `psql` dans le PATH :
+
 ```bash
-createdb yalla
-psql -d yalla -c "CREATE EXTENSION IF NOT EXISTS postgis;"
-for f in database/migrations/*.sql; do psql -d yalla -f "$f"; done
-psql -d yalla -f database/seed/seed_dev.sql   # jeu de données de dev
+npm run db:provision
 ```
 
----
+Le script crée la base, active PostGIS, applique les 10 migrations dans l'ordre
+puis le seed de développement, et s'arrête net à la première erreur SQL.
+Variables reconnues : `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`.
+Ajoutez `DB_RESET=1` pour repartir d'une base vierge.
+
+Pour vérifier à tout moment que les entités TypeORM correspondent au SQL :
+
+```bash
+npm run audit:schema
+```
+
+> **Sous Windows**, `initdb` échoue si la locale du compte contient une
+> apostrophe typographique — « French_Côte d'Ivoire.1252 » par exemple. C'est une
+> limite du CRT Microsoft, et la locale est mise en cache pour toute la session :
+> il faut la changer **puis rouvrir la session Windows**. Le problème ne se pose
+> ni sous Linux ni sous macOS.
 
 ## Configuration
 
@@ -128,13 +142,15 @@ Les arbitrages et leurs alternatives sont justifiés dans
 
 Ce dépôt est un socle de développement, pas un produit en production.
 
-**Vérifié** (2026-08-16) : les dépendances backend s'installent, le TypeScript
-compile sans erreur, `nest build` produit son `dist/`, et la landing page est
-servie correctement.
+**Vérifié par exécution** (2026-08-16) : les dépendances backend s'installent,
+le TypeScript compile sans erreur, `nest build` produit son `dist/`, `bcrypt` se
+charge, **tous les modules NestJS s'initialisent**, l'audit entités/SQL est propre
+(18 tables, 119 colonnes, 0 désalignement), et la landing page est servie
+correctement. Le seul obstacle au démarrage de l'API est l'absence de base.
 
 **Non vérifié** : le backend n'a jamais tourné contre une vraie base, les
-migrations SQL n'ont jamais été appliquées, et le mobile n'a jamais été compilé
-(SDK Flutter absent). Attendez-vous à des erreurs au premier démarrage réel.
+migrations n'ont jamais été appliquées, aucun endpoint n'a jamais répondu, et le
+mobile n'a jamais été compilé (SDK Flutter absent).
 
 Par ailleurs :
 

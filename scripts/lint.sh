@@ -26,6 +26,13 @@ else
   warn "SDK Flutter absent — étape ignorée"
 fi
 
+say "Schéma — alignement entités / migrations SQL"
+if command -v node >/dev/null 2>&1; then
+  node scripts/audit-schema.js || STATUS=1
+else
+  warn "node absent — étape ignorée"
+fi
+
 say "Landing — syntaxe JavaScript"
 if command -v node >/dev/null 2>&1; then
   node --check landing/script.js && ok "landing/script.js valide" || STATUS=1
