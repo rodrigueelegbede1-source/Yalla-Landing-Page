@@ -304,4 +304,75 @@
     });
   });
 
+
+  /* ─────────────── 14. Formulaire « rejoindre le réseau » ─────────────── */
+  const leadForm = $("#leadForm");
+
+  if (leadForm) {
+    const note = $("#leadNote");
+
+    const RULES = {
+      "f-nom":    v => v.trim().length >= 2      || "Indiquez votre nom",
+      "f-profil": v => v !== ""                  || "Choisissez votre profil",
+      // Numéros ivoiriens : 8 à 15 chiffres une fois les séparateurs retirés.
+      "f-tel":    v => /^[0-9]{8,15}$/.test(v.replace(/[\s.+()\-]/g, "")) || "Numéro invalide",
+    };
+
+    const check = (el) => {
+      const rule = RULES[el.id];
+      if (!rule) return true;
+      const res = rule(el.value);
+      const field = el.closest(".field");
+      const err = field.querySelector(".field__err");
+      const ok = res === true;
+      field.classList.toggle("is-invalid", !ok);
+      if (err) err.textContent = ok ? "" : res;
+      return ok;
+    };
+
+    // On ne valide au fil de la frappe qu'après une première erreur : sinon
+    // le champ passe en rouge dès le premier caractère saisi.
+    Object.keys(RULES).forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener("blur", () => check(el));
+      el.addEventListener("input", () => {
+        if (el.closest(".field").classList.contains("is-invalid")) check(el);
+      });
+    });
+
+    leadForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const champs = Object.keys(RULES).map(id => document.getElementById(id)).filter(Boolean);
+      // On valide tous les champs avant de sortir : l'utilisateur voit d'un coup
+      // tout ce qui bloque, au lieu de les corriger un par un.
+      const invalides = champs.filter(el => !check(el));
+      if (invalides.length) { invalides[0].focus(); return; }
+
+      const val = (n) => (leadForm.elements[n] && leadForm.elements[n].value.trim()) || "—";
+      const corps = [
+        "Nom : "       + val("nom"),
+        "Profil : "    + val("profil"),
+        "Téléphone : " + val("telephone"),
+        "",
+        "Message :",
+        val("message"),
+      ].join("\n");
+
+      // Pas de backend sur une page statique : on ouvre le client mail de
+      // l'utilisateur, pré-rempli. À remplacer par un POST le jour où une API existe.
+      const url = "mailto:contact@yalla.ci"
+        + "?subject=" + encodeURIComponent("Demande via le site — " + val("profil"))
+        + "&body="    + encodeURIComponent(corps);
+
+      window.location.href = url;
+
+      if (note) {
+        note.textContent = "VOTRE MESSAGERIE S'OUVRE AVEC LA DEMANDE PRÉ-REMPLIE";
+        note.classList.add("is-ok");
+      }
+    });
+  }
+
 })();
