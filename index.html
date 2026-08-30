@@ -9,6 +9,29 @@
 <meta property="og:title" content="Yalla — La rupture de stock, géolocalisée en temps réel">
 <meta property="og:description" content="Boutiques, fabricants et livreurs connectés en temps réel. Abidjan, Côte d'Ivoire.">
 <meta property="og:type" content="website">
+<meta property="og:locale" content="fr_CI">
+<meta property="og:site_name" content="Yalla">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="author" content="Yalla">
+<meta name="robots" content="index, follow">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Yalla",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "iOS, Android",
+  "inLanguage": "fr",
+  "description": "Signalement et géolocalisation des ruptures de stock en temps réel dans les points de vente de proximité en Côte d'Ivoire, avec caisse enregistreuse intégrée.",
+  "areaServed": { "@type": "City", "name": "Abidjan", "address": { "@type": "PostalAddress", "addressCountry": "CI" } },
+  "featureList": [
+    "Géolocalisation des livreurs en temps réel",
+    "Signalement de rupture de stock ciblé par catalogue",
+    "Caisse enregistreuse fonctionnant hors connexion",
+    "Paiement mobile intégré"
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -36,13 +59,14 @@
 
     <nav class="nav__links" aria-label="Navigation principale">
       <a href="#fonctionnement"><span>Comment ça marche</span></a>
+      <a href="#fonctions"><span>Fonctions</span></a>
       <a href="#profils"><span>Profils</span></a>
-      <a href="#contact"><span>Contact</span></a>
+      <a href="#faq"><span>FAQ</span></a>
     </nav>
 
     <div class="nav__actions">
-      <a href="#telecharger" class="btn btn--sm btn--yellow" data-magnetic>
-        <span>Télécharger</span>
+      <a href="#rejoindre" class="btn btn--sm btn--yellow" data-magnetic>
+        <span>Rejoindre</span>
       </a>
       <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="mobileMenu">
         <span></span><span></span>
@@ -54,11 +78,12 @@
 <div class="mobile-menu" id="mobileMenu" inert>
   <nav aria-label="Navigation mobile">
     <a href="#fonctionnement" style="--i:0">Comment ça marche</a>
-    <a href="#profils" style="--i:1">Profils</a>
-    <a href="#contact" style="--i:2">Contact</a>
-    <a href="#telecharger" class="mobile-menu__cta" style="--i:3">Télécharger l'application</a>
+    <a href="#fonctions" style="--i:1">Fonctions</a>
+    <a href="#profils" style="--i:2">Profils</a>
+    <a href="#faq" style="--i:3">FAQ</a>
+    <a href="#rejoindre" class="mobile-menu__cta" style="--i:4">Rejoindre le réseau</a>
   </nav>
-  <div class="mobile-menu__foot" style="--i:4">
+  <div class="mobile-menu__foot" style="--i:5">
     <span class="mono">ABIDJAN · CÔTE D'IVOIRE</span>
   </div>
 </div>
@@ -315,6 +340,76 @@
   </div>
 </section>
 
+<!-- ══════════════════════════ 3 EN 1 ══════════════════════════ -->
+<section class="feats" id="fonctions">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="sec-head__eyebrow mono reveal" style="--d:0ms"><span></span>UNE PLATEFORME, TROIS OUTILS</p>
+      <h2 class="sec-head__title reveal" style="--d:80ms">Trois métiers d'outils,<br><em>réunis dans une seule app.</em></h2>
+      <p class="sec-head__sub reveal" style="--d:160ms">Pas trois abonnements, pas trois applications à installer, pas trois bases de données qui se contredisent.</p>
+    </header>
+
+    <div class="feats__grid">
+      <article class="feat reveal" style="--d:0ms">
+        <div class="feat__head">
+          <span class="feat__num mono">01</span>
+          <div class="feat__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M16 29s10-8 10-15.5A10 10 0 0 0 6 13.5C6 21 16 29 16 29Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+              <circle cx="16" cy="13.5" r="3.4" stroke="currentColor" stroke-width="1.9"/>
+            </svg>
+          </div>
+        </div>
+        <h3>Géolocalisation temps réel</h3>
+        <p>Le suivi type Uber, appliqué à la distribution. Les positions des livreurs sont horodatées et historisées, pas seulement affichées à l'instant T.</p>
+        <ul>
+          <li>Carte du réseau par ville et par commune</li>
+          <li>Suivi simultané de plusieurs livreurs</li>
+          <li>Historique des trajets conservé</li>
+        </ul>
+      </article>
+
+      <article class="feat reveal" style="--d:110ms">
+        <div class="feat__head">
+          <span class="feat__num mono">02</span>
+          <div class="feat__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M24 13a8 8 0 1 0-16 0c0 8-3 9.5-3 9.5h22S24 21 24 13Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+              <path d="M13.4 26.5a3 3 0 0 0 5.2 0" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <h3>Signalement des ruptures</h3>
+        <p>Le cœur du produit. Une rupture signalée en boutique atteint le bon fabricant en quelques secondes, avec la photo du produit et la position exacte.</p>
+        <ul>
+          <li>Ciblage automatique par catalogue</li>
+          <li>Photo et quantité manquante</li>
+          <li>Alerte aux livreurs à proximité</li>
+        </ul>
+      </article>
+
+      <article class="feat reveal" style="--d:220ms">
+        <div class="feat__head">
+          <span class="feat__num mono">03</span>
+          <div class="feat__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <rect x="6" y="4" width="20" height="24" rx="2.6" stroke="currentColor" stroke-width="1.9"/>
+              <path d="M11 10h10M11 15.5h4m6 0h.01M11 21h4m6 0h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <h3>Caisse enregistreuse</h3>
+        <p>Vos ventes s'enregistrent dans l'application, même sans réseau. Une vente qui vide un stock déclenche automatiquement le signalement de rupture.</p>
+        <ul>
+          <li>Fonctionne hors connexion</li>
+          <li>Chiffre d'affaires en temps réel</li>
+          <li>Export Excel et PDF</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
 <!-- ══════════════════════════ PROFILS ══════════════════════════ -->
 <section class="profiles" id="profils">
   <div class="wrap">
@@ -426,6 +521,112 @@
       </article>
 
     </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ FAQ ══════════════════════════ -->
+<section class="faq" id="faq">
+  <div class="wrap faq__inner">
+    <header class="sec-head sec-head--light faq__head">
+      <p class="sec-head__eyebrow mono reveal" style="--d:0ms"><span></span>QUESTIONS FRÉQUENTES</p>
+      <h2 class="sec-head__title reveal" style="--d:80ms">Ce qu'on nous<br><em>demande le plus.</em></h2>
+      <p class="sec-head__sub reveal" style="--d:160ms">Une question qui n'est pas ici&nbsp;? Écrivez-nous, on répond.</p>
+    </header>
+
+    <div class="faq__list reveal" style="--d:120ms">
+      <details class="qa" name="faq">
+        <summary><span>Est-ce que ça marche sans connexion internet&nbsp;?</span><i aria-hidden="true"></i></summary>
+        <div class="qa__body"><p>Oui, et c'est volontaire. Le réseau est instable sur certaines zones d'Abidjan&nbsp;: la caisse enregistreuse et le signalement de rupture continuent de fonctionner hors ligne. Les données sont conservées sur le téléphone et se synchronisent dès que la connexion revient.</p></div>
+      </details>
+
+      <details class="qa" name="faq">
+        <summary><span>Qui voit les ruptures que je signale&nbsp;?</span><i aria-hidden="true"></i></summary>
+        <div class="qa__body"><p>Uniquement le fabricant du produit concerné et ses livreurs affiliés. Un fabricant ne voit jamais les ruptures portant sur le catalogue d'un concurrent&nbsp;: le filtrage par catalogue est une règle du système, pas un réglage.</p></div>
+      </details>
+
+      <details class="qa" name="faq">
+        <summary><span>Comment se passe le paiement&nbsp;?</span><i aria-hidden="true"></i></summary>
+        <div class="qa__body"><p>Le paiement mobile est intégré à l'application&nbsp;: la livraison se règle sans espèces, et la vente entre directement en caisse. Chaque transaction est tracée et rattachée à sa livraison.</p></div>
+      </details>
+
+      <details class="qa" name="faq">
+        <summary><span>Sur quelles villes êtes-vous présents&nbsp;?</span><i aria-hidden="true"></i></summary>
+        <div class="qa__body"><p>Abidjan au lancement. La plateforme est conçue dès le départ pour un découpage par ville et par commune, de sorte que l'extension à d'autres villes de Côte d'Ivoire ne demande pas de refonte.</p></div>
+      </details>
+
+      <details class="qa" name="faq">
+        <summary><span>Faut-il un téléphone particulier&nbsp;?</span><i aria-hidden="true"></i></summary>
+        <div class="qa__body"><p>Non. Yalla est disponible sur iOS et Android, et pensée pour fonctionner sur du matériel d'entrée de gamme — c'est la réalité du parc de téléphones chez les commerçants de proximité.</p></div>
+      </details>
+
+      <details class="qa" name="faq">
+        <summary><span>Comment rejoindre le réseau&nbsp;?</span><i aria-hidden="true"></i></summary>
+        <div class="qa__body"><p>Les points de vente s'enregistrent depuis l'application ou via un agent recenseur qui passe en boutique. Fabricants et livreurs sont activés par l'administrateur du réseau après vérification. Le formulaire ci-dessous est le point de départ.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ CONTACT ══════════════════════════ -->
+<section class="lead" id="rejoindre">
+  <div class="wrap lead__inner">
+    <div class="lead__copy">
+      <p class="sec-head__eyebrow mono reveal" style="--d:0ms"><span></span>REJOINDRE LE RÉSEAU</p>
+      <h2 class="lead__title reveal" style="--d:80ms">Parlons de votre<br><em>activité.</em></h2>
+      <p class="lead__sub reveal" style="--d:160ms">Boutique, marque ou livreur&nbsp;: dites-nous qui vous êtes, on revient vers vous avec la marche à suivre.</p>
+
+      <ul class="lead__direct reveal" style="--d:240ms">
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a1.5 1.5 0 0 1-1.7 1.5C10.5 19.8 4.2 13.5 3.5 5.7A1.5 1.5 0 0 1 5 4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+          <a href="tel:+2250700000000">+225 07 00 00 00 00</a>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="m4 7.5 8 5.5 8-5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <a href="mailto:contact@yalla.ci">contact@yalla.ci</a>
+        </li>
+      </ul>
+    </div>
+
+    <form class="lead__form reveal" id="leadForm" style="--d:200ms" novalidate>
+      <div class="field">
+        <label for="f-nom">Nom et prénoms</label>
+        <input id="f-nom" name="nom" type="text" autocomplete="name" required placeholder="Awa Koné">
+        <span class="field__err" data-for="f-nom"></span>
+      </div>
+
+      <div class="field">
+        <label for="f-profil">Vous êtes</label>
+        <div class="select-wrap">
+          <select id="f-profil" name="profil" required>
+            <option value="">Choisissez…</option>
+            <option>Point de vente</option>
+            <option>Fabricant</option>
+            <option>Livreur</option>
+            <option>Autre</option>
+          </select>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="field__err" data-for="f-profil"></span>
+      </div>
+
+      <div class="field">
+        <label for="f-tel">Téléphone</label>
+        <input id="f-tel" name="telephone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="07 00 00 00 00">
+        <span class="field__err" data-for="f-tel"></span>
+      </div>
+
+      <div class="field">
+        <label for="f-msg">Votre message <span class="field__opt">(facultatif)</span></label>
+        <textarea id="f-msg" name="message" rows="3" placeholder="Votre commune, votre activité…"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn--yellow btn--lg lead__submit">
+        <span>Envoyer ma demande</span>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <p class="lead__note mono" id="leadNote">VOS COORDONNÉES NE SERVENT QU'À VOUS RECONTACTER</p>
+    </form>
   </div>
 </section>
 
