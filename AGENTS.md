@@ -75,8 +75,10 @@ puis mise à jour de l'entité TypeORM correspondante pour rester aligné.
 Application dans l'ordre :
 
 ```bash
-for f in database/migrations/*.sql; do psql "$DATABASE_URL" -f "$f"; done
-psql "$DATABASE_URL" -f database/seed/seed_dev.sql
+npm run db:provision     # base + PostGIS + migrations + seed, d'un coup
+# ou, sur une base déjà créée :
+npm run db:migrate
+npm run db:seed
 ```
 
 ---
@@ -160,6 +162,12 @@ Copie `backend/.env.example` vers `backend/.env` et renseigne les valeurs.
 Variables lues par le code : `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USER`,
 `DATABASE_PASSWORD`, `DATABASE_NAME`, `JWT_SECRET`, `JWT_EXPIRATION`, `PORT`,
 `NODE_ENV`.
+
+**Deux conventions coexistent, ne les confonds pas** : l'application NestJS lit
+`DATABASE_*` depuis `backend/.env`, tandis que les scripts SQL (`db:provision`,
+`db:migrate`, `db:seed`) passent par `psql`, qui lit les variables `PG*`
+standard (`PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`). Renseigner
+seulement `backend/.env` ne suffit donc pas à diriger `psql` vers la bonne base.
 
 Côté mobile, l'URL de l'API se passe à la compilation :
 `flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000`

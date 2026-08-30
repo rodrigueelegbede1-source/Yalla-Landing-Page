@@ -13,8 +13,8 @@
     "dev:backend": "npm run start:dev --prefix backend",
     "dev:landing": "node landing/server.js",
     "build:backend": "npm run build --prefix backend",
-    "db:migrate": "bash -c 'for f in database/migrations/*.sql; do echo \"→ $f\"; psql \"${DATABASE_URL:-postgres://localhost/yalla}\" -v ON_ERROR_STOP=1 -f \"$f\" || exit 1; done'",
-    "db:seed": "psql \"${DATABASE_URL:-postgres://localhost/yalla}\" -v ON_ERROR_STOP=1 -f database/seed/seed_dev.sql",
+    "db:migrate": "bash -c 'for f in database/migrations/*.sql; do echo \"-> $f\"; psql -v ON_ERROR_STOP=1 -d \"${PGDATABASE:-yalla}\" -f \"$f\" || exit 1; done'",
+    "db:seed": "psql -v ON_ERROR_STOP=1 -d \"${PGDATABASE:-yalla}\" -f database/seed/seed_dev.sql",
     "audit:schema": "node scripts/audit-schema.js",
     "db:provision": "bash scripts/db-provision.sh"
   },
