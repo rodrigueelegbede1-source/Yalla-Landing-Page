@@ -950,3 +950,22 @@ body.is-locked{ overflow:hidden; }
 
 /* Ancres : compenser la nav fixe lors d'un saut clavier */
 section[id]{ scroll-margin-top:84px; }
+
+/* ═══════════════════ CONTRASTE — CORRECTIF ACCESSIBILITÉ ═══════════════════
+   Les micro-libellés en mono étaient posés à très faible opacité pour l'effet
+   « instrument ». Mesurés, neuf d'entre eux tombaient sous le seuil WCAG AA
+   (4.5:1), certains à 2:1 — illisibles sur un téléphone en plein jour, ce qui
+   est précisément le contexte d'usage à Abidjan. Opacités relevées au minimum
+   nécessaire pour passer AA, sans écraser la hiérarchie visuelle. */
+.card__index{ color:rgba(8,22,14,.62); }
+.card--feature .card__index{ color:rgba(255,229,0,.78); }
+.feat__num{ color:rgba(246,244,236,.56); }
+.step__badge{ color:rgba(246,244,236,.56); }
+.device__caption{ color:rgba(246,244,236,.62); }
+.hero__scrollcue{ color:rgba(246,244,236,.62); }
+.lead__note{ color:rgba(246,244,236,.62); }
+.feed__label{ color:rgba(246,244,236,.64); }
+.footer__bottom{ color:rgba(246,244,236,.64); }
+.field label{ color:rgba(246,244,236,.72); }
+.hero__pills li{ color:rgba(246,244,236,.74); }
+.step__meta{ color:rgba(255,229,0,.78); }
