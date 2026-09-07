@@ -1,4 +1,4 @@
-| [`scripts/`](scripts/) | Setup, lint, test, audit de schéma, provisionnement de la base |# Yalla
+# Yalla
 
 Plateforme de distribution de proximité pour la Côte d'Ivoire — **géolocalisation
 temps réel**, **signalement de ruptures de stock** et **caisse enregistreuse**,
@@ -19,7 +19,7 @@ Puis, selon ce sur quoi vous travaillez :
 
 ```bash
 npm run dev:backend    # API      → http://localhost:3000
-npm run dev:landing    # Vitrine  → http://localhost:4173
+npm run dev:landing    # Vitrine  → http://localhost:4180
 ```
 
 L'API a besoin d'une base PostgreSQL + PostGIS. Voir [Base de données](#base-de-données).
@@ -46,7 +46,7 @@ Node seul suffit pour travailler sur le backend ou la landing page.
 | [`landing/`](landing/) | Site vitrine public, HTML/CSS/JS sans framework |
 | [`maquettes/`](maquettes/) | 5 prototypes HTML cliquables, un par interface |
 | [`docs/`](docs/) | Cahier des charges, modèle de données, stack technique, historique |
-| [`scripts/`](scripts/) | Setup, lint, test |
+| [`scripts/`](scripts/) | Setup, lint, test, audit de schéma, provisionnement de la base |
 
 Ce dépôt regroupe des livrables auparavant numérotés. Correspondance :
 
@@ -109,6 +109,8 @@ npm run audit:schema
 > limite du CRT Microsoft, et la locale est mise en cache pour toute la session :
 > il faut la changer **puis rouvrir la session Windows**. Le problème ne se pose
 > ni sous Linux ni sous macOS.
+
+---
 
 ## Configuration
 

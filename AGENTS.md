@@ -42,7 +42,7 @@ toute décision d'architecture, pour ne pas revenir sur un arbitrage déjà tran
 ```bash
 npm run setup          # installe les dépendances de tous les sous-projets
 npm run dev:backend    # API sur http://localhost:3000
-npm run dev:landing    # landing page sur http://localhost:4173
+npm run dev:landing    # landing page sur http://localhost:4180
 npm run build:backend  # compile le backend
 npm run lint           # vérifications disponibles
 npm test               # tests (voir §7 : il n'y en a pas encore)
@@ -127,7 +127,7 @@ Ce qui a été **vérifié par exécution** (2026-08-16) :
 | Chargement de `bcrypt` (module natif) | **OK** — `require` + `hashSync` fonctionnent |
 | Amorçage NestJS | **tous les modules s'initialisent** (App, TypeOrm, Passport, Jwt, Config) |
 | Alignement entités ↔ migrations SQL | **18 tables, 119 colonnes, 0 désalignement** (`npm run audit:schema`) |
-| Landing servie sur `:4173` | 200 sur HTML/CSS/JS, MIME corrects, 404 géré |
+| Landing servie sur `:4180` | 200 sur HTML/CSS/JS, MIME corrects, 404 géré |
 | Tests automatisés | **aucun** — 0 `.spec.ts`, 0 `_test.dart` |
 
 Autrement dit : le seul obstacle au démarrage de l'API est **l'absence de base**.
