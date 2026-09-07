@@ -1,11 +1,11 @@
 /* Petit serveur statique pour prévisualiser la landing page en local.
-   Usage : node server.js   →   http://localhost:4173 */
+   Usage : node server.js   →   http://localhost:4180 */
 const http = require('http');
 const fs   = require('fs');
 const path = require('path');
 
 const ROOT = __dirname;
-const PORT = 4173;
+const PORT = 4180;
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
