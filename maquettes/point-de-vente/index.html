@@ -1,350 +1,245 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Yalla — Interface Point de vente</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --navy:#0B1220;
-    --bg:#F5F6F4;
-    --panel:#FFFFFF;
-    --amber:#FF7A1A;
-    --teal:#0E7C7B;
-    --danger:#E4483B;
-    --success:#17A672;
-    --ink:#10151F;
-    --dim:rgba(16,21,31,0.58);
-    --border:rgba(16,21,31,0.10);
-    --ff-display:'Sora', sans-serif;
-    --ff-body:'Inter', sans-serif;
-    --ff-mono:'IBM Plex Mono', monospace;
-  }
-  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body{
-    background:#E7E5E0; font-family:var(--ff-body); color:var(--ink);
-    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:36px 16px;
-  }
-  a{ color:inherit; text-decoration:none; }
-  ul{ list-style:none; }
-  button{ font:inherit; cursor:pointer; }
-  ::selection{ background:var(--amber); color:#fff; }
-  :focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
-
-  .device{
-    width:390px; height:844px; background:var(--navy); border-radius:52px; padding:14px;
-    box-shadow:0 30px 60px rgba(11,18,32,.35), 0 4px 12px rgba(11,18,32,.2);
-    flex-shrink:0;
-  }
-  .screen{ width:100%; height:100%; background:var(--bg); border-radius:38px; overflow:hidden; position:relative; display:flex; flex-direction:column; }
-  .notch{ position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:26px; background:var(--navy); border-radius:0 0 16px 16px; z-index:50; }
-  .status-row{ display:flex; justify-content:space-between; align-items:center; padding:16px 26px 4px; font-family:var(--ff-mono); font-size:12px; font-weight:600; color:var(--ink); flex-shrink:0; position:relative; z-index:30; }
-
-  .app-top{ padding:6px 20px 12px; flex-shrink:0; position:relative; z-index:30; }
-  .app-top .greet{ font-size:12px; color:var(--dim); font-weight:600; }
-  .app-top .brand-row{ display:flex; align-items:center; justify-content:space-between; margin-top:2px; }
-  .app-top h1{ font-family:var(--ff-display); font-size:19px; font-weight:700; }
-  .avatar{ width:34px; height:34px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--ff-display); font-weight:700; font-size:12px; }
-
-  .app-body{ flex:1; overflow-y:auto; padding:0 20px 100px; -webkit-overflow-scrolling:touch; position:relative; z-index:10; }
-  .app-body::-webkit-scrollbar{ display:none; }
-
-  .eyebrow{ font-family:var(--ff-mono); font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--teal); margin:16px 0 8px; font-weight:600; }
-  .eyebrow:first-child{ margin-top:2px; }
-
-  /* big CTA */
-  .cta-card{
-    background:linear-gradient(150deg, var(--navy), #1B2740); color:#fff; border-radius:18px; padding:20px;
-    position:relative; overflow:hidden; margin-top:2px;
-  }
-  .cta-card::after{ content:""; position:absolute; inset:0; background:radial-gradient(circle at 85% 10%, rgba(255,122,26,.35), transparent 55%); }
-  .cta-card p.tag{ position:relative; font-family:var(--ff-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:rgba(255,255,255,.6); margin-bottom:6px; }
-  .cta-card h3{ position:relative; font-family:var(--ff-display); font-size:18px; font-weight:700; margin-bottom:14px; line-height:1.25; }
-  .cta-btn{
-    position:relative; width:100%; background:var(--amber); color:var(--navy); border:none; border-radius:12px;
-    padding:14px; font-family:var(--ff-display); font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px;
-  }
-  .cta-btn svg{ width:16px; height:16px; }
-
-  .kpi-scroll{ display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; margin:0 -20px 4px; padding-left:20px; padding-right:20px; }
-  .kpi-scroll::-webkit-scrollbar{ display:none; }
-  .kpi-card{ flex-shrink:0; width:130px; background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; }
-  .kpi-card .lbl{ font-size:10.5px; color:var(--dim); font-weight:600; margin-bottom:8px; }
-  .kpi-card .val{ font-family:var(--ff-mono); font-size:18px; font-weight:600; }
-  .kpi-card .delta{ font-size:10px; font-weight:600; margin-top:4px; color:var(--success); }
-
-  .notif-card{ display:flex; gap:12px; background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:12px; margin-bottom:9px; }
-  .notif-icon{ width:38px; height:38px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:rgba(14,124,123,.12); }
-  .notif-icon svg{ width:17px; height:17px; color:var(--teal); }
-  .notif-icon.ad{ background:rgba(255,122,26,.14); }
-  .notif-icon.ad svg{ color:var(--amber); }
-  .notif-body p{ font-family:var(--ff-display); font-weight:600; font-size:12.5px; }
-  .notif-body span{ font-size:11px; color:var(--dim); }
-
-  /* category chips */
-  .chip-scroll{ display:flex; gap:8px; overflow-x:auto; margin:0 -20px 12px; padding:0 20px 4px; }
-  .chip-scroll::-webkit-scrollbar{ display:none; }
-  .chip{ flex-shrink:0; font-family:var(--ff-display); font-size:12px; font-weight:600; padding:8px 14px; border-radius:999px; border:1px solid var(--border); background:var(--panel); color:var(--dim); }
-  .chip.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
-
-  /* product to signal */
-  .sig-product{
-    display:flex; align-items:center; gap:12px; background:var(--panel); border:1px solid var(--border); border-radius:14px;
-    padding:11px 12px; margin-bottom:9px;
-  }
-  .sig-thumb{ width:44px; height:44px; border-radius:9px; background:var(--bg); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
-  .sig-thumb svg{ width:20px; height:20px; color:var(--teal); }
-  .sig-info{ flex:1; min-width:0; }
-  .sig-info p{ font-family:var(--ff-display); font-weight:600; font-size:13px; }
-  .sig-info span{ font-size:11px; color:var(--dim); }
-  .sig-btn{
-    flex-shrink:0; font-family:var(--ff-display); font-weight:700; font-size:11px; padding:8px 12px; border-radius:9px;
-    border:1px solid var(--border); background:var(--panel); color:var(--ink);
-  }
-  .sig-btn.reported{ background:var(--amber); color:var(--navy); border-color:var(--amber); }
-
-  /* survey */
-  .survey-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:10px; }
-  .survey-card h4{ font-family:var(--ff-display); font-weight:700; font-size:14px; margin-bottom:4px; }
-  .survey-card p.q{ font-size:12.5px; color:var(--dim); margin-bottom:12px; }
-  .survey-opt{
-    display:block; width:100%; text-align:left; padding:11px 14px; border-radius:10px; border:1px solid var(--border);
-    background:var(--bg); font-size:12.5px; font-weight:600; margin-bottom:8px;
-  }
-  .survey-opt.selected{ border-color:var(--teal); background:rgba(14,124,123,.1); color:var(--teal); }
-
-  .card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:10px; }
-  .card h4{ font-family:var(--ff-display); font-weight:700; font-size:13.5px; margin-bottom:4px; }
-  .card p.sub{ font-size:11.5px; color:var(--dim); }
-
-  .field{ margin-bottom:14px; }
-  .field label{ display:block; font-family:var(--ff-display); font-weight:600; font-size:12px; margin-bottom:7px; }
-  .field select, .field input{ width:100%; border:1px solid var(--border); border-radius:9px; padding:10px 11px; font-family:var(--ff-body); font-size:13px; background:var(--bg); outline:none; }
-  .field-static{ font-size:13px; padding:10px 0; border-bottom:1px solid var(--border); }
-  .field-static span{ display:block; font-size:11px; color:var(--dim); }
-
-  .danger-btn{ width:100%; padding:13px; border-radius:12px; border:1px solid rgba(228,72,59,.3); background:rgba(228,72,59,.08); color:var(--danger); font-family:var(--ff-display); font-weight:700; font-size:13px; }
-
-  .geo-pill{ display:inline-flex; align-items:center; gap:6px; background:rgba(23,166,114,.12); color:var(--success); font-size:11.5px; font-weight:600; padding:6px 12px; border-radius:999px; margin-bottom:4px; }
-  .geo-pill svg{ width:13px; height:13px; }
-
-  .back-btn{ width:34px; height:34px; border-radius:10px; background:var(--panel); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .back-btn svg{ width:16px; height:16px; }
-
-  .toast{
-    position:absolute; left:20px; right:20px; bottom:110px; background:var(--navy); color:#fff; border-radius:12px;
-    padding:13px 16px; display:flex; align-items:center; gap:10px; font-size:12.5px; font-weight:600;
-    transform:translateY(20px); opacity:0; pointer-events:none; transition:transform .3s ease, opacity .3s ease; z-index:60;
-  }
-  .toast.show{ transform:translateY(0); opacity:1; }
-  .toast svg{ width:16px; height:16px; color:var(--amber); flex-shrink:0; }
-
-  .tabbar{ position:absolute; left:0; right:0; bottom:0; background:rgba(255,255,255,.92); backdrop-filter:blur(10px); border-top:1px solid var(--border); display:flex; padding:10px 8px 22px; z-index:40; }
-  .tab{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; color:var(--dim); font-family:var(--ff-display); font-weight:600; font-size:10px; }
-  .tab svg{ width:20px; height:20px; }
-  .tab.active{ color:var(--amber); }
-
-  .view{ display:none; }
-  .view.active{ display:block; }
-
-  @media (max-width:430px){
-    body{ padding:0; align-items:stretch; }
-    .device{ width:100%; height:100svh; border-radius:0; padding:0; }
-    .screen{ border-radius:0; }
-    .notch{ display:none; }
-  }
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/app.css">
 </head>
 <body>
 
-<div class="device">
-  <div class="screen">
-    <div class="notch"></div>
-    <div class="status-row"><span>9:41</span><span>Yalla — Point de vente</span><span>100%</span></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M9.5 20v-5h5v5"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7Z"/><path d="M10.5 19a1.8 1.8 0 0 0 3 0"/></symbol>
+  <symbol id="i-cash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.4"/><path d="M8 7.5h8M8 12h3m5 0h.01M8 16h3m5 0h.01"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8 12 4l8 4v8l-8 4-8-4z"/><path d="m4 8 8 4 8-4M12 12v8"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.4"/></symbol>
+  <symbol id="i-poll" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 19V9M12 19V5M18 19v-6"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 10h16v10H4z"/><path d="m3 10 2-5h14l2 5"/><path d="M10 20v-5h4v5"/></symbol>
+  <symbol id="i-mark" viewBox="0 0 40 40" fill="none"><path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/><rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/><circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/></symbol>
+</defs></svg>
 
-    <div class="app-top">
-      <p class="greet">Bonjour,</p>
-      <div class="brand-row">
-        <h1 id="screenTitle">Superette Akwaba</h1>
-        <div class="avatar">SA</div>
-      </div>
+<header class="head">
+  <div class="head__id">
+    <svg class="head__mark" aria-hidden="true"><use href="#i-mark"/></svg>
+    <div>
+      <h1>Interface Point de vente</h1>
+      <p>Signalement des ruptures, caisse enregistreuse et profil de la boutique</p>
     </div>
+  </div>
+  <a class="head__back" href="../index.html">← TOUTES LES INTERFACES</a>
+</header>
 
-    <div class="app-body" id="appBody">
+<div class="stage">
+  <div class="phone" data-app>
+    <div class="phone__frame"><div class="phone__screen">
 
-      <!-- ============ ACCUEIL ============ -->
-      <div class="view active" id="view-accueil">
-        <div class="cta-card">
-          <p class="tag">Rupture de stock</p>
-          <h3>Un produit manque en rayon ? Signalez-le en un geste.</h3>
-          <button class="cta-btn" id="goSignal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.7 17.5A1.5 1.5 0 0 0 4 20h16a1.5 1.5 0 0 0 1.3-2.5L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg>Signaler une rupture</button>
-        </div>
-
-        <p class="eyebrow">Ce mois-ci</p>
-        <div class="kpi-scroll">
-          <div class="kpi-card"><div class="lbl">Ruptures signalées</div><div class="val">14</div><div class="delta">Traitées : 12</div></div>
-          <div class="kpi-card"><div class="lbl">Dernière livraison</div><div class="val">Hier</div><div class="delta">Ivoire Boissons</div></div>
-          <div class="kpi-card"><div class="lbl">Sondages</div><div class="val">2</div><div class="delta">en attente</div></div>
-        </div>
-
-        <p class="eyebrow">Notifications récentes</p>
-        <div class="notif-card"><div class="notif-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div><div class="notif-body"><p>Livraison confirmée</p><span>Eau Ivoire 1,5L — par Koffi A., il y a 2 h</span></div></div>
-        <div class="notif-card"><div class="notif-icon ad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11 18 4v16L3 13z"/><path d="M3 11v2a3 3 0 0 0 3 3h1"/></svg></div><div class="notif-body"><p>Nouvelle promotion Ivoire Boissons</p><span>Publicité réseau — il y a 5 h</span></div></div>
-        <div class="notif-card"><div class="notif-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div><div class="notif-body"><p>Rupture prise en compte</p><span>Jus Ivoire Mangue 1L — hier</span></div></div>
+      <div class="status">
+        <span>9:41</span>
+        <span class="status__dots"><i></i><i></i><i></i></span>
       </div>
 
-      <!-- ============ SIGNALER (catalogue global) ============ -->
-      <div class="view" id="view-signaler">
-        <button class="back-btn" id="backBtn" style="margin-bottom:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
-        <p class="eyebrow">Catalogue global — par catégorie</p>
-        <div class="chip-scroll">
-          <button class="chip active">Boissons</button>
-          <button class="chip">Épicerie</button>
-          <button class="chip">Hygiène</button>
-          <button class="chip">Snacking</button>
-        </div>
-
-        <div class="sig-product">
-          <div class="sig-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16l-1 9H5L4 3z"/><path d="M4 3 3 1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></div>
-          <div class="sig-info"><p>Jus Ivoire Mangue 1L</p><span>Ivoire Boissons</span></div>
-          <button class="sig-btn" data-sig>Signaler</button>
-        </div>
-        <div class="sig-product">
-          <div class="sig-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16l-1 9H5L4 3z"/><path d="M4 3 3 1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></div>
-          <div class="sig-info"><p>Eau Ivoire 1,5L</p><span>Ivoire Boissons</span></div>
-          <button class="sig-btn" data-sig>Signaler</button>
-        </div>
-        <div class="sig-product">
-          <div class="sig-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16l-1 9H5L4 3z"/><path d="M4 3 3 1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></div>
-          <div class="sig-info"><p>Soda Ivoire Cola 33cl</p><span>Ivoire Boissons</span></div>
-          <button class="sig-btn" data-sig>Signaler</button>
-        </div>
-        <div class="sig-product">
-          <div class="sig-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16l-1 9H5L4 3z"/><path d="M4 3 3 1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></div>
-          <div class="sig-info"><p>Jus Filtisac Orange 1L</p><span>Filtisac</span></div>
-          <button class="sig-btn" data-sig>Signaler</button>
-        </div>
-        <div class="sig-product">
-          <div class="sig-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16l-1 9H5L4 3z"/><path d="M4 3 3 1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></div>
-          <div class="sig-info"><p>Lait Nestlé 1L</p><span>Nestlé CI</span></div>
-          <button class="sig-btn" data-sig>Signaler</button>
-        </div>
-      </div>
-
-      <!-- ============ NOTIFICATIONS / SONDAGES ============ -->
-      <div class="view" id="view-notifs">
-        <p class="eyebrow">Sondages en attente</p>
-        <div class="survey-card">
-          <h4>Satisfaction livraison</h4>
-          <p class="q">Comment évaluez-vous la rapidité de votre dernier livreur ?</p>
-          <button class="survey-opt" data-opt>Très rapide</button>
-          <button class="survey-opt" data-opt>Correcte</button>
-          <button class="survey-opt" data-opt>Trop lente</button>
-        </div>
-        <p class="eyebrow">Publicités &amp; annonces</p>
-        <div class="notif-card"><div class="notif-icon ad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11 18 4v16L3 13z"/><path d="M3 11v2a3 3 0 0 0 3 3h1"/></svg></div><div class="notif-body"><p>Nouvelle promotion Ivoire Boissons</p><span>−10 % sur les jus 1L cette semaine</span></div></div>
-        <div class="notif-card"><div class="notif-icon ad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11 18 4v16L3 13z"/><path d="M3 11v2a3 3 0 0 0 3 3h1"/></svg></div><div class="notif-body"><p>Campagne Filtisac</p><span>Nouveaux emballages disponibles</span></div></div>
-        <p class="eyebrow">Notifications</p>
-        <div class="notif-card"><div class="notif-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div><div class="notif-body"><p>Rupture prise en compte</p><span>Jus Ivoire Mangue 1L — hier</span></div></div>
-      </div>
-
-      <!-- ============ PROFIL ============ -->
-      <div class="view" id="view-profil">
-        <div class="geo-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/></svg>Position géolocalisée</div>
-        <div class="card">
-          <h4>Superette Akwaba</h4>
-          <p class="sub">Rue des Jardins, Cocody, Abidjan</p>
-        </div>
-        <p class="eyebrow">Informations du point de vente</p>
-        <div class="card">
-          <div class="field">
-            <label>Type d'activité</label>
-            <select><option>Superette / Alimentation générale</option><option>Boutique de quartier</option><option>Kiosque</option><option>Restaurant / Maquis</option></select>
+      <div class="appbar">
+        <div class="appbar__row">
+          <div>
+            <p class="appbar__hi">Bonjour,</p>
+            <h2>Supérette La Grâce</h2>
           </div>
-          <div class="field-static">Nom du gérant<span>Aya Kouassi</span></div>
-          <div class="field-static">Téléphone<span>+225 07 45 00 00 00</span></div>
+          <div class="avatar">SG</div>
         </div>
-        <p class="eyebrow">Zone à risque</p>
-        <button class="danger-btn">Retirer mon point de vente</button>
       </div>
 
-    </div>
+      <div class="body">
 
-    <div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span id="toastText">Rupture signalée au fabricant</span></div>
+        <!-- ─── Accueil ─── -->
+        <section class="screen is-active" data-screen="accueil">
+          <div class="hero-cta">
+            <p>Un produit manque en rayon&nbsp;?</p>
+            <h3>Signalez-le, un livreur est prévenu.</h3>
+            <button class="btn-main" data-go="signaler">
+              <svg aria-hidden="true"><use href="#i-plus"/></svg>Signaler une rupture
+            </button>
+          </div>
 
-    <div class="tabbar" id="tabbar">
-      <button class="tab active" data-view="accueil" data-title="Superette Akwaba" data-greet="Bonjour,">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Accueil
-      </button>
-      <button class="tab" data-view="notifs" data-title="Notifications" data-greet="Publicités & sondages">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifs
-      </button>
-      <button class="tab" data-view="profil" data-title="Profil" data-greet="Mon point de vente">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>Profil
-      </button>
-    </div>
+          <p class="eyebrow">Aujourd'hui</p>
+          <div class="kpis">
+            <div class="kpi"><p class="kpi__l">Chiffre d'affaires</p><p class="kpi__v">184 500</p><p class="kpi__d">+12% vs hier</p></div>
+            <div class="kpi"><p class="kpi__l">Ventes</p><p class="kpi__v">47</p><p class="kpi__d">+5</p></div>
+            <div class="kpi"><p class="kpi__l">Ruptures en cours</p><p class="kpi__v">3</p><p class="kpi__d kpi__d--down">2 non livrées</p></div>
+          </div>
+
+          <p class="eyebrow">Mes signalements</p>
+          <div class="row">
+            <div class="row__ic row__ic--alert"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
+            <div class="row__t"><b>Lait concentré 400g</b><span>SIGNALÉ IL Y A 16 MIN</span></div>
+            <span class="tag tag--warn">EN ROUTE</span>
+          </div>
+          <div class="row">
+            <div class="row__ic row__ic--alert"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
+            <div class="row__t"><b>Sucre en morceaux 1kg</b><span>SIGNALÉ IL Y A 42 MIN</span></div>
+            <span class="tag tag--alert">EN ATTENTE</span>
+          </div>
+          <div class="row">
+            <div class="row__ic row__ic--ok"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
+            <div class="row__t"><b>Huile végétale 5L</b><span>LIVRÉ À 08:12</span></div>
+            <span class="tag tag--ok">LIVRÉ</span>
+          </div>
+
+          <p class="eyebrow">Notifications</p>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-poll"/></svg></div>
+            <div class="row__t"><b>Enquête satisfaction</b><span>2 MIN · RÉSEAU YALLA</span></div>
+            <span class="tag tag--info">RÉPONDRE</span>
+          </div>
+        </section>
+
+        <!-- ─── Signaler ─── -->
+        <section class="screen" data-screen="signaler">
+          <p class="eyebrow">Catégorie</p>
+          <div class="chips" data-chips>
+            <button class="chip is-on">Épicerie</button>
+            <button class="chip">Boissons</button>
+            <button class="chip">Hygiène</button>
+            <button class="chip">Entretien</button>
+          </div>
+
+          <p class="eyebrow">Produit manquant</p>
+          <div class="card">
+            <div class="prod">
+              <span class="prod__img"></span>
+              <div class="prod__t">
+                <b>Lait concentré sucré 400g</b>
+                <span>NESTLÉ · RÉF. LC-400</span>
+              </div>
+            </div>
+            <div class="prod__foot">
+              <span class="mono">DERNIÈRE VENTE IL Y A 2 H</span>
+              <span class="tag tag--alert">0 EN STOCK</span>
+            </div>
+          </div>
+
+          <p class="eyebrow">Quantité souhaitée</p>
+          <div class="field">
+            <label for="q">Nombre de cartons</label>
+            <input id="q" type="text" inputmode="numeric" value="4" readonly>
+          </div>
+
+          <p class="eyebrow">Photo du rayon <span style="text-transform:none;letter-spacing:0;opacity:.7">(facultatif)</span></p>
+          <button class="btn-ghost" type="button">
+            <svg style="width:16px;height:16px" aria-hidden="true"><use href="#i-cam"/></svg>Prendre une photo
+          </button>
+
+          <div class="card" style="margin-top:14px;background:rgba(20,107,58,.06);border-color:rgba(20,107,58,.2)">
+            <p style="font-size:12px;color:var(--dim);line-height:1.5">
+              Votre position est jointe automatiquement. Seul le fabricant de ce produit
+              et ses livreurs affiliés recevront l'alerte.
+            </p>
+          </div>
+
+          <div style="margin-top:14px">
+            <button class="btn-main" data-go="accueil">Envoyer le signalement</button>
+          </div>
+        </section>
+
+        <!-- ─── Caisse ─── -->
+        <section class="screen" data-screen="caisse">
+          <div class="total">
+            <span>TOTAL PANIER</span>
+            <b>7 250 F</b>
+          </div>
+
+          <div class="row">
+            <div class="row__t"><b>Riz parfumé 5kg</b><span>× 1 · 4 500 F</span></div>
+            <div class="row__x"><b>4 500</b></div>
+          </div>
+          <div class="row">
+            <div class="row__t"><b>Boisson gazeuse 33cl</b><span>× 5 · 550 F</span></div>
+            <div class="row__x"><b>2 750</b></div>
+          </div>
+
+          <p class="eyebrow">Montant reçu</p>
+          <div class="pad">
+            <button type="button">1</button><button type="button">2</button><button type="button">3</button>
+            <button type="button">4</button><button type="button">5</button><button type="button">6</button>
+            <button type="button">7</button><button type="button">8</button><button type="button">9</button>
+            <button type="button">.</button><button type="button">0</button>
+            <button type="button" class="is-accent">OK</button>
+          </div>
+
+          <div style="margin-top:12px">
+            <button class="btn-main" type="button">Encaisser</button>
+          </div>
+          <p class="mono" style="font-size:9px;color:var(--faint);text-align:center;margin-top:10px">
+            FONCTIONNE HORS CONNEXION · SYNCHRONISATION AUTOMATIQUE
+          </p>
+        </section>
+
+        <!-- ─── Profil ─── -->
+        <section class="screen" data-screen="profil">
+          <div class="map">
+            <svg viewBox="0 0 300 150" preserveAspectRatio="none" aria-hidden="true">
+              <rect width="300" height="150" fill="#0c3826"/>
+              <g opacity=".5" fill="#10462f">
+                <rect x="10" y="12" width="80" height="46" rx="4"/><rect x="104" y="8" width="94" height="52" rx="4"/>
+                <rect x="212" y="14" width="78" height="44" rx="4"/><rect x="12" y="76" width="86" height="56" rx="4"/>
+                <rect x="112" y="72" width="82" height="60" rx="4"/><rect x="208" y="74" width="84" height="58" rx="4"/>
+              </g>
+              <g stroke="#1a6b45" stroke-width="2"><path d="M0 66h300M100 0v150M202 0v150"/></g>
+            </svg>
+            <span class="pin pin--me" style="--x:36%;--y:46%"></span>
+            <span class="map__tag"><i style="background:#FFE500"></i>MA BOUTIQUE · COCODY</span>
+          </div>
+
+          <p class="eyebrow">Ma boutique</p>
+          <div class="card">
+            <b style="display:block;font-size:14px;margin-bottom:3px">Supérette La Grâce</b>
+            <span class="mono" style="font-size:9.5px;color:var(--faint)">RIVIERA 2 · COCODY · ABIDJAN</span>
+          </div>
+
+          <p class="eyebrow">Type d'activité</p>
+          <div class="chips" data-chips>
+            <button class="chip is-on">Supérette</button>
+            <button class="chip">Boutique</button>
+            <button class="chip">Kiosque</button>
+            <button class="chip">Maquis</button>
+          </div>
+
+          <p class="eyebrow">Accès</p>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
+            <div class="row__t"><b>Catalogue global des fabricants</b><span>1 248 RÉFÉRENCES</span></div>
+          </div>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-poll"/></svg></div>
+            <div class="row__t"><b>Enquêtes et sondages</b><span>1 EN ATTENTE</span></div>
+          </div>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-pin"/></svg></div>
+            <div class="row__t"><b>Position de la boutique</b><span>VÉRIFIÉE PAR UN AGENT RECENSEUR</span></div>
+            <span class="tag tag--ok">OK</span>
+          </div>
+        </section>
+
+      </div>
+
+      <nav class="tabs" aria-label="Navigation de l'application">
+        <a class="tab is-active" href="#" data-go="accueil"><svg aria-hidden="true"><use href="#i-home"/></svg><span>Accueil</span></a>
+        <a class="tab" href="#" data-go="signaler"><svg aria-hidden="true"><use href="#i-bell"/></svg><span>Signaler</span></a>
+        <a class="tab" href="#" data-go="caisse"><svg aria-hidden="true"><use href="#i-cash"/></svg><span>Caisse</span></a>
+        <a class="tab" href="#" data-go="profil"><svg aria-hidden="true"><use href="#i-user"/></svg><span>Profil</span></a>
+      </nav>
+
+    </div></div>
+    <p class="phone__label">Point de vente — 4 écrans, cliquez les onglets</p>
   </div>
 </div>
 
-<script>
-  const tabs = document.querySelectorAll('.tab');
-  const views = document.querySelectorAll('.view');
-  const title = document.getElementById('screenTitle');
-  const greet = document.querySelector('.greet');
-  const appBody = document.getElementById('appBody');
-  const tabbar = document.getElementById('tabbar');
-
-  function showView(name){
-    views.forEach(v => v.classList.remove('active'));
-    document.getElementById('view-' + name).classList.add('active');
-    appBody.scrollTop = 0;
-  }
-
-  tabs.forEach(t => t.addEventListener('click', () => {
-    tabs.forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    showView(t.dataset.view);
-    title.textContent = t.dataset.title;
-    greet.textContent = t.dataset.greet;
-  }));
-
-  document.getElementById('goSignal').addEventListener('click', () => {
-    tabs.forEach(x => x.classList.remove('active'));
-    tabbar.style.display = 'none';
-    showView('signaler');
-    title.textContent = 'Signaler une rupture';
-    greet.textContent = '';
-  });
-  document.getElementById('backBtn').addEventListener('click', () => {
-    tabbar.style.display = 'flex';
-    tabs[0].classList.add('active');
-    showView('accueil');
-    title.textContent = tabs[0].dataset.title;
-    greet.textContent = tabs[0].dataset.greet;
-  });
-
-  document.querySelectorAll('.chip-scroll .chip').forEach(chip => chip.addEventListener('click', () => {
-    document.querySelectorAll('.chip-scroll .chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-  }));
-
-  const toast = document.getElementById('toast');
-  document.querySelectorAll('[data-sig]').forEach(btn => btn.addEventListener('click', () => {
-    btn.textContent = 'Signalé ✓';
-    btn.classList.add('reported');
-    btn.disabled = true;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2200);
-  }));
-
-  document.querySelectorAll('[data-opt]').forEach(opt => opt.addEventListener('click', () => {
-    opt.parentElement.querySelectorAll('[data-opt]').forEach(o => o.classList.remove('selected'));
-    opt.classList.add('selected');
-  }));
-</script>
-
+<script src="../assets/app.js"></script>
 </body>
 </html>

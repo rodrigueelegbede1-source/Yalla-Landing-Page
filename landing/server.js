@@ -4,8 +4,10 @@ const http = require('http');
 const fs   = require('fs');
 const path = require('path');
 
-const ROOT = __dirname;
-const PORT = 4180;
+// Racine servie : le dossier passé en argument, sinon celui du script.
+// Permet de servir la landing (défaut) ou les maquettes sans dupliquer ce fichier.
+const ROOT = path.resolve(process.argv[2] || __dirname);
+const PORT = Number(process.env.PORT) || Number(process.argv[3]) || 4180;
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -34,4 +36,4 @@ http.createServer((req, res) => {
     });
     res.end(buf);
   });
-}).listen(PORT, () => console.log(`Yalla → http://localhost:${PORT}`));
+}).listen(PORT, () => console.log(`Yalla → http://localhost:${PORT}  (racine : ${ROOT})`));

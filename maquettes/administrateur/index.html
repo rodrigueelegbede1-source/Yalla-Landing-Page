@@ -1,523 +1,338 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yalla — Console Administrateur</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yalla — Interface Administrateur</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --navy:#0B1220;
-    --navy-soft:#141D2E;
-    --bg:#F5F6F4;
-    --panel:#FFFFFF;
-    --amber:#FF7A1A;
-    --teal:#0E7C7B;
-    --danger:#E4483B;
-    --success:#17A672;
-    --ink:#10151F;
-    --dim:rgba(16,21,31,0.58);
-    --border:rgba(16,21,31,0.10);
-    --border-dark:rgba(245,246,244,0.10);
-    --ff-display:'Sora', sans-serif;
-    --ff-body:'Inter', sans-serif;
-    --ff-mono:'IBM Plex Mono', monospace;
-  }
-  *{ margin:0; padding:0; box-sizing:border-box; }
-  body{
-    background:var(--bg); color:var(--ink); font-family:var(--ff-body);
-    display:flex; min-height:100vh; font-size:14px;
-  }
-  a{ color:inherit; text-decoration:none; }
-  ul{ list-style:none; }
-  button{ font:inherit; cursor:pointer; }
-  ::selection{ background:var(--amber); color:#fff; }
-  :focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
-
-  /* ---------- SIDEBAR ---------- */
-  .sidebar{
-    width:236px; flex-shrink:0; background:var(--navy); color:#fff;
-    display:flex; flex-direction:column; padding:22px 16px; position:sticky; top:0; height:100vh;
-  }
-  .side-brand{ display:flex; align-items:center; gap:10px; padding:6px 8px 26px; }
-  .side-brand .dot{ width:10px; height:10px; border-radius:50%; background:var(--amber); }
-  .side-brand span{ font-family:var(--ff-display); font-weight:800; font-size:19px; letter-spacing:-.01em; }
-  .side-tag{ font-size:10.5px; color:rgba(255,255,255,.4); font-family:var(--ff-mono); padding:0 8px 20px; text-transform:uppercase; letter-spacing:.08em; }
-
-  .side-nav{ display:flex; flex-direction:column; gap:2px; }
-  .side-nav button{
-    display:flex; align-items:center; gap:12px; width:100%; text-align:left;
-    background:none; border:none; color:rgba(255,255,255,.62);
-    padding:11px 12px; border-radius:8px; font-family:var(--ff-display); font-weight:600; font-size:13.5px;
-    transition:background .2s ease, color .2s ease;
-  }
-  .side-nav button svg{ width:17px; height:17px; flex-shrink:0; opacity:.85; }
-  .side-nav button:hover{ background:rgba(255,255,255,.06); color:#fff; }
-  .side-nav button.active{ background:var(--amber); color:var(--navy); }
-  .side-nav button.active svg{ opacity:1; }
-
-  .side-foot{ margin-top:auto; padding-top:20px; border-top:1px solid var(--border-dark); }
-  .side-admin{ display:flex; align-items:center; gap:10px; padding:8px; }
-  .side-avatar{
-    width:32px; height:32px; border-radius:50%; background:var(--teal);
-    display:flex; align-items:center; justify-content:center; font-family:var(--ff-display); font-weight:700; font-size:12px;
-  }
-  .side-admin div p{ font-size:13px; font-weight:600; }
-  .side-admin div span{ font-size:11.5px; color:rgba(255,255,255,.45); }
-
-  /* ---------- MAIN ---------- */
-  .main{ flex:1; min-width:0; }
-  .topbar{
-    background:var(--panel); border-bottom:1px solid var(--border);
-    padding:18px 32px; display:flex; align-items:center; justify-content:space-between; gap:24px;
-    position:sticky; top:0; z-index:20;
-  }
-  .topbar h1{ font-family:var(--ff-display); font-size:19px; font-weight:700; }
-  .topbar-right{ display:flex; align-items:center; gap:18px; }
-  .search{
-    display:flex; align-items:center; gap:8px; background:var(--bg); border:1px solid var(--border);
-    border-radius:8px; padding:8px 12px; width:260px;
-  }
-  .search input{ border:none; background:none; outline:none; font-size:13px; width:100%; font-family:var(--ff-body); }
-  .search svg{ width:15px; height:15px; color:var(--dim); flex-shrink:0; }
-  .icon-btn{
-    position:relative; width:36px; height:36px; border-radius:8px; border:1px solid var(--border);
-    background:var(--panel); display:flex; align-items:center; justify-content:center;
-  }
-  .icon-btn svg{ width:16px; height:16px; }
-  .icon-btn .badge{
-    position:absolute; top:-4px; right:-4px; background:var(--danger); color:#fff;
-    font-size:9.5px; font-family:var(--ff-mono); font-weight:600; width:16px; height:16px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-  }
-
-  .view{ display:none; padding:28px 32px 60px; }
-  .view.active{ display:block; }
-
-  .eyebrow{ font-family:var(--ff-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--teal); margin-bottom:6px; }
-  .view-title{ font-family:var(--ff-display); font-size:24px; font-weight:700; margin-bottom:26px; }
-
-  /* ---------- KPI CARDS ---------- */
-  .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
-  @media (max-width:1100px){ .kpi-row{ grid-template-columns:repeat(2,1fr); } }
-  .kpi{
-    background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:18px 20px;
-    display:flex; flex-direction:column; gap:10px;
-  }
-  .kpi-top{ display:flex; align-items:center; justify-content:space-between; }
-  .kpi-label{ font-size:12.5px; color:var(--dim); font-weight:600; }
-  .kpi-icon{ width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; }
-  .kpi-icon svg{ width:15px; height:15px; }
-  .kpi-value{ font-family:var(--ff-mono); font-size:25px; font-weight:600; }
-  .kpi-delta{ font-size:12px; font-weight:600; display:flex; align-items:center; gap:4px; }
-  .kpi-delta.up{ color:var(--success); }
-  .kpi-delta.down{ color:var(--danger); }
-
-  /* ---------- DASHBOARD GRID: map + feed ---------- */
-  .dash-grid{ display:grid; grid-template-columns:1.5fr 1fr; gap:16px; }
-  @media (max-width:1100px){ .dash-grid{ grid-template-columns:1fr; } }
-  .panel{ background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-  .panel-head{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); }
-  .panel-head h3{ font-family:var(--ff-display); font-size:14.5px; font-weight:700; }
-  .panel-head .legend{ display:flex; gap:14px; font-size:11.5px; color:var(--dim); }
-  .legend span{ display:inline-flex; align-items:center; gap:5px; }
-  .legend i{ width:7px; height:7px; border-radius:50%; display:inline-block; }
-
-  /* fake map */
-  .map{
-    position:relative; height:400px; overflow:hidden;
-    background:
-      repeating-linear-gradient(0deg, rgba(14,124,123,.07) 0 1px, transparent 1px 46px),
-      repeating-linear-gradient(90deg, rgba(14,124,123,.07) 0 1px, transparent 1px 46px),
-      linear-gradient(160deg, #EAF3F1, #EFF4F0 60%);
-  }
-  .map::before{
-    content:""; position:absolute; inset:0;
-    background:
-      radial-gradient(circle at 30% 70%, rgba(14,124,123,.10), transparent 45%),
-      radial-gradient(circle at 75% 25%, rgba(255,122,26,.10), transparent 45%);
-  }
-  .pin{ position:absolute; transform:translate(-50%,-100%); text-align:center; }
-  .pin .dot{
-    width:12px; height:12px; border-radius:50%; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.25);
-    margin:0 auto;
-  }
-  .pin.ok .dot{ background:var(--teal); }
-  .pin.rupture .dot{ background:var(--amber); }
-  .pin.rupture .dot{ animation:pulse 1.8s ease-out infinite; }
-  .pin .pulse-ring{
-    position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px;
-    border-radius:50%; background:rgba(255,122,26,.5); animation:ring 1.8s ease-out infinite;
-  }
-  @keyframes ring{ 0%{ transform:scale(1); opacity:.7; } 100%{ transform:scale(3.2); opacity:0; } }
-  @keyframes pulse{ 0%,100%{ box-shadow:0 1px 4px rgba(0,0,0,.25); } 50%{ box-shadow:0 0 0 4px rgba(255,122,26,.25); } }
-  .pin .tip{
-    font-family:var(--ff-mono); font-size:10px; background:var(--navy); color:#fff; padding:2px 6px; border-radius:4px;
-    white-space:nowrap; margin-top:4px; opacity:0; transform:translateY(2px); transition:opacity .2s ease, transform .2s ease; pointer-events:none;
-  }
-  .pin:hover .tip{ opacity:1; transform:none; }
-
-  /* live feed */
-  .feed{ max-height:400px; overflow-y:auto; }
-  .feed-item{ display:flex; gap:12px; padding:13px 20px; border-bottom:1px solid var(--border); }
-  .feed-item:last-child{ border-bottom:none; }
-  .feed-dot{ width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0; }
-  .feed-item.rupture .feed-dot{ background:var(--amber); }
-  .feed-item.livraison .feed-dot{ background:var(--teal); }
-  .feed-item.vente .feed-dot{ background:var(--success); }
-  .feed-text p{ font-size:13px; line-height:1.4; }
-  .feed-text p b{ font-weight:600; }
-  .feed-text span{ font-size:11px; color:var(--dim); font-family:var(--ff-mono); }
-  .feed-item.new{ animation:flash .9s ease; }
-  @keyframes flash{ from{ background:rgba(255,122,26,.12); } to{ background:transparent; } }
-
-  /* ---------- TABLE (Réseau) ---------- */
-  .toolbar{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
-  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; }
-  .chip{
-    font-family:var(--ff-display); font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:999px;
-    border:1px solid var(--border); background:var(--panel); color:var(--dim); transition:all .2s ease;
-  }
-  .chip.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
-  .btn{
-    font-family:var(--ff-display); font-weight:600; font-size:13px; padding:9px 16px; border-radius:8px;
-    border:1px solid var(--border); background:var(--panel); display:inline-flex; align-items:center; gap:8px;
-  }
-  .btn.primary{ background:var(--navy); color:#fff; border-color:var(--navy); }
-  .btn svg{ width:14px; height:14px; }
-
-  table{ width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-  thead th{
-    text-align:left; font-family:var(--ff-mono); font-size:10.5px; letter-spacing:.05em; text-transform:uppercase;
-    color:var(--dim); padding:12px 18px; background:#FAFAF9; border-bottom:1px solid var(--border);
-  }
-  tbody td{ padding:14px 18px; border-bottom:1px solid var(--border); font-size:13px; }
-  tbody tr:last-child td{ border-bottom:none; }
-  tbody tr:hover{ background:#FAFAF9; }
-  .status-tag{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:4px 10px; border-radius:999px; }
-  .status-tag.ok{ background:rgba(23,166,114,.12); color:var(--success); }
-  .status-tag.rupture{ background:rgba(255,122,26,.14); color:var(--amber); }
-  .status-tag i{ width:6px; height:6px; border-radius:50%; background:currentColor; }
-  .row-actions{ display:flex; gap:8px; }
-  .row-actions button{ width:28px; height:28px; border-radius:6px; border:1px solid var(--border); background:var(--panel); display:flex; align-items:center; justify-content:center; }
-  .row-actions svg{ width:13px; height:13px; }
-
-  /* ---------- STATS ---------- */
-  .stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  @media (max-width:1000px){ .stats-grid{ grid-template-columns:1fr; } }
-  .bar-row{ display:flex; align-items:center; gap:12px; padding:11px 20px; }
-  .bar-row .label{ width:120px; font-size:12.5px; color:var(--dim); flex-shrink:0; }
-  .bar-track{ flex:1; height:8px; border-radius:999px; background:var(--bg); overflow:hidden; }
-  .bar-fill{ height:100%; border-radius:999px; background:linear-gradient(90deg, var(--teal), var(--amber)); }
-  .bar-row .val{ width:74px; text-align:right; font-family:var(--ff-mono); font-size:12.5px; font-weight:600; flex-shrink:0; }
-
-  /* ---------- NOTIFICATIONS ---------- */
-  .compose{ background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:22px; max-width:640px; }
-  .field{ margin-bottom:16px; }
-  .field label{ display:block; font-family:var(--ff-display); font-weight:600; font-size:12.5px; margin-bottom:8px; }
-  .field input, .field textarea, .field select{
-    width:100%; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-family:var(--ff-body); font-size:13.5px; outline:none;
-    background:var(--bg);
-  }
-  .field textarea{ resize:vertical; min-height:80px; }
-  .target-row{ display:flex; gap:8px; flex-wrap:wrap; }
-
-  /* ---------- CATALOGUE / toggles ---------- */
-  .toggle-list{ display:flex; flex-direction:column; gap:1px; background:var(--border); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-  .toggle-row{ background:var(--panel); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
-  .toggle-row div p{ font-family:var(--ff-display); font-weight:600; font-size:14px; }
-  .toggle-row div span{ font-size:12.5px; color:var(--dim); }
-  .switch{ width:42px; height:24px; border-radius:999px; background:var(--border); position:relative; flex-shrink:0; border:none; }
-  .switch::after{ content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:transform .2s ease; }
-  .switch.on{ background:var(--success); }
-  .switch.on::after{ transform:translateX(18px); }
-
-  .empty-note{ font-size:12.5px; color:var(--dim); margin-top:14px; padding:12px 16px; background:#FAFAF9; border:1px dashed var(--border); border-radius:8px; }
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/app.css">
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="side-brand"><span class="dot"></span><span>Yalla</span></div>
-  <p class="side-tag">Console Administrateur</p>
-  <nav class="side-nav">
-    <button class="active" data-view="dashboard">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-      Tableau de bord
-    </button>
-    <button data-view="reseau">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-      Réseau
-    </button>
-    <button data-view="stats">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12.5" y="8" width="3" height="10"/><rect x="18" y="5" width="3" height="13"/></svg>
-      Statistiques
-    </button>
-    <button data-view="notifs">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      Notifications
-    </button>
-    <button data-view="catalogue">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7 12 3 4 7l8 4 8-4z"/><path d="M4 7v10l8 4 8-4V7"/><path d="M12 11v10"/></svg>
-      Catalogue &amp; accès
-    </button>
-  </nav>
-  <div class="side-foot">
-    <div class="side-admin">
-      <div class="side-avatar">EA</div>
-      <div><p>Elegson Admin</p><span>Réseau Abidjan</span></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.4"/><rect x="13" y="4" width="7" height="7" rx="1.4"/><rect x="4" y="13" width="7" height="7" rx="1.4"/><rect x="13" y="13" width="7" height="7" rx="1.4"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19a6 6 0 0 1 12 0"/><path d="M16 5.3a3.2 3.2 0 0 1 0 5.4M17.5 19a5.5 5.5 0 0 0-2-4.2"/></symbol>
+  <symbol id="i-mega" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 10v4h3l7 4V6l-7 4z"/><path d="M18 9.5a3.5 3.5 0 0 1 0 5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 19V9M12 19V5M18 19v-6"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8 12 4l8 4v8l-8 4-8-4z"/><path d="m4 8 8 4 8-4M12 12v8"/></symbol>
+  <symbol id="i-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14"/></symbol>
+  <symbol id="i-mark" viewBox="0 0 40 40" fill="none"><path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/><rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/><circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/></symbol>
+</defs></svg>
+
+<header class="head">
+  <div class="head__id">
+    <svg class="head__mark" aria-hidden="true"><use href="#i-mark"/></svg>
+    <div>
+      <h1>Interface Administrateur</h1>
+      <p>Supervision du réseau complet — poste de travail, pas mobile</p>
     </div>
   </div>
-</aside>
+  <a class="head__back" href="../index.html">← TOUTES LES INTERFACES</a>
+</header>
 
-<main class="main">
-  <div class="topbar">
-    <h1 id="topTitle">Tableau de bord</h1>
-    <div class="topbar-right">
-      <div class="search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" placeholder="Rechercher un point de vente, un fabricant…">
-      </div>
-      <button class="icon-btn" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="badge">4</span></button>
+<div class="stage">
+  <div class="desk" data-app>
+    <div class="desk__bar">
+      <i></i><i></i><i></i>
+      <p>ADMINISTRATION YALLA · RÉSEAU ABIDJAN</p>
+    </div>
+
+    <div class="desk__grid">
+      <aside class="side">
+        <div class="side__logo">
+          <svg aria-hidden="true"><use href="#i-mark"/></svg><b>YALLA</b>
+        </div>
+        <nav>
+          <a href="#" class="is-active" data-go="tableau"><svg aria-hidden="true"><use href="#i-grid"/></svg>Tableau de bord</a>
+          <a href="#" data-go="carte"><svg aria-hidden="true"><use href="#i-map"/></svg>Carte du réseau</a>
+          <a href="#" data-go="acteurs"><svg aria-hidden="true"><use href="#i-users"/></svg>Acteurs</a>
+          <a href="#" data-go="diffusion"><svg aria-hidden="true"><use href="#i-mega"/></svg>Diffusion</a>
+          <a href="#" data-go="stats"><svg aria-hidden="true"><use href="#i-chart"/></svg>Statistiques</a>
+        </nav>
+      </aside>
+
+      <main class="main">
+
+        <!-- ─── Tableau de bord ─── -->
+        <section class="screen is-active" data-screen="tableau">
+          <div class="main__head">
+            <div>
+              <h3>Tableau de bord</h3>
+              <p>Vue temps réel sur l'ensemble du réseau</p>
+            </div>
+            <span class="tag tag--ok">TEMPS RÉEL</span>
+          </div>
+
+          <div class="stat-grid">
+            <div class="panel">
+              <p class="kpi__l">Chiffre d'affaires du jour</p>
+              <p class="kpi__v" style="font-size:22px">14,8 M</p>
+              <p class="kpi__d">+9% vs hier</p>
+            </div>
+            <div class="panel">
+              <p class="kpi__l">Points de vente actifs</p>
+              <p class="kpi__v" style="font-size:22px">412</p>
+              <p class="kpi__d">+7 cette semaine</p>
+            </div>
+            <div class="panel">
+              <p class="kpi__l">Ruptures en cours</p>
+              <p class="kpi__v" style="font-size:22px">23</p>
+              <p class="kpi__d kpi__d--down">6 non prises</p>
+            </div>
+            <div class="panel">
+              <p class="kpi__l">Livreurs en course</p>
+              <p class="kpi__v" style="font-size:22px">31</p>
+              <p class="kpi__d">sur 48</p>
+            </div>
+          </div>
+
+          <div class="two">
+            <div class="panel">
+              <h4>Ruptures récentes</h4>
+              <table>
+                <thead><tr><th>Point de vente</th><th>Produit</th><th>Commune</th><th>Délai</th></tr></thead>
+                <tbody>
+                  <tr><td>Supérette La Grâce</td><td>Lait concentré 400g</td><td>Cocody</td><td class="num">16 min</td></tr>
+                  <tr><td>Boutique Awa</td><td>Sucre 1kg</td><td>Yopougon</td><td class="num">34 min</td></tr>
+                  <tr><td>Kiosque Odienné</td><td>Eau 1,5L</td><td>Treichville</td><td class="num">51 min</td></tr>
+                  <tr><td>Maquis Le Baobab</td><td>Boisson gazeuse</td><td>Abobo</td><td class="num">1 h 12</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel">
+              <h4>Ventes sur 7 jours</h4>
+              <div class="chart" style="height:110px">
+                <span style="--h:44%"></span><span style="--h:58%"></span><span style="--h:41%"></span>
+                <span style="--h:70%"></span><span style="--h:63%"></span><span style="--h:86%"></span><span style="--h:78%"></span>
+              </div>
+              <p class="mono" style="font-size:9px;color:var(--faint);margin-top:10px">LUN → DIM</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Carte ─── -->
+        <section class="screen" data-screen="carte">
+          <div class="main__head">
+            <div>
+              <h3>Carte du réseau</h3>
+              <p>Points de vente et livreurs, par ville et par commune</p>
+            </div>
+            <div class="chips" data-chips>
+              <button class="chip is-on">Toutes communes</button>
+              <button class="chip">Cocody</button>
+              <button class="chip">Yopougon</button>
+            </div>
+          </div>
+
+          <div class="panel" style="padding:0;overflow:hidden">
+            <div class="map" style="height:330px;border:0;border-radius:0">
+              <svg viewBox="0 0 900 330" preserveAspectRatio="none" aria-hidden="true">
+                <rect width="900" height="330" fill="#0c3826"/>
+                <g opacity=".5" fill="#10462f">
+                  <rect x="30" y="24" width="220" height="110" rx="8"/><rect x="280" y="18" width="280" height="120" rx="8"/>
+                  <rect x="590" y="26" width="270" height="108" rx="8"/><rect x="34" y="168" width="210" height="130" rx="8"/>
+                  <rect x="276" y="172" width="290" height="126" rx="8"/><rect x="596" y="168" width="264" height="130" rx="8"/>
+                </g>
+                <path d="M-10 300c150-10 220 22 380 14s240-40 400-28 140 10 140 10v44H-10Z" fill="#12523a"/>
+                <g stroke="#1a6b45" stroke-width="3"><path d="M0 152h900M266 0v330M578 0v330"/></g>
+              </svg>
+              <span class="pin pin--alert" style="--x:14%;--y:22%"></span>
+              <span class="pin pin--alert" style="--x:38%;--y:56%"></span>
+              <span class="pin pin--alert" style="--x:72%;--y:30%"></span>
+              <span class="pin pin--ok" style="--x:24%;--y:70%"></span>
+              <span class="pin pin--ok" style="--x:52%;--y:26%"></span>
+              <span class="pin pin--ok" style="--x:62%;--y:66%"></span>
+              <span class="pin pin--ok" style="--x:86%;--y:58%"></span>
+              <span class="pin pin--me" style="--x:44%;--y:44%"></span>
+              <span class="pin pin--me" style="--x:78%;--y:78%"></span>
+              <span class="map__tag"><i></i>23 RUPTURES · 412 POINTS · 31 LIVREURS EN COURSE</span>
+            </div>
+          </div>
+
+          <div class="two" style="margin-top:12px">
+            <div class="panel">
+              <h4>Livreurs actifs en temps réel</h4>
+              <table>
+                <thead><tr><th>Livreur</th><th>Fabricant</th><th>Commune</th><th>État</th></tr></thead>
+                <tbody>
+                  <tr><td>Konan Yao</td><td>Nestlé CI</td><td>Cocody</td><td><span class="tag tag--ok">EN COURSE</span></td></tr>
+                  <tr><td>Aya Traoré</td><td>Sania</td><td>Yopougon</td><td><span class="tag tag--ok">EN COURSE</span></td></tr>
+                  <tr><td>Ibrahim Cissé</td><td>Nestlé CI</td><td>Adjamé</td><td><span class="tag tag--warn">EN PAUSE</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel">
+              <h4>Répartition par commune</h4>
+              <table>
+                <thead><tr><th>Commune</th><th>Points</th><th>Ruptures</th></tr></thead>
+                <tbody>
+                  <tr><td>Cocody</td><td class="num">96</td><td class="num">6</td></tr>
+                  <tr><td>Yopougon</td><td class="num">118</td><td class="num">8</td></tr>
+                  <tr><td>Abobo</td><td class="num">84</td><td class="num">5</td></tr>
+                  <tr><td>Marcory</td><td class="num">62</td><td class="num">2</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Acteurs ─── -->
+        <section class="screen" data-screen="acteurs">
+          <div class="main__head">
+            <div>
+              <h3>Acteurs du réseau</h3>
+              <p>Ajout, retrait et activation des interfaces</p>
+            </div>
+            <span class="tag tag--info">4 DEMANDES EN ATTENTE</span>
+          </div>
+
+          <div class="stat-grid">
+            <div class="panel"><p class="kpi__l">Points de vente</p><p class="kpi__v" style="font-size:22px">412</p></div>
+            <div class="panel"><p class="kpi__l">Fabricants</p><p class="kpi__v" style="font-size:22px">18</p></div>
+            <div class="panel"><p class="kpi__l">Livreurs</p><p class="kpi__v" style="font-size:22px">48</p></div>
+            <div class="panel"><p class="kpi__l">Agents recenseurs</p><p class="kpi__v" style="font-size:22px">9</p></div>
+          </div>
+
+          <div class="panel">
+            <h4>Demandes à confirmer</h4>
+            <table>
+              <thead><tr><th>Demande</th><th>Émetteur</th><th>Type</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td>Ajout point de vente</td><td>Aya Traoré (agent)</td><td>Alimentation Bénédiction</td><td><span class="tag tag--ok">CONFIRMER</span></td></tr>
+                <tr><td>Ajout au catalogue</td><td>Nestlé CI</td><td>Lait en poudre 900g</td><td><span class="tag tag--ok">CONFIRMER</span></td></tr>
+                <tr><td>Retrait point de vente</td><td>Kiosque Bonheur</td><td>Cessation d'activité</td><td><span class="tag tag--alert">EXAMINER</span></td></tr>
+                <tr><td>Affiliation livreur</td><td>Sania</td><td>Ibrahim Cissé</td><td><span class="tag tag--ok">CONFIRMER</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel" style="margin-top:12px">
+            <h4>Attribution de réseau</h4>
+            <table>
+              <thead><tr><th>Fabricant</th><th>Points attribués</th><th>Périmètre</th></tr></thead>
+              <tbody>
+                <tr><td>Nestlé CI</td><td class="num">38</td><td>Cocody, Riviera</td></tr>
+                <tr><td>Sania</td><td class="num">124</td><td>Réseau complet</td></tr>
+                <tr><td>Brassivoire</td><td class="num">86</td><td>Yopougon, Abobo</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── Diffusion ─── -->
+        <section class="screen" data-screen="diffusion">
+          <div class="main__head">
+            <div>
+              <h3>Diffusion</h3>
+              <p>Notifications ciblées, publicités et sondages d'opinion</p>
+            </div>
+          </div>
+
+          <div class="two">
+            <div class="panel">
+              <h4>Nouvelle diffusion</h4>
+              <div class="field">
+                <label for="cible">Destinataires</label>
+                <select id="cible">
+                  <option>Réseau complet</option>
+                  <option>Points de vente uniquement</option>
+                  <option>Fabricants uniquement</option>
+                  <option>Livreurs uniquement</option>
+                  <option>Une commune</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="type">Type</label>
+                <select id="type">
+                  <option>Notification</option>
+                  <option>Splash publicitaire</option>
+                  <option>Enquête / sondage</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="msg">Message</label>
+                <textarea id="msg" rows="4">Nouvelle gamme disponible au catalogue à partir de lundi.</textarea>
+              </div>
+              <button class="btn-main" type="button" style="width:auto;padding:11px 20px">Diffuser</button>
+            </div>
+
+            <div class="panel">
+              <h4>Diffusions récentes</h4>
+              <table>
+                <thead><tr><th>Objet</th><th>Cible</th><th>Lu</th></tr></thead>
+                <tbody>
+                  <tr><td>Enquête satisfaction</td><td>412 points</td><td class="num">68%</td></tr>
+                  <tr><td>Splash Nestlé</td><td>Réseau complet</td><td class="num">91%</td></tr>
+                  <tr><td>Maintenance samedi</td><td>48 livreurs</td><td class="num">100%</td></tr>
+                  <tr><td>Nouveau catalogue</td><td>18 fabricants</td><td class="num">83%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Statistiques ─── -->
+        <section class="screen" data-screen="stats">
+          <div class="main__head">
+            <div>
+              <h3>Statistiques</h3>
+              <p>Ventes et livraisons, exportables en Excel et PDF</p>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="chip" type="button" style="display:inline-flex;align-items:center;gap:6px">
+                <svg style="width:14px;height:14px" aria-hidden="true"><use href="#i-dl"/></svg>Excel
+              </button>
+              <button class="chip" type="button" style="display:inline-flex;align-items:center;gap:6px">
+                <svg style="width:14px;height:14px" aria-hidden="true"><use href="#i-dl"/></svg>PDF
+              </button>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-bottom:12px">
+            <h4>Chiffre d'affaires sur 12 semaines</h4>
+            <div class="chart" style="height:130px">
+              <span style="--h:32%"></span><span style="--h:41%"></span><span style="--h:38%"></span>
+              <span style="--h:52%"></span><span style="--h:47%"></span><span style="--h:61%"></span>
+              <span style="--h:56%"></span><span style="--h:70%"></span><span style="--h:64%"></span>
+              <span style="--h:81%"></span><span style="--h:75%"></span><span style="--h:92%"></span>
+            </div>
+          </div>
+
+          <div class="two">
+            <div class="panel">
+              <h4>Par fabricant</h4>
+              <table>
+                <thead><tr><th>Fabricant</th><th>CA</th><th>Livraisons</th><th>Évolution</th></tr></thead>
+                <tbody>
+                  <tr><td>Sania</td><td class="num">5,2 M</td><td class="num">342</td><td class="num" style="color:var(--ok)">+14%</td></tr>
+                  <tr><td>Nestlé CI</td><td class="num">4,1 M</td><td class="num">286</td><td class="num" style="color:var(--ok)">+9%</td></tr>
+                  <tr><td>Brassivoire</td><td class="num">3,4 M</td><td class="num">198</td><td class="num" style="color:var(--alert)">−3%</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel">
+              <h4>Produits les plus en rupture</h4>
+              <table>
+                <thead><tr><th>Produit</th><th>Signalements</th></tr></thead>
+                <tbody>
+                  <tr><td>Lait concentré 400g</td><td class="num">86</td></tr>
+                  <tr><td>Sucre 1kg</td><td class="num">74</td></tr>
+                  <tr><td>Huile 5L</td><td class="num">61</td></tr>
+                  <tr><td>Eau 1,5L</td><td class="num">52</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
     </div>
   </div>
+</div>
 
-  <!-- ============ DASHBOARD ============ -->
-  <section class="view active" id="view-dashboard">
-    <p class="eyebrow">Vue d'ensemble</p>
-    <h2 class="view-title">Bonjour, voici l'état du réseau aujourd'hui</h2>
-
-    <div class="kpi-row">
-      <div class="kpi">
-        <div class="kpi-top"><span class="kpi-label">Chiffre d'affaires — 24h</span><span class="kpi-icon" style="background:rgba(23,166,114,.12); color:var(--success);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span></div>
-        <div class="kpi-value">2 340 500 F</div>
-        <div class="kpi-delta up">▲ 8,2 % vs hier</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-top"><span class="kpi-label">Points de vente actifs</span><span class="kpi-icon" style="background:rgba(14,124,123,.12); color:var(--teal);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/></svg></span></div>
-        <div class="kpi-value">312</div>
-        <div class="kpi-delta up">▲ 6 nouveaux</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-top"><span class="kpi-label">Ruptures en cours</span><span class="kpi-icon" style="background:rgba(255,122,26,.14); color:var(--amber);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.7 17.5A1.5 1.5 0 0 0 4 20h16a1.5 1.5 0 0 0 1.3-2.5L13.7 3.9a1.5 1.5 0 0 0-2.6 0z"/></svg></span></div>
-        <div class="kpi-value">17</div>
-        <div class="kpi-delta down">▼ 3 depuis ce matin</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-top"><span class="kpi-label">Livreurs en course</span><span class="kpi-icon" style="background:rgba(11,18,32,.08); color:var(--navy);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="15" height="12" rx="2"/><path d="M16 10h4l3 3v5h-7"/><circle cx="6" cy="18" r="2"/><circle cx="18.5" cy="18" r="2"/></svg></span></div>
-        <div class="kpi-value">28</div>
-        <div class="kpi-delta up">▲ 4 vs hier</div>
-      </div>
-    </div>
-
-    <div class="dash-grid">
-      <div class="panel">
-        <div class="panel-head">
-          <h3>Carte du réseau — Abidjan</h3>
-          <div class="legend"><span><i style="background:var(--teal);"></i>Actif</span><span><i style="background:var(--amber);"></i>En rupture</span></div>
-        </div>
-        <div class="map" id="map">
-          <div class="pin ok" style="left:22%; top:30%;"><div class="dot"></div><div class="tip">Superette Akwaba — Cocody</div></div>
-          <div class="pin ok" style="left:38%; top:55%;"><div class="dot"></div><div class="tip">Chez Fatou — Marcory</div></div>
-          <div class="pin rupture" style="left:55%; top:22%;"><div class="pulse-ring"></div><div class="dot"></div><div class="tip">Alimentation Le Bon Coin — Plateau</div></div>
-          <div class="pin ok" style="left:65%; top:60%;"><div class="dot"></div><div class="tip">Boutique Aya — Koumassi</div></div>
-          <div class="pin rupture" style="left:28%; top:68%;"><div class="pulse-ring"></div><div class="dot"></div><div class="tip">Dépôt Yao — Yopougon</div></div>
-          <div class="pin ok" style="left:74%; top:40%;"><div class="dot"></div><div class="tip">Superette Treichville Centre</div></div>
-          <div class="pin rupture" style="left:47%; top:78%;"><div class="pulse-ring"></div><div class="dot"></div><div class="tip">Mini-marché Adjamé Nord</div></div>
-          <div class="pin ok" style="left:82%; top:70%;"><div class="dot"></div><div class="tip">Boutique Bel Air — Port-Bouët</div></div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head"><h3>Flux temps réel</h3><span style="font-size:11px; color:var(--dim); font-family:var(--ff-mono);">● en direct</span></div>
-        <div class="feed" id="feed">
-          <div class="feed-item rupture"><div class="feed-dot"></div><div class="feed-text"><p><b>Rupture signalée</b> — Alimentation Le Bon Coin, Plateau</p><span>il y a 2 min</span></div></div>
-          <div class="feed-item livraison"><div class="feed-dot"></div><div class="feed-text"><p><b>Livraison en cours</b> — Livreur Koffi vers Chez Fatou, Marcory</p><span>il y a 4 min</span></div></div>
-          <div class="feed-item vente"><div class="feed-dot"></div><div class="feed-text"><p><b>Nouveau point de vente</b> — Boutique Bel Air, Port-Bouët</p><span>il y a 11 min</span></div></div>
-          <div class="feed-item rupture"><div class="feed-dot"></div><div class="feed-text"><p><b>Rupture signalée</b> — Dépôt Yao, Yopougon</p><span>il y a 14 min</span></div></div>
-          <div class="feed-item livraison"><div class="feed-dot"></div><div class="feed-text"><p><b>Livraison terminée</b> — Livreur Aminata à Superette Akwaba</p><span>il y a 19 min</span></div></div>
-          <div class="feed-item vente"><div class="feed-dot"></div><div class="feed-text"><p><b>Catalogue mis à jour</b> — Fabricant Ivoire Boissons</p><span>il y a 26 min</span></div></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ RÉSEAU ============ -->
-  <section class="view" id="view-reseau">
-    <p class="eyebrow">Gestion du réseau</p>
-    <h2 class="view-title">Points de vente</h2>
-
-    <div class="toolbar">
-      <div class="chip-row">
-        <button class="chip active">Tous (312)</button>
-        <button class="chip">Cocody</button>
-        <button class="chip">Yopougon</button>
-        <button class="chip">Marcory</button>
-        <button class="chip">Plateau</button>
-        <button class="chip">Adjamé</button>
-      </div>
-      <button class="btn primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Ajouter un point de vente</button>
-    </div>
-
-    <table>
-      <thead><tr><th>Point de vente</th><th>Commune</th><th>Statut</th><th>Fabricant attribué</th><th>Dernière activité</th><th></th></tr></thead>
-      <tbody>
-        <tr><td>Superette Akwaba</td><td>Cocody</td><td><span class="status-tag ok"><i></i>Actif</span></td><td>Ivoire Boissons</td><td>il y a 12 min</td><td class="row-actions"><button aria-label="Appeler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .6 2.9a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.5 2.9.6a2 2 0 0 1 1.8 2.1z"/></svg></button><button aria-label="Voir la fiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button></td></tr>
-        <tr><td>Chez Fatou</td><td>Marcory</td><td><span class="status-tag ok"><i></i>Actif</span></td><td>Filtisac</td><td>il y a 27 min</td><td class="row-actions"><button aria-label="Appeler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .6 2.9a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.5 2.9.6a2 2 0 0 1 1.8 2.1z"/></svg></button><button aria-label="Voir la fiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button></td></tr>
-        <tr><td>Alimentation Le Bon Coin</td><td>Plateau</td><td><span class="status-tag rupture"><i></i>En rupture</span></td><td>Ivoire Boissons</td><td>il y a 2 min</td><td class="row-actions"><button aria-label="Appeler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .6 2.9a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.5 2.9.6a2 2 0 0 1 1.8 2.1z"/></svg></button><button aria-label="Voir la fiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button></td></tr>
-        <tr><td>Boutique Aya</td><td>Koumassi</td><td><span class="status-tag ok"><i></i>Actif</span></td><td>SIPRA</td><td>il y a 41 min</td><td class="row-actions"><button aria-label="Appeler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .6 2.9a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.5 2.9.6a2 2 0 0 1 1.8 2.1z"/></svg></button><button aria-label="Voir la fiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button></td></tr>
-        <tr><td>Dépôt Yao</td><td>Yopougon</td><td><span class="status-tag rupture"><i></i>En rupture</span></td><td>Nestlé CI</td><td>il y a 14 min</td><td class="row-actions"><button aria-label="Appeler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .6 2.9a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.5 2.9.6a2 2 0 0 1 1.8 2.1z"/></svg></button><button aria-label="Voir la fiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button></td></tr>
-        <tr><td>Superette Treichville Centre</td><td>Treichville</td><td><span class="status-tag ok"><i></i>Actif</span></td><td>Filtisac</td><td>il y a 1 h</td><td class="row-actions"><button aria-label="Appeler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .6 2.9a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.5 2.9.6a2 2 0 0 1 1.8 2.1z"/></svg></button><button aria-label="Voir la fiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button></td></tr>
-      </tbody>
-    </table>
-    <p class="empty-note">Maquette — la liste complète (312 points de vente), les filtres par commune et la recherche seront connectés à de vraies données une fois la base en place.</p>
-  </section>
-
-  <!-- ============ STATISTIQUES ============ -->
-  <section class="view" id="view-stats">
-    <p class="eyebrow">Pilotage</p>
-    <div class="toolbar">
-      <h2 class="view-title" style="margin-bottom:0;">Statistiques</h2>
-      <div class="chip-row">
-        <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Exporter Excel</button>
-        <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Exporter PDF</button>
-      </div>
-    </div>
-
-    <div class="stats-grid">
-      <div class="panel">
-        <div class="panel-head"><h3>Chiffre d'affaires par fabricant</h3></div>
-        <div style="padding:8px 0 14px;">
-          <div class="bar-row"><span class="label">Ivoire Boissons</span><div class="bar-track"><div class="bar-fill" style="width:88%;"></div></div><span class="val">812 400 F</span></div>
-          <div class="bar-row"><span class="label">Filtisac</span><div class="bar-track"><div class="bar-fill" style="width:64%;"></div></div><span class="val">590 200 F</span></div>
-          <div class="bar-row"><span class="label">Nestlé CI</span><div class="bar-track"><div class="bar-fill" style="width:52%;"></div></div><span class="val">474 800 F</span></div>
-          <div class="bar-row"><span class="label">SIPRA</span><div class="bar-track"><div class="bar-fill" style="width:33%;"></div></div><span class="val">298 100 F</span></div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><h3>Livraisons par livreur — 7 jours</h3></div>
-        <div style="padding:8px 0 14px;">
-          <div class="bar-row"><span class="label">Koffi A.</span><div class="bar-track"><div class="bar-fill" style="width:80%;"></div></div><span class="val">64</span></div>
-          <div class="bar-row"><span class="label">Aminata D.</span><div class="bar-track"><div class="bar-fill" style="width:71%;"></div></div><span class="val">57</span></div>
-          <div class="bar-row"><span class="label">Yao B.</span><div class="bar-track"><div class="bar-fill" style="width:58%;"></div></div><span class="val">46</span></div>
-          <div class="bar-row"><span class="label">Salimata K.</span><div class="bar-track"><div class="bar-fill" style="width:40%;"></div></div><span class="val">32</span></div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><h3>Ruptures signalées par commune — 7 jours</h3></div>
-        <div style="padding:8px 0 14px;">
-          <div class="bar-row"><span class="label">Yopougon</span><div class="bar-track"><div class="bar-fill" style="width:75%; background:linear-gradient(90deg, var(--amber), var(--danger));"></div></div><span class="val">21</span></div>
-          <div class="bar-row"><span class="label">Adjamé</span><div class="bar-track"><div class="bar-fill" style="width:60%; background:linear-gradient(90deg, var(--amber), var(--danger));"></div></div><span class="val">17</span></div>
-          <div class="bar-row"><span class="label">Cocody</span><div class="bar-track"><div class="bar-fill" style="width:38%; background:linear-gradient(90deg, var(--amber), var(--danger));"></div></div><span class="val">11</span></div>
-          <div class="bar-row"><span class="label">Plateau</span><div class="bar-track"><div class="bar-fill" style="width:29%; background:linear-gradient(90deg, var(--amber), var(--danger));"></div></div><span class="val">8</span></div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><h3>Points de vente actifs par commune</h3></div>
-        <div style="padding:8px 0 14px;">
-          <div class="bar-row"><span class="label">Cocody</span><div class="bar-track"><div class="bar-fill" style="width:70%;"></div></div><span class="val">58</span></div>
-          <div class="bar-row"><span class="label">Yopougon</span><div class="bar-track"><div class="bar-fill" style="width:92%;"></div></div><span class="val">74</span></div>
-          <div class="bar-row"><span class="label">Marcory</span><div class="bar-track"><div class="bar-fill" style="width:46%;"></div></div><span class="val">39</span></div>
-          <div class="bar-row"><span class="label">Adjamé</span><div class="bar-track"><div class="bar-fill" style="width:55%;"></div></div><span class="val">44</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ NOTIFICATIONS ============ -->
-  <section class="view" id="view-notifs">
-    <p class="eyebrow">Communication</p>
-    <h2 class="view-title">Notifications &amp; annonces</h2>
-    <div class="compose">
-      <div class="field">
-        <label>Destinataires</label>
-        <div class="target-row">
-          <button class="chip active">Tout le réseau</button>
-          <button class="chip">Fabricants</button>
-          <button class="chip">Points de vente</button>
-          <button class="chip">Livreurs</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Type de message</label>
-        <select><option>Notification standard</option><option>Splash publicitaire</option><option>Enquête / sondage</option></select>
-      </div>
-      <div class="field">
-        <label>Titre</label>
-        <input type="text" placeholder="Ex. Nouvelle promotion Ivoire Boissons">
-      </div>
-      <div class="field">
-        <label>Message</label>
-        <textarea placeholder="Rédigez votre message ici…"></textarea>
-      </div>
-      <button class="btn primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Envoyer au réseau</button>
-    </div>
-    <p class="empty-note">Maquette — l'envoi n'est pas connecté ; en production ce bouton déclenchera une notification push réelle vers les cibles choisies.</p>
-  </section>
-
-  <!-- ============ CATALOGUE & ACCÈS ============ -->
-  <section class="view" id="view-catalogue">
-    <p class="eyebrow">Configuration</p>
-    <h2 class="view-title">Catalogue &amp; activation des interfaces</h2>
-    <div class="toggle-list">
-      <div class="toggle-row"><div><p>Interface Fabricant</p><span>Accès à la gestion de catalogue et de livreurs affiliés</span></div><button class="switch on" data-switch></button></div>
-      <div class="toggle-row"><div><p>Interface Point de vente</p><span>Signalement de rupture et accès au catalogue global</span></div><button class="switch on" data-switch></button></div>
-      <div class="toggle-row"><div><p>Interface Livreur</p><span>Géolocalisation des ruptures à proximité</span></div><button class="switch on" data-switch></button></div>
-      <div class="toggle-row"><div><p>Interface Agent recenseur</p><span>Enregistrement et mise à jour des points de vente sur le terrain</span></div><button class="switch" data-switch></button></div>
-      <div class="toggle-row"><div><p>Paiement mobile</p><span>Orange CI, MTN CI, Wave, Moov, Djamo</span></div><button class="switch on" data-switch></button></div>
-    </div>
-    <p class="empty-note">Maquette — ces interrupteurs illustrent l'activation des interfaces par l'administrateur ; le catalogue produit détaillé sera ajouté dans une prochaine itération.</p>
-  </section>
-
-</main>
-
-<script>
-  // ---- nav switching ----
-  const buttons = document.querySelectorAll('.side-nav button');
-  const views = document.querySelectorAll('.view');
-  const titles = {
-    dashboard:"Tableau de bord", reseau:"Réseau", stats:"Statistiques",
-    notifs:"Notifications", catalogue:"Catalogue & accès"
-  };
-  buttons.forEach(btn => btn.addEventListener('click', () => {
-    buttons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    views.forEach(v => v.classList.remove('active'));
-    document.getElementById('view-' + btn.dataset.view).classList.add('active');
-    document.getElementById('topTitle').textContent = titles[btn.dataset.view];
-  }));
-
-  // ---- chip filters (visual only) ----
-  document.querySelectorAll('.chip-row').forEach(row => {
-    row.querySelectorAll('.chip').forEach(chip => chip.addEventListener('click', () => {
-      row.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-    }));
-  });
-
-  // ---- toggles ----
-  document.querySelectorAll('[data-switch]').forEach(sw => sw.addEventListener('click', () => sw.classList.toggle('on')));
-
-  // ---- live feed simulation ----
-  const feedEvents = [
-    { type:'rupture', text:'<b>Rupture signalée</b> — Boutique Bel Air, Port-Bouët' },
-    { type:'livraison', text:'<b>Livraison en cours</b> — Livreur Salimata vers Superette Treichville' },
-    { type:'vente', text:'<b>Nouveau point de vente</b> — Alimentation Étoile, Cocody' },
-    { type:'rupture', text:'<b>Rupture signalée</b> — Chez Fatou, Marcory' },
-    { type:'livraison', text:'<b>Livraison terminée</b> — Livreur Koffi à Dépôt Yao' }
-  ];
-  const feed = document.getElementById('feed');
-  setInterval(() => {
-    const ev = feedEvents[Math.floor(Math.random() * feedEvents.length)];
-    const item = document.createElement('div');
-    item.className = 'feed-item ' + ev.type + ' new';
-    item.innerHTML = `<div class="feed-dot"></div><div class="feed-text"><p>${ev.text}</p><span>à l'instant</span></div>`;
-    feed.prepend(item);
-    if (feed.children.length > 8) feed.removeChild(feed.lastChild);
-  }, 6000);
-</script>
-
+<script src="../assets/app.js"></script>
 </body>
 </html>

@@ -1,313 +1,243 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Yalla — Interface Agent recenseur</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --navy:#0B1220;
-    --bg:#F5F6F4;
-    --panel:#FFFFFF;
-    --amber:#FF7A1A;
-    --teal:#0E7C7B;
-    --danger:#E4483B;
-    --success:#17A672;
-    --ink:#10151F;
-    --dim:rgba(16,21,31,0.58);
-    --border:rgba(16,21,31,0.10);
-    --ff-display:'Sora', sans-serif;
-    --ff-body:'Inter', sans-serif;
-    --ff-mono:'IBM Plex Mono', monospace;
-  }
-  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body{
-    background:#E7E5E0; font-family:var(--ff-body); color:var(--ink);
-    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:36px 16px;
-  }
-  a{ color:inherit; text-decoration:none; }
-  ul{ list-style:none; }
-  button{ font:inherit; cursor:pointer; }
-  ::selection{ background:var(--amber); color:#fff; }
-  :focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
-
-  .device{ width:390px; height:844px; background:var(--navy); border-radius:52px; padding:14px; box-shadow:0 30px 60px rgba(11,18,32,.35), 0 4px 12px rgba(11,18,32,.2); flex-shrink:0; }
-  .screen{ width:100%; height:100%; background:var(--bg); border-radius:38px; overflow:hidden; position:relative; display:flex; flex-direction:column; }
-  .notch{ position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:26px; background:var(--navy); border-radius:0 0 16px 16px; z-index:50; }
-  .status-row{ display:flex; justify-content:space-between; align-items:center; padding:16px 26px 4px; font-family:var(--ff-mono); font-size:12px; font-weight:600; color:var(--ink); flex-shrink:0; position:relative; z-index:30; }
-
-  .app-top{ padding:6px 20px 12px; flex-shrink:0; position:relative; z-index:30; }
-  .app-top .greet{ font-size:12px; color:var(--dim); font-weight:600; }
-  .app-top .brand-row{ display:flex; align-items:center; justify-content:space-between; margin-top:2px; }
-  .app-top h1{ font-family:var(--ff-display); font-size:19px; font-weight:700; }
-  .avatar{ width:34px; height:34px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--ff-display); font-weight:700; font-size:12px; }
-
-  .app-body{ flex:1; overflow-y:auto; padding:0 20px 100px; -webkit-overflow-scrolling:touch; position:relative; z-index:10; }
-  .app-body::-webkit-scrollbar{ display:none; }
-
-  .eyebrow{ font-family:var(--ff-mono); font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--teal); margin:16px 0 8px; font-weight:600; }
-  .eyebrow:first-child{ margin-top:2px; }
-
-  .search{ display:flex; align-items:center; gap:8px; background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:11px 13px; margin-top:2px; }
-  .search svg{ width:15px; height:15px; color:var(--dim); flex-shrink:0; }
-  .search input{ border:none; outline:none; background:none; font-family:var(--ff-body); font-size:13px; width:100%; }
-
-  .kpi-scroll{ display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; margin:14px -20px 4px; padding-left:20px; padding-right:20px; }
-  .kpi-scroll::-webkit-scrollbar{ display:none; }
-  .kpi-card{ flex-shrink:0; width:126px; background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; }
-  .kpi-card .lbl{ font-size:10.5px; color:var(--dim); font-weight:600; margin-bottom:8px; }
-  .kpi-card .val{ font-family:var(--ff-mono); font-size:18px; font-weight:600; }
-  .kpi-card .delta{ font-size:10px; font-weight:600; margin-top:4px; color:var(--success); }
-
-  .pdv-row{ display:flex; align-items:center; gap:12px; background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:12px; margin-bottom:9px; width:100%; text-align:left; }
-  .pdv-icon{ width:40px; height:40px; border-radius:10px; background:rgba(14,124,123,.12); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .pdv-icon svg{ width:18px; height:18px; color:var(--teal); }
-  .pdv-info{ flex:1; min-width:0; }
-  .pdv-info p{ font-family:var(--ff-display); font-weight:600; font-size:13px; }
-  .pdv-info span{ font-size:11px; color:var(--dim); }
-  .pdv-status{ font-size:10px; font-family:var(--ff-mono); font-weight:600; color:var(--success); background:rgba(23,166,114,.12); padding:3px 8px; border-radius:999px; flex-shrink:0; }
-  .pdv-status.pending{ color:var(--amber); background:rgba(255,122,26,.14); }
-
-  .fab{
-    position:absolute; right:20px; bottom:112px; width:54px; height:54px; border-radius:50%; background:var(--amber);
-    color:var(--navy); border:none; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 24px rgba(255,122,26,.4); z-index:35;
-  }
-  .fab svg{ width:22px; height:22px; }
-
-  .back-btn{ width:34px; height:34px; border-radius:10px; background:var(--panel); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .back-btn svg{ width:16px; height:16px; }
-
-  .field{ margin-bottom:14px; }
-  .field label{ display:block; font-family:var(--ff-display); font-weight:600; font-size:12px; margin-bottom:7px; }
-  .field input, .field select{ width:100%; border:1px solid var(--border); border-radius:9px; padding:11px 12px; font-family:var(--ff-body); font-size:13px; background:var(--panel); outline:none; }
-
-  .geo-capture{
-    display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--panel); border:1px dashed var(--border);
-    border-radius:12px; padding:13px 14px; margin-bottom:16px;
-  }
-  .geo-capture .left{ display:flex; align-items:center; gap:10px; }
-  .geo-capture svg{ width:17px; height:17px; color:var(--teal); flex-shrink:0; }
-  .geo-capture p{ font-family:var(--ff-display); font-weight:600; font-size:12.5px; }
-  .geo-capture span{ font-size:11px; color:var(--dim); }
-  .geo-btn{ font-family:var(--ff-display); font-weight:700; font-size:11.5px; padding:8px 12px; border-radius:9px; border:1px solid var(--border); background:var(--bg); flex-shrink:0; }
-  .geo-btn.captured{ background:var(--success); color:#fff; border-color:var(--success); }
-
-  .submit-btn{ width:100%; padding:14px; border-radius:12px; border:none; background:var(--navy); color:#fff; font-family:var(--ff-display); font-weight:700; font-size:13.5px; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:6px; }
-  .submit-btn svg{ width:15px; height:15px; }
-  .danger-btn{ width:100%; padding:13px; border-radius:12px; border:1px solid rgba(228,72,59,.3); background:rgba(228,72,59,.08); color:var(--danger); font-family:var(--ff-display); font-weight:700; font-size:13px; margin-top:10px; }
-
-  .card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:10px; }
-  .card h4{ font-family:var(--ff-display); font-weight:700; font-size:13.5px; margin-bottom:4px; }
-  .card p.sub{ font-size:11.5px; color:var(--dim); }
-
-  .toast{
-    position:absolute; left:20px; right:20px; bottom:110px; background:var(--navy); color:#fff; border-radius:12px;
-    padding:13px 16px; display:flex; align-items:center; gap:10px; font-size:12.5px; font-weight:600;
-    transform:translateY(20px); opacity:0; pointer-events:none; transition:transform .3s ease, opacity .3s ease; z-index:60;
-  }
-  .toast.show{ transform:translateY(0); opacity:1; }
-  .toast svg{ width:16px; height:16px; color:var(--success); flex-shrink:0; }
-
-  .tabbar{ position:absolute; left:0; right:0; bottom:0; background:rgba(255,255,255,.92); backdrop-filter:blur(10px); border-top:1px solid var(--border); display:flex; padding:10px 8px 22px; z-index:40; }
-  .tab{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; color:var(--dim); font-family:var(--ff-display); font-weight:600; font-size:10px; }
-  .tab svg{ width:20px; height:20px; }
-  .tab.active{ color:var(--amber); }
-
-  .view{ display:none; }
-  .view.active{ display:block; }
-
-  @media (max-width:430px){
-    body{ padding:0; align-items:stretch; }
-    .device{ width:100%; height:100svh; border-radius:0; padding:0; }
-    .screen{ border-radius:0; }
-    .notch{ display:none; }
-  }
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/app.css">
 </head>
 <body>
 
-<div class="device">
-  <div class="screen">
-    <div class="notch"></div>
-    <div class="status-row"><span>9:41</span><span>Yalla — Agent recenseur</span><span>100%</span></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 10h16v10H4z"/><path d="m3 10 2-5h14l2 5"/><path d="M10 20v-5h4v5"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4.5 4.5L19 8"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 5 4 4"/></symbol>
+  <symbol id="i-mark" viewBox="0 0 40 40" fill="none"><path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/><rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/><circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/></symbol>
+</defs></svg>
 
-    <div class="app-top">
-      <p class="greet">Bonjour,</p>
-      <div class="brand-row">
-        <h1 id="screenTitle">Mes recensements</h1>
-        <div class="avatar">SD</div>
-      </div>
+<header class="head">
+  <div class="head__id">
+    <svg class="head__mark" aria-hidden="true"><use href="#i-mark"/></svg>
+    <div>
+      <h1>Interface Agent recenseur</h1>
+      <p>Enregistrement, géolocalisation et mise à jour des points de vente</p>
     </div>
+  </div>
+  <a class="head__back" href="../index.html">← TOUTES LES INTERFACES</a>
+</header>
 
-    <div class="app-body" id="appBody">
+<div class="stage">
+  <div class="phone" data-app>
+    <div class="phone__frame"><div class="phone__screen">
 
-      <!-- ============ LISTE ============ -->
-      <div class="view active" id="view-liste">
-        <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input type="text" placeholder="Rechercher un point de vente…"></div>
+      <div class="status"><span>9:41</span><span class="status__dots"><i></i><i></i><i></i></span></div>
 
-        <div class="kpi-scroll">
-          <div class="kpi-card"><div class="lbl">Recensés ce mois</div><div class="val">23</div><div class="delta">▲ 4 cette semaine</div></div>
-          <div class="kpi-card"><div class="lbl">En attente d'activation</div><div class="val">3</div></div>
+      <div class="appbar">
+        <div class="appbar__row">
+          <div>
+            <p class="appbar__hi">Agent recenseur · Zone Cocody</p>
+            <h2>Aya Traoré</h2>
+          </div>
+          <div class="avatar">AT</div>
         </div>
-
-        <p class="eyebrow">Derniers points de vente recensés</p>
-        <button class="pdv-row" data-edit="p1"><div class="pdv-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/></svg></div><div class="pdv-info"><p>Superette Akwaba</p><span>Cocody · Superette</span></div><span class="pdv-status">Actif</span></button>
-        <button class="pdv-row" data-edit="p2"><div class="pdv-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/></svg></div><div class="pdv-info"><p>Chez Fatou</p><span>Marcory · Boutique de quartier</span></div><span class="pdv-status">Actif</span></button>
-        <button class="pdv-row" data-edit="p3"><div class="pdv-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/></svg></div><div class="pdv-info"><p>Kiosque Bel Air</p><span>Port-Bouët · Kiosque</span></div><span class="pdv-status pending">En attente</span></button>
-        <button class="pdv-row" data-edit="p4"><div class="pdv-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/></svg></div><div class="pdv-info"><p>Maquis Chez Yao</p><span>Yopougon · Restaurant / Maquis</span></div><span class="pdv-status">Actif</span></button>
-        <button class="pdv-row" data-edit="p5"><div class="pdv-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/></svg></div><div class="pdv-info"><p>Mini-marché Adjamé Nord</p><span>Adjamé · Superette</span></div><span class="pdv-status pending">En attente</span></button>
       </div>
 
-      <!-- ============ FORMULAIRE (nouveau / modifier) ============ -->
-      <div class="view" id="view-form">
-        <button class="back-btn" id="backBtn" style="margin-bottom:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+      <div class="body">
 
-        <div class="field"><label>Nom du point de vente</label><input type="text" id="fName" placeholder="Ex. Superette Akwaba"></div>
-        <div class="field"><label>Type d'activité</label>
-          <select id="fType">
-            <option>Superette / Alimentation générale</option>
-            <option>Boutique de quartier</option>
-            <option>Kiosque</option>
-            <option>Restaurant / Maquis</option>
-          </select>
-        </div>
-        <div class="field"><label>Commune</label>
-          <select id="fCommune">
-            <option>Cocody</option><option>Marcory</option><option>Yopougon</option><option>Plateau</option><option>Adjamé</option><option>Port-Bouët</option><option>Treichville</option><option>Koumassi</option>
-          </select>
-        </div>
-        <div class="field"><label>Nom du gérant</label><input type="text" id="fGerant" placeholder="Ex. Aya Kouassi"></div>
-        <div class="field"><label>Téléphone</label><input type="text" id="fPhone" placeholder="+225 07 00 00 00 00"></div>
+        <!-- ─── Tournée ─── -->
+        <section class="screen is-active" data-screen="tournee">
+          <div class="hero-cta">
+            <p>Nouvelle boutique repérée&nbsp;?</p>
+            <h3>Enregistrez-la en deux minutes.</h3>
+            <button class="btn-main" data-go="ajouter">
+              <svg aria-hidden="true"><use href="#i-plus"/></svg>Enregistrer un point de vente
+            </button>
+          </div>
 
-        <div class="geo-capture">
-          <div class="left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/></svg><div><p>Position GPS</p><span id="geoStatus">Non capturée</span></div></div>
-          <button class="geo-btn" id="geoBtn">Capturer</button>
-        </div>
+          <p class="eyebrow">Ma tournée</p>
+          <div class="kpis">
+            <div class="kpi"><p class="kpi__l">Enregistrés</p><p class="kpi__v">128</p><p class="kpi__d">+6 cette semaine</p></div>
+            <div class="kpi"><p class="kpi__l">À vérifier</p><p class="kpi__v">4</p><p class="kpi__d kpi__d--down">position douteuse</p></div>
+            <div class="kpi"><p class="kpi__l">Communes</p><p class="kpi__v">3</p><p class="kpi__d">Cocody, Angré, Riviera</p></div>
+          </div>
 
-        <button class="submit-btn" id="saveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span id="saveLabel">Enregistrer le point de vente</span></button>
-        <button class="danger-btn" id="removeBtn" style="display:none;">Retirer ce point de vente</button>
+          <p class="eyebrow">Points gérés</p>
+          <div class="row">
+            <div class="row__ic row__ic--ok"><svg aria-hidden="true"><use href="#i-store"/></svg></div>
+            <div class="row__t"><b>Supérette La Grâce</b><span>RIVIERA 2 · SUPÉRETTE</span></div>
+            <span class="tag tag--ok">VÉRIFIÉ</span>
+          </div>
+          <div class="row">
+            <div class="row__ic row__ic--warn"><svg aria-hidden="true"><use href="#i-store"/></svg></div>
+            <div class="row__t"><b>Kiosque Bonheur</b><span>DEUX PLATEAUX · KIOSQUE</span></div>
+            <span class="tag tag--warn">À VÉRIFIER</span>
+          </div>
+          <div class="row">
+            <div class="row__ic row__ic--ok"><svg aria-hidden="true"><use href="#i-store"/></svg></div>
+            <div class="row__t"><b>Boutique Awa</b><span>ANGRÉ 8e TRANCHE · BOUTIQUE</span></div>
+            <span class="tag tag--ok">VÉRIFIÉ</span>
+          </div>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-edit"/></svg></div>
+            <div class="row__t"><b>Maquis Le Baobab</b><span>MODIFIÉ HIER · MAQUIS</span></div>
+            <span class="tag tag--info">MODIFIÉ</span>
+          </div>
+        </section>
+
+        <!-- ─── Ajouter ─── -->
+        <section class="screen" data-screen="ajouter">
+          <p class="eyebrow">Position</p>
+          <div class="map" style="height:120px">
+            <svg viewBox="0 0 300 120" preserveAspectRatio="none" aria-hidden="true">
+              <rect width="300" height="120" fill="#0c3826"/>
+              <g opacity=".5" fill="#10462f">
+                <rect x="12" y="8" width="80" height="40" rx="4"/><rect x="106" y="6" width="90" height="44" rx="4"/>
+                <rect x="210" y="10" width="78" height="38" rx="4"/><rect x="14" y="66" width="84" height="46" rx="4"/>
+                <rect x="112" y="64" width="84" height="48" rx="4"/><rect x="210" y="66" width="78" height="46" rx="4"/>
+              </g>
+              <g stroke="#1a6b45" stroke-width="2"><path d="M0 56h300M100 0v120M202 0v120"/></g>
+            </svg>
+            <span class="pin pin--me" style="--x:50%;--y:50%"></span>
+            <span class="map__tag"><i style="background:#FFE500"></i>GPS CAPTÉ · PRÉCISION 4 M</span>
+          </div>
+
+          <div class="field" style="margin-top:12px">
+            <label for="nom">Nom du point de vente</label>
+            <input id="nom" type="text" value="Alimentation Bénédiction" readonly>
+          </div>
+
+          <div class="field">
+            <label for="resp">Nom du responsable</label>
+            <input id="resp" type="text" value="Konaté Salif" readonly>
+          </div>
+
+          <div class="field">
+            <label for="tel">Téléphone</label>
+            <input id="tel" type="text" value="07 12 34 56 78" readonly>
+          </div>
+
+          <p class="eyebrow">Type d'activité</p>
+          <div class="chips" data-chips>
+            <button class="chip">Supérette</button>
+            <button class="chip is-on">Boutique</button>
+            <button class="chip">Kiosque</button>
+            <button class="chip">Maquis</button>
+          </div>
+
+          <p class="eyebrow">Photo de la devanture</p>
+          <button class="btn-ghost" type="button">
+            <svg style="width:16px;height:16px" aria-hidden="true"><use href="#i-cam"/></svg>Prendre une photo
+          </button>
+
+          <div style="margin-top:14px">
+            <button class="btn-main" data-go="tournee">
+              <svg aria-hidden="true"><use href="#i-check"/></svg>Enregistrer le point de vente
+            </button>
+          </div>
+          <p class="mono" style="font-size:9px;color:var(--faint);text-align:center;margin-top:10px">
+            ENREGISTREMENT POSSIBLE HORS CONNEXION
+          </p>
+        </section>
+
+        <!-- ─── Carte ─── -->
+        <section class="screen" data-screen="carte">
+          <div class="map" style="height:200px">
+            <svg viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">
+              <rect width="300" height="200" fill="#0c3826"/>
+              <g opacity=".5" fill="#10462f">
+                <rect x="10" y="12" width="78" height="52" rx="4"/><rect x="102" y="8" width="94" height="58" rx="4"/>
+                <rect x="210" y="14" width="80" height="50" rx="4"/><rect x="12" y="84" width="82" height="50" rx="4"/>
+                <rect x="108" y="82" width="88" height="54" rx="4"/><rect x="208" y="84" width="84" height="50" rx="4"/>
+                <rect x="14" y="150" width="86" height="42" rx="4"/><rect x="112" y="152" width="82" height="40" rx="4"/>
+                <rect x="208" y="150" width="84" height="42" rx="4"/>
+              </g>
+              <g stroke="#1a6b45" stroke-width="2"><path d="M0 74h300M0 144h300M96 0v200M202 0v200"/></g>
+            </svg>
+            <span class="pin pin--ok" style="--x:20%;--y:22%"></span>
+            <span class="pin pin--ok" style="--x:48%;--y:34%"></span>
+            <span class="pin pin--ok" style="--x:76%;--y:26%"></span>
+            <span class="pin pin--warn" style="--x:34%;--y:58%;background:#F5A524"></span>
+            <span class="pin pin--ok" style="--x:66%;--y:62%"></span>
+            <span class="pin pin--ok" style="--x:24%;--y:84%"></span>
+            <span class="pin pin--me" style="--x:52%;--y:76%"></span>
+            <span class="map__tag"><i style="background:#3ED598"></i>128 POINTS · ZONE COCODY</span>
+          </div>
+
+          <p class="eyebrow">Filtrer</p>
+          <div class="chips" data-chips>
+            <button class="chip is-on">Tous</button>
+            <button class="chip">Vérifiés</button>
+            <button class="chip">À vérifier</button>
+          </div>
+
+          <p class="eyebrow">À proximité de moi</p>
+          <div class="row">
+            <div class="row__ic row__ic--warn"><svg aria-hidden="true"><use href="#i-pin"/></svg></div>
+            <div class="row__t"><b>Kiosque Bonheur</b><span>POSITION À CONFIRMER</span></div>
+            <div class="row__x"><b>240 m</b></div>
+          </div>
+          <div class="row">
+            <div class="row__ic row__ic--ok"><svg aria-hidden="true"><use href="#i-pin"/></svg></div>
+            <div class="row__t"><b>Supérette La Grâce</b><span>VÉRIFIÉ LE 12/08</span></div>
+            <div class="row__x"><b>610 m</b></div>
+          </div>
+        </section>
+
+        <!-- ─── Profil ─── -->
+        <section class="screen" data-screen="profil">
+          <div class="card">
+            <b style="display:block;font-size:14px;margin-bottom:3px">Aya Traoré</b>
+            <span class="mono" style="font-size:9.5px;color:var(--faint)">AGENT RECENSEUR · MATRICULE AR-014</span>
+          </div>
+
+          <p class="eyebrow">Zone attribuée</p>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-map"/></svg></div>
+            <div class="row__t"><b>Cocody, Angré, Riviera</b><span>3 COMMUNES</span></div>
+          </div>
+
+          <p class="eyebrow">Activité</p>
+          <div class="row">
+            <div class="row__ic row__ic--ok"><svg aria-hidden="true"><use href="#i-check"/></svg></div>
+            <div class="row__t"><b>128 points enregistrés</b><span>DEPUIS JANVIER</span></div>
+          </div>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-edit"/></svg></div>
+            <div class="row__t"><b>32 modifications</b><span>CE TRIMESTRE</span></div>
+          </div>
+
+          <p class="eyebrow">Synchronisation</p>
+          <div class="card">
+            <p style="font-size:12px;color:var(--dim);line-height:1.5">
+              4 enregistrements sont conservés sur ce téléphone et partiront
+              dès le retour du réseau.
+            </p>
+          </div>
+        </section>
+
       </div>
 
-      <!-- ============ PROFIL ============ -->
-      <div class="view" id="view-profil">
-        <div class="card">
-          <h4>Sori D.</h4>
-          <p class="sub">Agent recenseur · Secteur Abidjan Sud</p>
-        </div>
-        <p class="eyebrow">Ce mois-ci</p>
-        <div class="card"><h4>23 points de vente recensés</h4><p class="sub">3 en attente d'activation par l'administrateur</p></div>
-        <p class="eyebrow">Compte</p>
-        <div class="card"><h4>Coordonnées</h4><p class="sub">+225 07 88 00 00 00 · Secteur Abidjan Sud</p></div>
-        <div class="card"><h4>Se déconnecter</h4><p class="sub">Fermer la session sur cet appareil</p></div>
-      </div>
+      <nav class="tabs" aria-label="Navigation de l'application">
+        <a class="tab is-active" href="#" data-go="tournee"><svg aria-hidden="true"><use href="#i-list"/></svg><span>Tournée</span></a>
+        <a class="tab" href="#" data-go="ajouter"><svg aria-hidden="true"><use href="#i-plus"/></svg><span>Ajouter</span></a>
+        <a class="tab" href="#" data-go="carte"><svg aria-hidden="true"><use href="#i-map"/></svg><span>Carte</span></a>
+        <a class="tab" href="#" data-go="profil"><svg aria-hidden="true"><use href="#i-user"/></svg><span>Profil</span></a>
+      </nav>
 
-    </div>
-
-    <button class="fab" id="fabNew"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
-    <div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span id="toastText">Point de vente enregistré</span></div>
-
-    <div class="tabbar" id="tabbar">
-      <button class="tab active" data-view="liste" data-title="Mes recensements" data-greet="Bonjour,">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.5"/><circle cx="3.5" cy="12" r="1.5"/><circle cx="3.5" cy="18" r="1.5"/></svg>Liste
-      </button>
-      <button class="tab" data-view="profil" data-title="Profil" data-greet="Mon compte">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>Profil
-      </button>
-    </div>
+    </div></div>
+    <p class="phone__label">Agent recenseur — 4 écrans, cliquez les onglets</p>
   </div>
 </div>
 
-<script>
-  const tabs = document.querySelectorAll('.tab');
-  const views = document.querySelectorAll('.view');
-  const title = document.getElementById('screenTitle');
-  const greet = document.querySelector('.greet');
-  const appBody = document.getElementById('appBody');
-  const tabbar = document.getElementById('tabbar');
-  const fab = document.getElementById('fabNew');
-
-  function showView(name){
-    views.forEach(v => v.classList.remove('active'));
-    document.getElementById('view-' + name).classList.add('active');
-    appBody.scrollTop = 0;
-  }
-
-  tabs.forEach(t => t.addEventListener('click', () => {
-    tabs.forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    showView(t.dataset.view);
-    title.textContent = t.dataset.title;
-    greet.textContent = t.dataset.greet;
-    fab.style.display = t.dataset.view === 'liste' ? 'flex' : 'none';
-  }));
-
-  const pdvData = {
-    p1:{ name:"Superette Akwaba", type:"Superette / Alimentation générale", commune:"Cocody", gerant:"Aya Kouassi", phone:"+225 07 45 00 00 00" },
-    p2:{ name:"Chez Fatou", type:"Boutique de quartier", commune:"Marcory", gerant:"Fatou Traoré", phone:"+225 07 22 00 00 00" },
-    p3:{ name:"Kiosque Bel Air", type:"Kiosque", commune:"Port-Bouët", gerant:"Jean Bel", phone:"+225 07 66 00 00 00" },
-    p4:{ name:"Maquis Chez Yao", type:"Restaurant / Maquis", commune:"Yopougon", gerant:"Yao Brou", phone:"+225 07 33 00 00 00" },
-    p5:{ name:"Mini-marché Adjamé Nord", type:"Superette / Alimentation générale", commune:"Adjamé", gerant:"Salif Coulibaly", phone:"+225 07 11 00 00 00" }
-  };
-
-  function openForm(mode, key){
-    document.getElementById('fName').value = key ? pdvData[key].name : "";
-    document.getElementById('fType').value = key ? pdvData[key].type : "Superette / Alimentation générale";
-    document.getElementById('fCommune').value = key ? pdvData[key].commune : "Cocody";
-    document.getElementById('fGerant').value = key ? pdvData[key].gerant : "";
-    document.getElementById('fPhone').value = key ? pdvData[key].phone : "";
-    document.getElementById('geoStatus').textContent = key ? "Capturée" : "Non capturée";
-    const geoBtn = document.getElementById('geoBtn');
-    geoBtn.textContent = key ? "Recapturer" : "Capturer";
-    geoBtn.classList.toggle('captured', !!key);
-    document.getElementById('saveLabel').textContent = key ? "Enregistrer les modifications" : "Enregistrer le point de vente";
-    document.getElementById('removeBtn').style.display = key ? 'block' : 'none';
-
-    tabs.forEach(x => x.classList.remove('active'));
-    tabbar.style.display = 'none';
-    fab.style.display = 'none';
-    showView('form');
-    title.textContent = key ? "Modifier le point de vente" : "Nouveau point de vente";
-    greet.textContent = '';
-  }
-
-  fab.addEventListener('click', () => openForm('new', null));
-  document.querySelectorAll('[data-edit]').forEach(row => row.addEventListener('click', () => openForm('edit', row.dataset.edit)));
-
-  document.getElementById('backBtn').addEventListener('click', () => {
-    tabbar.style.display = 'flex';
-    tabs[0].classList.add('active');
-    showView('liste');
-    title.textContent = tabs[0].dataset.title;
-    greet.textContent = tabs[0].dataset.greet;
-    fab.style.display = 'flex';
-  });
-
-  document.getElementById('geoBtn').addEventListener('click', () => {
-    document.getElementById('geoStatus').textContent = 'Capturée';
-    document.getElementById('geoBtn').textContent = 'Recapturer';
-    document.getElementById('geoBtn').classList.add('captured');
-  });
-
-  const toast = document.getElementById('toast');
-  const toastText = document.getElementById('toastText');
-  function fireToast(text){
-    toastText.textContent = text;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2200);
-  }
-
-  document.getElementById('saveBtn').addEventListener('click', () => {
-    fireToast(document.getElementById('removeBtn').style.display === 'block' ? 'Modifications enregistrées' : 'Point de vente enregistré');
-    document.getElementById('backBtn').click();
-  });
-  document.getElementById('removeBtn').addEventListener('click', () => {
-    fireToast('Point de vente retiré');
-    document.getElementById('backBtn').click();
-  });
-</script>
-
+<script src="../assets/app.js"></script>
 </body>
 </html>
