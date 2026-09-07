@@ -23,11 +23,11 @@ Recommandation construite à partir des contraintes du cahier des charges : app 
 
 ## 2. Application mobile — Flutter
 
-**Pourquoi** : un seul code source pour iOS et Android (exigence explicite du cahier des charges), bonnes performances sur du matériel d'entrée de gamme — pertinent pour un déploiement à Abidjan où le parc Android est très majoritaire et varié. Écosystème mature pour la géolocalisation temps réel, les cartes et le mode hors-ligne.
+**Pourquoi** : un seul code source pour iOS et Android (exigence explicite du cahier des charges), bonnes performances sur du matériel d'entrée de gamme — pertinent pour un déploiement à Abidjan où le parc Android est très majoritaire et varié. Écosystème mature pour la géolocalisation temps réel et les cartes.
 
 **Pourquoi pas React Native** : reste une alternative crédible et tout aussi viable (grande communauté, JavaScript/TypeScript partagé avec un backend Node). Flutter a un léger avantage sur la fluidité des animations et la cohérence visuelle entre iOS et Android, ce qui compte pour les 5 interfaces très différentes du projet.
 
-**Point d'attention — mode hors-ligne** : la caisse enregistreuse (type Loyverse) et le signalement de rupture doivent continuer à fonctionner en cas de coupure réseau, fréquente sur certaines zones d'Abidjan. Prévoir une base locale embarquée (SQLite via `drift` ou `sqflite` en Flutter) avec synchronisation différée dès que la connexion revient.
+**Point d'attention — dépendance au réseau** : le mode hors-ligne a été retiré du périmètre. L'application suppose une connexion active. Le corollaire est qu'il faut soigner le comportement en réseau faible — délais d'attente courts, messages d'erreur explicites, reprise manuelle — plutôt que de masquer la coupure.
 
 ---
 
@@ -84,7 +84,6 @@ Hébergeur retenu pour l'infrastructure (base de données, backend, stockage). �
 ## 10. Ce que cette stack permet de couvrir directement
 
 - Suivi temps réel des livreurs et des ruptures (PostGIS + Socket.io)
-- Fonctionnement dégradé hors connexion pour la caisse et le signalement (SQLite embarqué + synchronisation différée)
 - Un seul code mobile pour les 5 interfaces (Flutter), déjà cohérent avec les maquettes réalisées
 - Export Excel/PDF des statistiques (librairies `exceljs` et `pdfkit` côté NestJS)
 - Paiement mobile multi-opérateurs sans multiplier les intégrations

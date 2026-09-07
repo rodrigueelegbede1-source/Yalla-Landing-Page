@@ -65,9 +65,6 @@ rôles.
   Catalogue pour l'Administrateur ; Catalogue et Livreurs pour le Fabricant ;
   Historique et Profil pour le Livreur ; etc.) — chaque écran déjà construit
   ici sert de modèle pour brancher les autres sur l'API réelle.
-- **Mode hors-ligne** pour la caisse et le signalement de rupture (base
-  locale `drift`/SQLite déjà ajoutée aux dépendances, non encore implémentée)
-  — nécessaire vu l'instabilité réseau évoquée dans le choix de stack.
 - **Cartes réelles** (`google_maps_flutter` déjà en dépendance) — les écrans
   actuels affichent des listes, pas encore de carte interactive.
 - **Notifications push** (Firebase déjà en dépendance, configuration

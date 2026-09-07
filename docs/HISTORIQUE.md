@@ -40,6 +40,17 @@ Lancement prévu sur Abidjan, Côte d'Ivoire, en iOS et Android.
    de l'ID utilisateur — a nécessité l'ajout d'un lien `utilisateur_id` sur
    `points_de_vente`, absent du schéma initial.
 
+8. **Mode hors-ligne retiré du périmètre** (2026-08-16). Le cahier des charges
+   initial prévoyait que la caisse et le signalement continuent de fonctionner
+   sans réseau, avec synchronisation différée. Cette exigence est abandonnée :
+   Yalla repose sur le temps réel, et une rupture stockée localement pendant
+   des heures perd sa raison d'être. Conséquences appliquées — dépendances
+   `drift`, `sqlite3_flutter_libs`, `path_provider` et `path` retirées de
+   `mobile/pubspec.yaml` (elles n'étaient utilisées nulle part), mentions
+   supprimées de la landing, des maquettes et du dossier stack technique.
+   Le corollaire à traiter : soigner le comportement en réseau faible plutôt
+   que de masquer la coupure.
+
 ## Où ça en est, honnêtement
 
 - Le code (base de données, backend, mobile) a été écrit avec soin mais

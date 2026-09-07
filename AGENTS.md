@@ -190,8 +190,11 @@ NindoHost.** `.gitignore` couvre les cas courants, vérifie avant de committer.
   parcourus), 1/min à l'arrêt, rien hors ligne.
 - Un point de vente peut vendre des produits **hors catalogue Yalla** : ne pars
   pas du principe que toute vente référence un `produit_id`.
-- Le mode hors-ligne est une exigence (réseau instable à Abidjan) : caisse et
-  signalement doivent fonctionner sans connexion, avec synchronisation différée.
+- **Le mode hors-ligne a été retiré du périmètre** (décision du 2026-08-16).
+  Yalla suppose une connexion active : une rupture n'a de valeur que transmise
+  immédiatement. Ne réintroduis pas de base locale, de file d'attente de
+  synchronisation ni de « mode dégradé » sans instruction explicite — les
+  dépendances correspondantes ont été retirées de `mobile/pubspec.yaml`.
 - La landing page masque ses éléments animés derrière une classe `js` posée par
   le script. Si tu retires ce mécanisme, la page reste blanche sans JavaScript.
 - **`bcrypt` est un module natif.** Il a été vérifié comme fonctionnel ici

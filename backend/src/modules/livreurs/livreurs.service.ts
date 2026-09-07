@@ -22,7 +22,7 @@ export class LivreursService {
    * de l'utilisateur à chaque appel.
    *
    * Fréquence attendue côté app mobile : ~10 s en course, ~60 s à l'arrêt,
-   * rien hors ligne (voir Yalla_Stack_Technique.md).
+   * rien lorsque le livreur est déconnecté (voir Yalla_Modele_de_donnees.md, §5).
    */
   async enregistrerPosition(livreurId: string, latitude: number, longitude: number) {
     const livreur = await this.repo.findOne({ where: { id: livreurId } });
