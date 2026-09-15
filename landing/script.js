@@ -350,26 +350,15 @@
       const invalides = champs.filter(el => !check(el));
       if (invalides.length) { invalides[0].focus(); return; }
 
-      const val = (n) => (leadForm.elements[n] && leadForm.elements[n].value.trim()) || "—";
-      const corps = [
-        "Nom : "       + val("nom"),
-        "Profil : "    + val("profil"),
-        "Téléphone : " + val("telephone"),
-        "",
-        "Message :",
-        val("message"),
-      ].join("\n");
-
-      // Pas de backend sur une page statique : on ouvre le client mail de
-      // l'utilisateur, pré-rempli. À remplacer par un POST le jour où une API existe.
-      const url = "mailto:contact@yalla.ci"
-        + "?subject=" + encodeURIComponent("Demande via le site — " + val("profil"))
-        + "&body="    + encodeURIComponent(corps);
-
-      window.location.href = url;
-
+      // L'adresse de contact a été retirée du site tant que la boîte n'existe
+      // pas. Ouvrir une messagerie vers un destinataire inexistant laissait
+      // croire au visiteur que sa demande était partie, alors qu'elle se perdait.
+      //
+      // Le formulaire valide donc la saisie, puis le dit franchement au lieu de
+      // simuler un envoi. À rebrancher sur un mailto ou un POST le jour où un
+      // destinataire réel existe.
       if (note) {
-        note.textContent = "VOTRE MESSAGERIE S'OUVRE AVEC LA DEMANDE PRÉ-REMPLIE";
+        note.textContent = "FORMULAIRE PAS ENCORE RELIÉ — APPELEZ-NOUS EN ATTENDANT";
         note.classList.add("is-ok");
       }
     });
