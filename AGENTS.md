@@ -209,6 +209,20 @@ NindoHost.** `.gitignore` couvre les cas courants, vérifie avant de committer.
 
 ## 9. Pièges connus
 
+- **Ne déploie jamais `backend/` sur Vercel, et vérifie le « Root Directory ».**
+  Le 15/09/2026, le projet Vercel a été importé avec Root Directory sur
+  `backend/`. Vercel a servi le dossier en statique et **tout le code source de
+  l'API est devenu public** (`/src/main.ts`, `/src/modules/auth/auth.service.ts`,
+  `/src/config/database.config.ts` répondaient 200 sur une URL ouverte). Aucun
+  secret n'a fuité, `backend/.env` étant ignoré par git donc absent du
+  déploiement. Le réglage correct est **Root Directory sur `./`** : le
+  `vercel.json` de la racine publie alors `landing/` et rien d'autre.
+  `backend/.vercelignore` est le garde-fou posé en urgence ce jour-là, à
+  supprimer une fois le réglage corrigé.
+  Sur le fond, l'API n'a pas sa place sur Vercel : socket.io, la connexion
+  PostgreSQL persistante et le job d'escalade en `setInterval` sont incompatibles
+  avec le serverless. La cible reste NindoHost.
+
 **Les trois premiers viennent du passage en conditions réelles du 2026-09-15.
 Aucun n'était visible au typage ni à l'audit de schéma.**
 
