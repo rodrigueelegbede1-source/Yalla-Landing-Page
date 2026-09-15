@@ -209,6 +209,18 @@ NindoHost.** `.gitignore` couvre les cas courants, vérifie avant de committer.
 
 ## 9. Pièges connus
 
+- **La landing est publiée deux fois, et `landing/` reste la source unique.**
+  Le site en ligne est servi par GitHub Pages depuis le dépôt public
+  `rodrigueelegbede1-source/Yalla-Landing-Page`, qui n'est qu'un **miroir** du
+  dossier `landing/` de ce dépôt. Ne modifie jamais le miroir directement : il
+  est régénéré par `git subtree split --prefix landing -b gh-pages` puis poussé.
+  Un correctif appliqué au miroir serait écrasé à la publication suivante.
+  Pourquoi ce détour : GitHub Pages n'est pas disponible sur un dépôt privé avec
+  un compte Free, et le dépôt `yalla` doit rester privé. Le miroir ne contient
+  que la landing, c'est-à-dire du contenu déjà public par nature.
+  Le déploiement Vercel (`landing-page-yalla`) vise le même dossier mais reste
+  inaccessible de l'extérieur tant que la protection de déploiement est active.
+
 - **Ne déploie jamais `backend/` sur Vercel, et vérifie le « Root Directory ».**
   Le 15/09/2026, le projet Vercel a été importé avec Root Directory sur
   `backend/`. Vercel a servi le dossier en statique et **tout le code source de
