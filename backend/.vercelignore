@@ -26,4 +26,7 @@
 #
 # À SUPPRIMER une fois « Root Directory » corrigé.
 
+# Exception temporaire : sonde de diagnostic. Si /_vercel-probe.txt devient
+# accessible, c est que Root Directory est reste sur backend/.
 *
+!_vercel-probe.txt
