@@ -375,4 +375,52 @@
     });
   }
 
+  /* ─────────────── 12. La chaîne : cas de figure et maillons ───────────────
+     Trois configurations réelles de la distribution ivoirienne. Le schéma se
+     reconfigure, et chaque maillon ouvre le détail de son interface.
+     Sans JS : le cas 01 reste affiché et les six panneaux s'empilent — la
+     section reste lisible, elle perd seulement l'interaction. */
+  const chainFlow = $('#chainFlow');
+  if (chainFlow) {
+    const NOTES = {
+      complete:    "LE FABRICANT CONFIE LA DISTRIBUTION À DES GROSSISTES AFFILIÉS · CHACUN PILOTE SES PROPRES LIVREURS",
+      independant: "LE DISTRIBUTEUR TRAVAILLE SANS FABRICANT ATTITRÉ · IL SERT LES BOUTIQUES AVEC SES PROPRES LIVREURS",
+      integre:     "LE FABRICANT ASSURE LUI-MÊME SA DISTRIBUTION · SES LIVREURS LUI SONT DIRECTEMENT RATTACHÉS",
+    };
+
+    const note   = $('#chainNote');
+    const cases  = $$('.chain__case');
+    const links  = $$('.link');
+    const panels = $$('.chain__panel');
+
+    cases.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.case;
+        if (!key) return;
+        cases.forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle('is-active', on);
+          b.setAttribute('aria-selected', String(on));
+        });
+        chainFlow.dataset.case = key;
+        if (note && NOTES[key]) note.textContent = NOTES[key];
+      });
+    });
+
+    const showRole = (role) => {
+      if (!role) return;
+      links.forEach((l) => {
+        const on = l.dataset.role === role;
+        l.classList.toggle('is-active', on);
+        l.setAttribute('aria-pressed', String(on));
+      });
+      panels.forEach((p) => p.classList.toggle('is-shown', p.dataset.panel === role));
+    };
+
+    links.forEach((l) => l.addEventListener('click', () => showRole(l.dataset.role)));
+
+    // Le point de vente ouvre la section : c'est lui qui déclenche toute la chaîne.
+    showRole('point-de-vente');
+  }
+
 })();
