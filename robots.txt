@@ -1,0 +1,18 @@
+# Yalla — site volontairement non indexé pour le moment.
+#
+# Le blocage est porté par la balise placée dans le <head> des trois pages :
+#   <meta name="robots" content="noindex, nofollow">
+#
+# NE PAS AJOUTER « Disallow: / » ICI.
+#
+# Ce serait contre-productif, et c'est l'erreur classique sur ce sujet : un robot
+# empêché de lire la page ne voit jamais la balise noindex. L'URL peut alors
+# apparaître quand même dans les résultats, sans titre ni description, et devient
+# plus difficile à faire retirer. Pour qu'une page reste hors de l'index, le robot
+# doit pouvoir la lire et y trouver la consigne.
+#
+# À rouvrir une fois la marque déposée : repasser les trois balises en
+# « index, follow » et supprimer ce fichier.
+
+User-agent: *
+Allow: /
