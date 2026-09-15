@@ -41,7 +41,7 @@ class SessionNotifier extends StateNotifier<SessionYalla> {
     state = SessionYalla(role: role, nom: nom, idMetier: idMetier, enCoursDeChargement: false);
   }
 
-  /// Les 5 rôles (`administrateur`, `fabricant`, `livreur`, `point_de_vente`,
+  /// Les 6 rôles (`administrateur`, `fabricant`, `distributeur`, `livreur`, `point_de_vente`,
   /// `agent_recenseur`) partagent le même endpoint de connexion — l'API renvoie
   /// le rôle et l'ID métier (fabricantId/livreurId/pointDeVenteId/agentRecenseurId)
   /// dans la même réponse, ce qui pilote à la fois le routage et les appels API

@@ -49,7 +49,7 @@ done
 psql -d yalla_dev -f database/seed/seed_dev.sql
 ```
 
-Ce script recrée les entités déjà utilisées dans les 5 maquettes cliquables
+Ce script recrée les entités déjà utilisées dans les 6 maquettes cliquables
 (Ivoire Boissons, Superette Akwaba, Koffi A., etc.) et insère une vente qui
 vide volontairement un stock, pour vérifier que le trigger de rupture
 automatique fonctionne :

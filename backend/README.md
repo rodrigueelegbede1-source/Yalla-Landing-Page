@@ -1,7 +1,7 @@
 # Yalla — Backend API (NestJS)
 
 API qui expose le schéma PostgreSQL/PostGIS défini dans `yalla-backend/database`
-(dossier livré séparément) aux 5 interfaces déjà maquettées.
+(dossier livré séparément) aux 6 interfaces déjà maquettées.
 
 ## Démarrage
 

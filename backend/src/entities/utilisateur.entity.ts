@@ -1,6 +1,14 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-export type RoleUtilisateur = 'administrateur' | 'fabricant' | 'livreur' | 'point_de_vente' | 'agent_recenseur';
+// Six rôles depuis la migration 011 : le distributeur est l'acteur qui reçoit
+// une rupture et qui agit dessus. Le fabricant, lui, la voit en lecture.
+export type RoleUtilisateur =
+  | 'administrateur'
+  | 'fabricant'
+  | 'distributeur'
+  | 'livreur'
+  | 'point_de_vente'
+  | 'agent_recenseur';
 
 @Entity('utilisateurs')
 export class Utilisateur {
@@ -19,7 +27,7 @@ export class Utilisateur {
   @Column({ name: 'mot_de_passe_hash' })
   motDePasseHash: string;
 
-  @Column({ type: 'enum', enum: ['administrateur', 'fabricant', 'livreur', 'point_de_vente', 'agent_recenseur'] })
+  @Column({ type: 'enum', enum: ['administrateur', 'fabricant', 'distributeur', 'livreur', 'point_de_vente', 'agent_recenseur'] })
   role: RoleUtilisateur;
 
   @Column({ name: 'derniere_connexion', type: 'timestamptz', nullable: true })

@@ -1,6 +1,8 @@
 # Modèle de données — Application Yalla
 
-Ce document décrit le modèle de données commun aux 5 interfaces (Administrateur, Fabricant, Livreur, Point de vente, Agent recenseur), à partir du cahier des charges et des maquettes déjà validées.
+Ce document décrit le modèle de données commun aux 6 interfaces (Administrateur, Fabricant, Distributeur, Livreur, Point de vente, Agent recenseur), à partir du cahier des charges et des maquettes déjà validées.
+
+> **Le distributeur a été ajouté le 2026-09-15** par la migration `011`, après la rédaction de ce document. Il reçoit les ruptures et agit dessus, le fabricant les voit en lecture. Voir `docs/HISTORIQUE.md`, entrée 9, pour le détail du routage et de la règle d'escalade.
 
 ---
 
@@ -26,7 +28,7 @@ Ce document décrit le modèle de données commun aux 5 interfaces (Administrate
 ## 2. Détail des entités
 
 ### `Utilisateur`
-Compte de base, commun aux 5 rôles.
+Compte de base, commun aux 6 rôles.
 
 | Champ | Type | Description |
 |---|---|---|

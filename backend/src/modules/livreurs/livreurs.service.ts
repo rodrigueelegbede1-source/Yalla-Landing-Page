@@ -34,12 +34,19 @@ export class LivreursService {
       [livreurId, longitude, latitude],
     );
 
-    this.realtime.emettrePositionLivreur(livreur.fabricantId, {
-      livreurId,
-      latitude,
-      longitude,
-      horodatage: new Date(),
-    });
+    // Le livreur dépend d'un distributeur (migration 011). Sa position part à ce
+    // distributeur, et au fabricant derrière lui quand il y en a un : un
+    // distributeur indépendant ne rend de comptes à aucune marque en particulier.
+    const [rattachement] = await this.repo.query(
+      `SELECT d.id AS "distributeurId", d.fabricant_id AS "fabricantId"
+       FROM distributeurs d WHERE d.id = $1`,
+      [livreur.distributeurId],
+    );
+
+    this.realtime.emettrePositionLivreur(
+      { distributeurId: rattachement?.distributeurId, fabricantId: rattachement?.fabricantId },
+      { livreurId, latitude, longitude, horodatage: new Date() },
+    );
 
     return { ok: true };
   }
@@ -49,16 +56,40 @@ export class LivreursService {
     return { ok: true, enLigne };
   }
 
+  /**
+   * Les livreurs qu'un fabricant voit sur sa carte : ceux des distributeurs qui
+   * lui sont rattachés, y compris son propre distributeur d'auto-distribution.
+   *
+   * Un fabricant ne voit donc pas les livreurs d'un distributeur indépendant,
+   * même quand celui-ci sert ses produits. C'est cohérent avec le périmètre du
+   * rôle (§6 d'AGENTS.md) : le fabricant voit son réseau, pas celui des autres.
+   */
   async findByFabricant(fabricantId: string) {
+    return this.repo.query(
+      `SELECT l.id, u.nom, l.en_ligne AS "enLigne",
+              d.id AS "distributeurId", d.nom AS "distributeurNom",
+              ST_Y(l.position::geometry) AS latitude, ST_X(l.position::geometry) AS longitude,
+              l.position_maj_le AS "positionMajLe"
+       FROM livreurs l
+       JOIN utilisateurs u ON u.id = l.utilisateur_id
+       JOIN distributeurs d ON d.id = l.distributeur_id
+       WHERE d.fabricant_id = $1
+       ORDER BY d.nom, u.nom`,
+      [fabricantId],
+    );
+  }
+
+  /** Les livreurs d'un distributeur : sa propre flotte, sur son écran à lui. */
+  async findByDistributeur(distributeurId: string) {
     return this.repo.query(
       `SELECT l.id, u.nom, l.en_ligne AS "enLigne",
               ST_Y(l.position::geometry) AS latitude, ST_X(l.position::geometry) AS longitude,
               l.position_maj_le AS "positionMajLe"
        FROM livreurs l
        JOIN utilisateurs u ON u.id = l.utilisateur_id
-       WHERE l.fabricant_id = $1
+       WHERE l.distributeur_id = $1
        ORDER BY u.nom`,
-      [fabricantId],
+      [distributeurId],
     );
   }
 }

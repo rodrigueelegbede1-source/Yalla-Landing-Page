@@ -5,10 +5,13 @@ import 'dart:async';
 import '../../core/auth/auth_providers.dart';
 
 /// Reprend l'écran "Carte" de la maquette Livreur : liste des ruptures les
-/// plus proches (GET /ruptures/proximite/:livreurId, tri PostGIS), et envoi
-/// périodique de la position réelle du téléphone vers POST /livreurs/position
-/// — fréquence alignée sur la recommandation de Yalla_Stack_Technique.md
-/// (10 s en course active).
+/// plus proches (GET /ruptures/proximite, tri PostGIS), et envoi périodique de
+/// la position réelle du téléphone vers POST /livreurs/position — fréquence
+/// alignée sur la recommandation de Yalla_Stack_Technique.md (10 s en course
+/// active).
+///
+/// L'identifiant du livreur n'est plus passé dans l'URL : le backend le lit
+/// dans le token. `livreurId` reste utile à l'écran lui-même, pas à l'appel.
 class LivreurHomeScreen extends ConsumerStatefulWidget {
   const LivreurHomeScreen({super.key, required this.livreurId});
 
@@ -61,7 +64,7 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
         ],
       ),
       body: FutureBuilder(
-        future: api.dio.get('/ruptures/proximite/${widget.livreurId}'),
+        future: api.dio.get('/ruptures/proximite'),
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
           final ruptures = snapshot.data!.data as List;

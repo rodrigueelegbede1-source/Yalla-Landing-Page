@@ -41,10 +41,10 @@ Node seul suffit pour travailler sur le backend ou la landing page.
 | Dossier | Contenu |
 |---|---|
 | [`backend/`](backend/) | API NestJS — REST + WebSocket, 9 modules, JWT par rôle |
-| [`database/`](database/) | 10 migrations SQL + seed de développement |
+| [`database/`](database/) | 11 migrations SQL + seed de développement |
 | [`mobile/`](mobile/) | Application Flutter (authentification + un écran par rôle) |
 | [`landing/`](landing/) | Site vitrine public, HTML/CSS/JS sans framework |
-| [`maquettes/`](maquettes/) | 5 prototypes HTML cliquables, un par interface |
+| [`maquettes/`](maquettes/) | 6 prototypes HTML cliquables, un par interface |
 | [`docs/`](docs/) | Cahier des charges, modèle de données, stack technique, historique |
 | [`scripts/`](scripts/) | Setup, lint, test, audit de schéma, provisionnement de la base |
 
@@ -65,12 +65,13 @@ La landing page est le seul ajout : elle n'existait pas dans les livrables initi
 
 ---
 
-## Les cinq rôles
+## Les six rôles
 
 | Rôle | Ce qu'il fait |
 |---|---|
 | **Point de vente** | Signale ses ruptures, encaisse ses ventes, reçoit notifications et sondages |
-| **Fabricant** | Suit son réseau attribué, reçoit les ruptures de son seul catalogue, pilote ses livreurs |
+| **Fabricant** | Suit son réseau attribué, voit **en lecture** les ruptures de son seul catalogue |
+| **Distributeur** | Reçoit les ruptures et **agit** : prend la course, affecte un livreur, porte les marques qu'il distribue |
 | **Livreur** | Voit les ruptures à proximité, prend la course, contacte la boutique, livre |
 | **Agent recenseur** | Enregistre et met à jour les points de vente sur le terrain |
 | **Administrateur** | Supervise l'ensemble du réseau, diffuse notifications et sondages, extrait les statistiques |

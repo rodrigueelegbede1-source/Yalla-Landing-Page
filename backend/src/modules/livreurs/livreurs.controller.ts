@@ -29,4 +29,12 @@ export class LivreursController {
   findByFabricant(@Param('fabricantId') fabricantId: string) {
     return this.service.findByFabricant(fabricantId);
   }
+
+  // Flotte du distributeur connecté. Identifiant pris dans le token et non dans
+  // l'URL : un distributeur n'a pas à consulter la flotte d'un concurrent.
+  @Get('distributeur')
+  @Roles('distributeur')
+  findByDistributeur(@Req() req: any) {
+    return this.service.findByDistributeur(req.user.idMetier);
+  }
 }

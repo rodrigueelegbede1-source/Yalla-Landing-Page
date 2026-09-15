@@ -1,7 +1,7 @@
 # Yalla — Application mobile (Flutter)
 
 Squelette d'application connecté à `yalla-backend-api` (NestJS), qui aiguille
-vers l'une des 5 interfaces déjà maquettées en HTML selon le rôle renvoyé par
+vers l'une des 6 interfaces déjà maquettées en HTML selon le rôle renvoyé par
 la connexion.
 
 ## Démarrage
@@ -37,7 +37,7 @@ lib/
 
 - **Authentification réelle** contre `POST /auth/login`, token stocké de
   façon sécurisée, session restaurée au redémarrage de l'app.
-- **Aiguillage par rôle** vers l'une des 5 interfaces (`main.dart`).
+- **Aiguillage par rôle** vers l'une des 6 interfaces (`main.dart`).
 - **Appels API réels**, pas de données simulées : ruptures ouvertes
   (Administrateur), ruptures filtrées par fabricant, ruptures triées par
   proximité PostGIS (Livreur), signalement de rupture (Point de vente),

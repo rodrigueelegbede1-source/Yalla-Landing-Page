@@ -35,9 +35,24 @@ for (let m; (m = CREATE.exec(sql));) {
   }
   tables[m[1]] = cols;
 }
-// colonnes ajoutées après coup
-for (const a of sql.matchAll(/ALTER TABLE ([a-z_]+)[\s\S]*?ADD COLUMN (?:IF NOT EXISTS )?([a-z_]+)/gi)) {
-  if (tables[a[1]] && !tables[a[1]].includes(a[2])) tables[a[1]].push(a[2]);
+// Colonnes ajoutées ou retirées après coup.
+//
+// On découpe d'abord chaque ALTER TABLE jusqu'à son point-virgule, puis on lit
+// les ADD/DROP COLUMN à l'intérieur de cette seule instruction. La version
+// précédente cherchait le premier ADD COLUMN situé n'importe où après un
+// ALTER TABLE : une instruction sans ADD COLUMN (un ALTER COLUMN ... SET NOT NULL,
+// un DROP COLUMN) lui faisait sauter la frontière et avaler l'ajout de
+// l'instruction suivante, qui passait alors pour absent du SQL. La migration 011
+// déclenchait exactement ce cas sur ruptures.distributeur_id.
+for (const stmt of sql.matchAll(/ALTER TABLE\s+(?:IF EXISTS\s+)?([a-z_]+)([\s\S]*?);/gi)) {
+  const [, table, corps] = stmt;
+  if (!tables[table]) continue;
+  for (const a of corps.matchAll(/ADD COLUMN\s+(?:IF NOT EXISTS\s+)?([a-z_]+)/gi)) {
+    if (!tables[table].includes(a[1])) tables[table].push(a[1]);
+  }
+  for (const d of corps.matchAll(/DROP COLUMN\s+(?:IF EXISTS\s+)?([a-z_]+)/gi)) {
+    tables[table] = tables[table].filter(c => c !== d[1]);
+  }
 }
 
 // ── 2. Colonnes attendues par les entités ──────────────────────────────────

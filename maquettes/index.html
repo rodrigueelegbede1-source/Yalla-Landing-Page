@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yalla — Les cinq interfaces</title>
+<title>Yalla — Les six interfaces</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -16,6 +16,7 @@
   <symbol id="i-factory" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 20V10l6 3.6V10l6 3.6V6l6 3v11z"/><path d="M8.5 20v-3h3v3"/></symbol>
   <symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7h10v9H3zM13 11h4l3 3v2h-7z"/><circle cx="7" cy="18" r="1.9"/><circle cx="17" cy="18" r="1.9"/></symbol>
   <symbol id="i-clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="M9 12h6M9 16h4"/></symbol>
+  <symbol id="i-depot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 9.5 12 5l9 4.5V20H3z"/><path d="M8 20v-6h8v6"/><path d="M8 17h8"/></symbol>
   <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.4"/><rect x="13" y="4" width="7" height="7" rx="1.4"/><rect x="4" y="13" width="7" height="7" rx="1.4"/><rect x="13" y="13" width="7" height="7" rx="1.4"/></symbol>
   <symbol id="i-mark" viewBox="0 0 40 40" fill="none"><path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/><rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/><circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/></symbol>
 </defs></svg>
@@ -24,7 +25,7 @@
   <div class="head__id">
     <svg class="head__mark" aria-hidden="true"><use href="#i-mark"/></svg>
     <div>
-      <h1>Les cinq interfaces de Yalla</h1>
+      <h1>Les six interfaces de Yalla</h1>
       <p>Prototypes cliquables — chaque rôle, son périmètre et ses écrans</p>
     </div>
   </div>
@@ -48,23 +49,30 @@
       <p>Carte du réseau attribué, ruptures filtrées sur son seul catalogue, gestion des produits et des livreurs affiliés.</p>
     </a>
 
+    <a class="hub__card" href="distributeur/index.html">
+      <div class="hub__ic"><svg aria-hidden="true"><use href="#i-depot"/></svg></div>
+      <p class="hub__n">03 · MOBILE · 4 ÉCRANS</p>
+      <h3>Distributeur</h3>
+      <p>Carnet de courses en deux cercles, escalade des ruptures non prises, flotte de livreurs et marques portées.</p>
+    </a>
+
     <a class="hub__card" href="livreur/index.html">
       <div class="hub__ic"><svg aria-hidden="true"><use href="#i-truck"/></svg></div>
-      <p class="hub__n">03 · MOBILE · 4 ÉCRANS</p>
+      <p class="hub__n">04 · MOBILE · 4 ÉCRANS</p>
       <h3>Livreur</h3>
       <p>Ruptures à proximité triées par distance, itinéraire, encaissement par paiement mobile et suivi des gains.</p>
     </a>
 
     <a class="hub__card" href="agent-recenseur/index.html">
       <div class="hub__ic"><svg aria-hidden="true"><use href="#i-clip"/></svg></div>
-      <p class="hub__n">04 · MOBILE · 4 ÉCRANS</p>
+      <p class="hub__n">05 · MOBILE · 4 ÉCRANS</p>
       <h3>Agent recenseur</h3>
       <p>Enregistrement des boutiques sur le terrain, géolocalisation GPS, mise à jour et vérification des positions.</p>
     </a>
 
     <a class="hub__card" href="administrateur/index.html">
       <div class="hub__ic"><svg aria-hidden="true"><use href="#i-grid"/></svg></div>
-      <p class="hub__n">05 · POSTE DE TRAVAIL · 5 VUES</p>
+      <p class="hub__n">06 · POSTE DE TRAVAIL · 5 VUES</p>
       <h3>Administrateur</h3>
       <p>Supervision du réseau complet, confirmation des demandes, diffusion ciblée et export des statistiques.</p>
     </a>
@@ -78,6 +86,11 @@
       l'identité visuelle avant le développement Flutter. Les données affichées sont des
       exemples réalistes, pas des chiffres réels. Le périmètre de chaque rôle suit le
       cahier des charges — voir <code>AGENTS.md</code> §6.
+      <br><br>
+      <b style="color:var(--ink)">Le distributeur est le sixième rôle</b>, ajouté par la migration
+      <code>011</code>. C'est lui qui reçoit une rupture et qui agit dessus ; le fabricant la voit
+      en lecture, sur son seul catalogue. Sa maquette est la seule à montrer les deux cercles
+      d'accès, <b>attribué</b> et <b>élargi</b>, sur lesquels repose la règle d'escalade.
     </p>
   </div>
 </div>

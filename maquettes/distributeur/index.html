@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yalla — Interface Distributeur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/app.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7Z"/><path d="M10.5 19a1.8 1.8 0 0 0 3 0"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8 12 4l8 4v8l-8 4-8-4z"/><path d="m4 8 8 4 8-4M12 12v8"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7h10v9H3zM13 11h4l3 3v2h-7z"/><circle cx="7" cy="18" r="1.9"/><circle cx="17" cy="18" r="1.9"/></symbol>
+  <symbol id="i-factory" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 20V10l6 3.6V10l6 3.6V6l6 3v11z"/><path d="M8.5 20v-3h3v3"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 10h16v10H4z"/><path d="m3 10 2-5h14l2 5"/><path d="M10 20v-5h4v5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a1.5 1.5 0 0 1-1.7 1.5C10.5 19.8 4.2 13.5 3.5 5.7A1.5 1.5 0 0 1 5 4Z"/></symbol>
+  <symbol id="i-mark" viewBox="0 0 40 40" fill="none"><path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/><rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/><circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/></symbol>
+</defs></svg>
+
+<header class="head">
+  <div class="head__id">
+    <svg class="head__mark" aria-hidden="true"><use href="#i-mark"/></svg>
+    <div>
+      <h1>Interface Distributeur</h1>
+      <p>Carnet de courses, escalade, flotte de livreurs et marques portées</p>
+    </div>
+  </div>
+  <a class="head__back" href="../index.html">← TOUTES LES INTERFACES</a>
+</header>
+
+<div class="stage">
+  <div class="phone" data-app>
+    <div class="phone__frame"><div class="phone__screen">
+
+      <div class="status"><span>9:41</span><span class="status__dots"><i></i><i></i><i></i></span></div>
+
+      <div class="appbar">
+        <div class="appbar__row">
+          <div>
+            <p class="appbar__hi">Distributeur</p>
+            <h2>Distrib Cocody</h2>
+          </div>
+          <div class="avatar">DC</div>
+        </div>
+      </div>
+
+      <div class="body">
+
+        <!-- ─── Courses ─── -->
+        <section class="screen is-active" data-screen="courses">
+          <div class="card" style="background:rgba(20,107,58,.06);border-color:rgba(20,107,58,.2)">
+            <p style="font-size:12px;color:var(--dim);line-height:1.5">
+              Deux listes, deux statuts très différents. <b>Mes courses</b> vous
+              reviennent de droit, sur les boutiques qui vous sont attribuées.
+              <b>Ouvertes dans ma commune</b> sont des courses qu'un autre
+              distributeur n'a pas prises à temps : une opportunité, pas une
+              obligation.
+            </p>
+          </div>
+
+          <p class="eyebrow">Mes courses · 2 en attente</p>
+
+          <div class="row">
+            <div class="row__ic row__ic--alert"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
+            <div class="row__t"><b>Lait concentré 400g</b><span>SUPÉRETTE LA GRÂCE · COCODY</span></div>
+            <div class="row__x"><b>16 min</b><span>4 cartons</span></div>
+          </div>
+          <div class="card" style="margin:-4px 0 10px;background:rgba(255,229,0,.07);border-color:rgba(255,229,0,.28)">
+            <div class="prod__foot" style="margin:0;padding:0;border:0">
+              <span class="mono" style="display:flex;align-items:center;gap:6px">
+                <svg style="width:13px;height:13px" aria-hidden="true"><use href="#i-clock"/></svg>
+                OUVERTE AUX AUTRES DANS 1 H 44
+              </span>
+              <span class="tag tag--warn">À PRENDRE</span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="row__ic row__ic--alert"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
+            <div class="row__t"><b>Café soluble 100g</b><span>BOUTIQUE ZANZAN · COCODY</span></div>
+            <div class="row__x"><b>52 min</b><span>2 cartons</span></div>
+          </div>
+          <div class="card" style="margin:-4px 0 10px;background:rgba(255,229,0,.07);border-color:rgba(255,229,0,.28)">
+            <div class="prod__foot" style="margin:0;padding:0;border:0">
+              <span class="mono" style="display:flex;align-items:center;gap:6px">
+                <svg style="width:13px;height:13px" aria-hidden="true"><use href="#i-clock"/></svg>
+                OUVERTE AUX AUTRES DANS 1 H 08
+              </span>
+              <span class="tag tag--warn">À PRENDRE</span>
+            </div>
+          </div>
+
+          <p class="eyebrow">Ouvertes dans ma commune · 1</p>
+          <div class="row">
+            <div class="row__ic row__ic--warn"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
+            <div class="row__t"><b>Chocolat en poudre 500g</b><span>KIOSQUE DJENI · COCODY</span></div>
+            <div class="row__x"><b>2 h 21</b><span>3 cartons</span></div>
+          </div>
+          <div class="card" style="margin:-4px 0 10px">
+            <p style="font-size:12px;color:var(--dim);line-height:1.5">
+              Non prise par son distributeur attribué dans le délai. Vous la voyez
+              parce que vous portez <b>la même marque</b> et desservez déjà cette
+              commune. Premier arrivé, premier servi.
+            </p>
+            <div class="prod__foot">
+              <span class="mono">NESTLÉ CÔTE D'IVOIRE</span>
+              <span class="tag tag--info">ÉLARGIE</span>
+            </div>
+          </div>
+
+          <p class="eyebrow">En cours de livraison</p>
+          <div class="row">
+            <div class="row__ic row__ic--ok"><svg aria-hidden="true"><use href="#i-truck"/></svg></div>
+            <div class="row__t"><b>Lait en poudre 900g</b><span>KONAN YAO · ARRIVÉE DANS 12 MIN</span></div>
+            <span class="tag tag--ok">EN ROUTE</span>
+          </div>
+
+          <p class="eyebrow">Affecter un livreur</p>
+          <button class="btn-main" type="button">Prendre la course et affecter</button>
+        </section>
+
+        <!-- ─── Réseau ─── -->
+        <section class="screen" data-screen="reseau">
+          <div class="map">
+            <svg viewBox="0 0 300 150" preserveAspectRatio="none" aria-hidden="true">
+              <rect width="300" height="150" fill="#0c3826"/>
+              <g opacity=".5" fill="#10462f">
+                <rect x="8" y="10" width="76" height="44" rx="4"/><rect x="98" y="6" width="98" height="50" rx="4"/>
+                <rect x="210" y="12" width="82" height="42" rx="4"/><rect x="10" y="72" width="84" height="58" rx="4"/>
+                <rect x="108" y="70" width="88" height="62" rx="4"/><rect x="208" y="72" width="84" height="58" rx="4"/>
+              </g>
+              <g stroke="#1a6b45" stroke-width="2"><path d="M0 63h300M96 0v150M202 0v150"/></g>
+            </svg>
+            <span class="pin pin--alert" style="--x:22%;--y:28%"></span>
+            <span class="pin pin--alert" style="--x:64%;--y:62%"></span>
+            <span class="pin pin--me" style="--x:48%;--y:44%"></span>
+            <span class="pin pin--ok" style="--x:44%;--y:78%"></span>
+            <span class="pin pin--ok" style="--x:82%;--y:34%"></span>
+            <span class="map__tag"><i></i>3 COURSES · 24 BOUTIQUES · 4 LIVREURS</span>
+          </div>
+
+          <p class="eyebrow">Filtrer par commune</p>
+          <div class="chips" data-chips>
+            <button class="chip is-on">Toutes</button>
+            <button class="chip">Cocody</button>
+            <button class="chip">Adjamé</button>
+            <button class="chip">Plateau</button>
+          </div>
+
+          <p class="eyebrow">Mon activité aujourd'hui</p>
+          <div class="kpis">
+            <div class="kpi"><p class="kpi__l">Courses servies</p><p class="kpi__v">17</p><p class="kpi__d">+4</p></div>
+            <div class="kpi"><p class="kpi__l">Taux de service</p><p class="kpi__v">89%</p><p class="kpi__d">+6 pts</p></div>
+            <div class="kpi"><p class="kpi__l">Délai moyen</p><p class="kpi__v">41 min</p><p class="kpi__d">-9 min</p></div>
+          </div>
+
+          <p class="eyebrow">Courses sur 7 jours</p>
+          <div class="card">
+            <div class="chart">
+              <span style="--h:44%"></span><span style="--h:62%"></span><span style="--h:51%"></span>
+              <span style="--h:78%"></span><span style="--h:66%"></span><span style="--h:91%"></span><span style="--h:73%"></span>
+            </div>
+          </div>
+
+          <p class="eyebrow">Boutiques attribuées</p>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-store"/></svg></div>
+            <div class="row__t"><b>Supérette La Grâce</b><span>COCODY · RUE DES JARDINS</span></div>
+            <span class="tag tag--alert">EN RUPTURE</span>
+          </div>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-store"/></svg></div>
+            <div class="row__t"><b>Boutique Zanzan</b><span>COCODY · BOULEVARD LATRILLE</span></div>
+            <span class="tag tag--alert">EN RUPTURE</span>
+          </div>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-store"/></svg></div>
+            <div class="row__t"><b>Alimentation Bénédiction</b><span>COCODY · ANGRÉ 7E TRANCHE</span></div>
+            <span class="tag tag--ok">SERVIE</span>
+          </div>
+        </section>
+
+        <!-- ─── Flotte ─── -->
+        <section class="screen" data-screen="flotte">
+          <p class="eyebrow">Mes livreurs</p>
+          <div class="row">
+            <div class="row__ic row__ic--ok"><svg aria-hidden="true"><use href="#i-truck"/></svg></div>
+            <div class="row__t"><b>Konan Yao</b><span>EN COURSE · COCODY · 1,2 KM</span></div>
+            <div class="row__x"><b>486 000</b><span>12 courses</span></div>
+          </div>
+          <div class="row">
+            <div class="row__ic row__ic--ok"><svg aria-hidden="true"><use href="#i-truck"/></svg></div>
+            <div class="row__t"><b>Aya Traoré</b><span>DISPONIBLE · COCODY · 0,8 KM</span></div>
+            <div class="row__x"><b>412 500</b><span>10 courses</span></div>
+          </div>
+          <div class="row">
+            <div class="row__ic row__ic--ok"><svg aria-hidden="true"><use href="#i-truck"/></svg></div>
+            <div class="row__t"><b>Sori Doumbia</b><span>DISPONIBLE · ADJAMÉ · 3,4 KM</span></div>
+            <div class="row__x"><b>274 000</b><span>7 courses</span></div>
+          </div>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-truck"/></svg></div>
+            <div class="row__t"><b>Ibrahim Cissé</b><span>HORS LIGNE</span></div>
+            <div class="row__x"><b>198 000</b><span>5 courses</span></div>
+          </div>
+
+          <p class="eyebrow">Gérer la flotte</p>
+          <button class="btn-ghost" type="button">
+            <svg style="width:15px;height:15px" aria-hidden="true"><use href="#i-plus"/></svg>Rattacher un livreur
+          </button>
+
+          <div class="card" style="margin-top:12px">
+            <p style="font-size:12px;color:var(--dim);line-height:1.5">
+              Un livreur est rattaché à <b>vous</b>, pas à une marque. Il voit les
+              courses de votre périmètre, y compris celles qui vous parviennent
+              par escalade.
+            </p>
+          </div>
+
+          <p class="eyebrow">Contact rapide</p>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-phone"/></svg></div>
+            <div class="row__t"><b>Appeler Aya Traoré</b><span>LIVREUSE LA PLUS PROCHE D'UNE COURSE</span></div>
+          </div>
+        </section>
+
+        <!-- ─── Marques ─── -->
+        <section class="screen" data-screen="marques">
+          <p class="eyebrow">Mon statut</p>
+          <div class="card">
+            <div class="prod">
+              <span class="prod__img"></span>
+              <div class="prod__t">
+                <b>Distributeur affilié</b>
+                <span>RATTACHÉ À NESTLÉ CÔTE D'IVOIRE</span>
+              </div>
+            </div>
+            <div class="prod__foot">
+              <span class="mono">24 BOUTIQUES ATTRIBUÉES</span>
+              <span class="tag tag--ok">ACTIF</span>
+            </div>
+          </div>
+
+          <p class="eyebrow">Marques que je porte</p>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-factory"/></svg></div>
+            <div class="row__t"><b>Nestlé Côte d'Ivoire</b><span>14 RÉFÉRENCES · AFFILIATION</span></div>
+            <span class="tag tag--ok">PRINCIPALE</span>
+          </div>
+          <div class="row">
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-factory"/></svg></div>
+            <div class="row__t"><b>Ivoire Boissons</b><span>6 RÉFÉRENCES · ACCORD LOCAL</span></div>
+            <span class="tag tag--ok">ACTIVE</span>
+          </div>
+          <div class="row">
+            <div class="row__ic row__ic--warn"><svg aria-hidden="true"><use href="#i-factory"/></svg></div>
+            <div class="row__t"><b>Sucrivoire</b><span>3 RÉFÉRENCES · DEMANDE ENVOYÉE</span></div>
+            <span class="tag tag--warn">EN ATTENTE</span>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <p style="font-size:12px;color:var(--dim);line-height:1.5">
+              Les marques que vous portez déterminent ce que vous voyez. Une
+              course en escalade ne vous parvient <b>que</b> si elle concerne une
+              marque de cette liste. Yalla ne propose jamais une rupture à un
+              distributeur qui ne travaille pas le produit.
+            </p>
+          </div>
+
+          <p class="eyebrow">Ajouter une marque</p>
+          <button class="btn-ghost" type="button">
+            <svg style="width:15px;height:15px" aria-hidden="true"><use href="#i-plus"/></svg>Demander un accord
+          </button>
+        </section>
+
+      </div>
+
+      <nav class="tabs" aria-label="Navigation de l'application">
+        <a class="tab is-active" href="#" data-go="courses"><svg aria-hidden="true"><use href="#i-bell"/></svg><span>Courses</span></a>
+        <a class="tab" href="#" data-go="reseau"><svg aria-hidden="true"><use href="#i-map"/></svg><span>Réseau</span></a>
+        <a class="tab" href="#" data-go="flotte"><svg aria-hidden="true"><use href="#i-truck"/></svg><span>Flotte</span></a>
+        <a class="tab" href="#" data-go="marques"><svg aria-hidden="true"><use href="#i-factory"/></svg><span>Marques</span></a>
+      </nav>
+
+    </div></div>
+    <p class="phone__label">Distributeur — 4 écrans, cliquez les onglets</p>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+</body>
+</html>

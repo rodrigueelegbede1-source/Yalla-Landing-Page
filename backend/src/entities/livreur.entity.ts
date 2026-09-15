@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, JoinColumn, OneToOne, ManyToOne } from 'typeorm';
 import { Utilisateur } from './utilisateur.entity';
-import { Fabricant } from './fabricant.entity';
+import { Distributeur } from './distributeur.entity';
 
 @Entity('livreurs')
 export class Livreur {
@@ -14,12 +14,16 @@ export class Livreur {
   @JoinColumn({ name: 'utilisateur_id' })
   utilisateur: Utilisateur;
 
-  @Column({ name: 'fabricant_id' })
-  fabricantId: string;
+  // Depuis la migration 011, le livreur dépend du distributeur et non plus du
+  // fabricant : il n'a jamais été l'employé d'une marque, mais de celui qui
+  // distribue. Le cas du fabricant qui livre lui-même reste couvert, via son
+  // distributeur d'auto-distribution.
+  @Column({ name: 'distributeur_id' })
+  distributeurId: string;
 
-  @ManyToOne(() => Fabricant)
-  @JoinColumn({ name: 'fabricant_id' })
-  fabricant: Fabricant;
+  @ManyToOne(() => Distributeur)
+  @JoinColumn({ name: 'distributeur_id' })
+  distributeur: Distributeur;
 
   @Column({ name: 'en_ligne', default: false })
   enLigne: boolean;

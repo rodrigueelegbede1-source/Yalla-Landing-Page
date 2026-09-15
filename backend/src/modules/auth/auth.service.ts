@@ -53,6 +53,9 @@ export class AuthService {
       case 'livreur':
         table = 'livreurs';
         break;
+      case 'distributeur':
+        table = 'distributeurs';
+        break;
       case 'agent_recenseur':
         table = 'agents_recenseurs';
         break;

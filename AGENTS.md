@@ -14,8 +14,14 @@ Côte d'Ivoire (lancement Abidjan, iOS + Android) :
 2. **Signalement de ruptures de stock**, transmis en temps réel au fabricant concerné.
 3. **Caisse enregistreuse** embarquée (modèle Loyverse).
 
-Cinq rôles, cinq interfaces, des droits distincts :
-`administrateur`, `fabricant`, `livreur`, `point_de_vente`, `agent_recenseur`.
+Six rôles, six interfaces, des droits distincts :
+`administrateur`, `fabricant`, `distributeur`, `livreur`, `point_de_vente`,
+`agent_recenseur`.
+
+Le `distributeur` a été introduit par la migration 011. C'est lui qui **reçoit
+une rupture et agit dessus** ; le fabricant la voit en lecture, sur son seul
+catalogue. Un fabricant qui livre lui-même possède son propre distributeur
+(`auto_distribution`), ce qui évite tout cas particulier dans le code.
 
 Le cahier des charges fait foi : `docs/01_cahier_des_charges/`.
 
@@ -29,7 +35,7 @@ Le cahier des charges fait foi : `docs/01_cahier_des_charges/`.
 | `database/` | Migrations SQL numérotées + seed de dev | PostgreSQL 15 + PostGIS |
 | `mobile/` | Squelette app (auth + 1 écran par rôle) | Flutter / Dart |
 | `landing/` | Site vitrine public | HTML/CSS/JS sans framework |
-| `maquettes/` | 5 prototypes HTML cliquables, un par rôle | HTML statique |
+| `maquettes/` | 6 prototypes HTML cliquables, un par rôle | HTML statique |
 | `docs/` | Cahier des charges, modèle de données, stack, historique | Markdown / docx |
 
 `docs/HISTORIQUE.md` retrace les décisions prises et leur ordre — à lire avant
@@ -45,7 +51,7 @@ npm run dev:backend    # API sur http://localhost:3000
 npm run dev:landing    # landing page sur http://localhost:4180
 npm run build:backend  # compile le backend
 npm run lint           # vérifications disponibles
-npm test               # tests (voir §7 : il n'y en a pas encore)
+npm test               # tests — suite SQL d'escalade, plus l'inventaire backend/mobile (§7)
 npm run audit:schema   # vérifie l'alignement entités TypeORM / migrations SQL
 npm run db:provision   # crée la base, applique migrations + seed (psql requis)
 ```
@@ -105,19 +111,26 @@ npm run db:seed
 | Rôle | Géolocalisation | Ruptures | Catalogue |
 |---|---|---|---|
 | Administrateur | réseau complet | toutes | tous |
-| Fabricant | réseau qui lui est attribué | **son catalogue uniquement** | le sien |
-| Livreur | points à proximité | catalogue du fabricant affilié | — |
+| Fabricant | réseau qui lui est attribué | son catalogue uniquement, **en lecture** | le sien |
+| Distributeur | ses points de vente et sa flotte | celles qu'il peut prendre, **en action** | marques qu'il porte |
+| Livreur | points à proximité | périmètre de son distributeur | — |
 | Point de vente | son point de vente | émission (signalement) | catalogue global |
 | Agent recenseur | points qu'il gère | — | — |
 
 Le filtrage par catalogue côté fabricant est une exigence métier, pas une
 optimisation : un fabricant ne doit jamais voir la rupture d'un concurrent.
 
+**Qui peut prendre quelle rupture est décidé par la vue
+`v_acces_rupture_distributeur`, pas par du code.** Ne réimplémente pas cette
+règle en TypeScript, interroge la vue. Elle répond pour les deux cercles
+(`attribue` dès le signalement, `elargi` après escalade), et c'est elle que
+consulte aussi l'UPDATE conditionnel de prise en charge.
+
 ---
 
 ## 7. État réel du projet — à lire avant de promettre quoi que ce soit
 
-Ce qui a été **vérifié par exécution** (2026-08-16) :
+Ce qui a été **vérifié par exécution** (2026-08-16, complété le 2026-09-15) :
 
 | Vérification | Résultat |
 |---|---|
@@ -126,26 +139,42 @@ Ce qui a été **vérifié par exécution** (2026-08-16) :
 | `nest build` | passe, `backend/dist/` produit |
 | Chargement de `bcrypt` (module natif) | **OK** — `require` + `hashSync` fonctionnent |
 | Amorçage NestJS | **tous les modules s'initialisent** (App, TypeOrm, Passport, Jwt, Config) |
-| Alignement entités ↔ migrations SQL | **18 tables, 119 colonnes, 0 désalignement** (`npm run audit:schema`) |
+| Migrations appliquées sur une vraie base | **les 11 passent** sur PostgreSQL 17 + PostGIS 3.6, base créée de zéro |
+| Seed de développement | **passe** — après correction de 5 `INSERT` qui omettaient `mot_de_passe_hash` |
+| API connectée à la base | **démarre et sert** — « Nest application successfully started », toutes les routes montées |
+| Endpoints HTTP | **répondent** — login, carnet distributeur, passe d'escalade, prise en charge (200 puis 409) |
+| Suite SQL d'escalade | **10 cas verts** (`npm test`) |
+| Alignement entités ↔ migrations SQL | **19 tables, 133 colonnes, 0 désalignement** (`npm run audit:schema`, revérifié le 2026-09-15 après `011`) |
 | Landing servie sur `:4180` | 200 sur HTML/CSS/JS, MIME corrects, 404 géré |
-| Tests automatisés | **aucun** — 0 `.spec.ts`, 0 `_test.dart` |
+| Tests automatisés | **suite SQL uniquement** — `database/tests/test_escalade.sql`, 10 cas. Toujours 0 `.spec.ts`, 0 `_test.dart` |
 
-Autrement dit : le seul obstacle au démarrage de l'API est **l'absence de base**.
-Aucun autre blocage n'a été trouvé dans le code.
+La chaîne complète a donc tourné une fois de bout en bout : base provisionnée,
+migrations appliquées, seed chargé, API démarrée, endpoints interrogés. Trois
+bugs que l'analyse statique ne pouvait pas voir sont sortis à cette occasion,
+tous corrigés (voir §9).
 
 Ce qui reste **non vérifié** :
 
-- Le backend **n'a jamais tourné contre une vraie base**. Il compile et s'amorce
-  jusqu'à la connexion TypeORM, puis boucle sur « Unable to connect to the
-  database ». Les erreurs d'exécution réelles restent à découvrir.
-- Les migrations SQL n'ont **jamais été appliquées** sur une base réelle. L'audit
-  statique confirme leur cohérence avec les entités, pas leur exécutabilité
-  (ordre des dépendances, triggers, index spatiaux).
-- Aucun endpoint HTTP n'a jamais répondu.
+- La validation du 2026-09-15 a été faite sur **PostgreSQL 17 + PostGIS 3.6**,
+  alors que la cible documentée est PostgreSQL 15. Rien dans le schéma n'est
+  propre à la 17, mais l'écart est réel et mérite d'être rejoué sur la version
+  cible avant déploiement.
+- Elle a tourné sur un **cluster jetable en locale C**, monté hors de
+  `Program Files` faute de droits administrateur. Le comportement en locale
+  française reste donc non testé — voir le piège `initdb` au §9, qui est
+  précisément ce qui a empêché l'installation standard d'aboutir.
+- Les modules non exercés par ce passage (caisse, notifications, livraisons,
+  transactions) n'ont toujours **aucun endpoint testé**.
 - Le mobile n'a **jamais été compilé** — SDK Flutter absent de l'environnement.
-- **Aucun test automatisé n'existe.** `npm test` liste ce constat au lieu de
-  sortir vert en silence. Si tu ajoutes une fonctionnalité, ajoute les tests
-  avec (Jest côté backend, `flutter_test` côté mobile).
+- **Le backend et le mobile n'ont toujours aucun test.** `npm test` liste ce
+  constat au lieu de sortir vert en silence. Si tu ajoutes une fonctionnalité,
+  ajoute les tests avec (Jest côté backend, `flutter_test` côté mobile).
+- Il existe en revanche une **suite SQL** : `database/tests/test_escalade.sql`
+  vérifie par exécution le routage des ruptures, les deux cercles d'accès, la
+  non-réescalade, la concurrence entre deux preneurs et la péremption. Elle
+  tourne dans une transaction close par `ROLLBACK`, donc rejouable à l'infini
+  sur la même base. Elle a besoin d'une base provisionnée avec le seed ;
+  `npm test` signale et passe quand `psql` ou la base manquent.
 - Chaque interface mobile se limite à un **écran d'accueil**. Le reste de chaque
   maquette HTML reste à porter en Flutter.
 - Trois intégrations sont déclarées mais **non branchées** : push FCM, paiement
@@ -180,6 +209,52 @@ NindoHost.** `.gitignore` couvre les cas courants, vérifie avant de committer.
 
 ## 9. Pièges connus
 
+**Les trois premiers viennent du passage en conditions réelles du 2026-09-15.
+Aucun n'était visible au typage ni à l'audit de schéma.**
+
+- **`repo.query()` sur un `UPDATE ... RETURNING` ne renvoie pas les lignes.** Le
+  pilote postgres de TypeORM renvoie `[lignes, nombreAffecté]`. Tester
+  `.length === 0` sur le résultat brut donne donc toujours 2, jamais 0 : un
+  UPDATE conditionnel qui ne touche aucune ligne passe pour un succès. C'est ce
+  qui rendait muet le 409 de `prendre-en-charge`. Normalise le résultat
+  (`Array.isArray(r?.[0]) ? r[0] : r`) avant de compter.
+- **Ne lis jamais `process.env` dans un décorateur `@Module`.** Les arguments de
+  `JwtModule.register({...})` sont évalués au chargement du fichier, avant que
+  `ConfigModule.forRoot()` d'app.module ait lu `backend/.env`. La valeur retombe
+  sur le défaut, tandis qu'un provider instancié plus tard lit la vraie. Le
+  symptôme est déroutant : `/auth/login` délivre un token valide et toutes les
+  routes protégées répondent 401 dessus. Utilise `registerAsync` + `ConfigService`.
+- **`utilisateurs.mot_de_passe_hash` est NOT NULL.** Cinq `INSERT` du seed
+  l'omettaient : le seed échouait au deuxième utilisateur et n'avait donc jamais
+  pu s'appliquer. Si tu ajoutes un compte, n'oublie pas la colonne.
+
+- **Une rupture peut naître sans passer par NestJS.** Le trigger de caisse de
+  `006` insère directement dans `ruptures` quand une vente vide un stock. Toute
+  logique qui doit s'appliquer à *toutes* les ruptures va donc en SQL, pas dans
+  un service. C'est pourquoi la résolution du destinataire est le trigger
+  `trg_ruptures_resout_destinataire` (`011`) et non du TypeScript.
+- **`prendre-en-charge` doit rester un UPDATE conditionnel.** Il filtre sur
+  `statut = 'signalee'` et renvoie 409 quand aucune ligne n'est touchée. Un
+  simple `repo.update()` laisserait deux livreurs partir sur la même course en
+  croyant chacun l'avoir obtenue. Même chose pour toute future prise de course.
+- **L'escalade tourne dans le processus de l'API** (`EscaladeService`, un
+  `setInterval` de 5 min qui appelle `escalader_ruptures_en_attente()`). Avec
+  plusieurs instances, elles la déclencheront toutes : la fonction SQL est
+  idempotente, donc sans dégât, mais il faudra basculer sur pg_cron ou un verrou
+  consultatif le jour du passage à l'échelle.
+- **Les délais d'escalade et de péremption sont des fonctions SQL**
+  (`delai_escalade()` = 2 h, `delai_peremption()` = 24 h), pas des constantes
+  applicatives. Les changer se fait par `CREATE OR REPLACE`, sans migration ni
+  redémarrage. Ne les recopie pas en dur côté TypeScript ou Flutter.
+- **L'escalade ne franchit jamais la frontière de la marque.** Le cercle élargi
+  ne s'ouvre qu'aux distributeurs qui portent déjà le même fabricant dans la même
+  commune. C'est une protection des accords de territoire, pas une optimisation
+  de requête : ne l'élargis pas sans instruction explicite.
+- **Supprimer une colonne dont dépend une vue échoue.** `011` a dû redéfinir
+  `v_chiffre_affaires_par_fabricant` et `v_chiffre_affaires_par_livreur` avant de
+  pouvoir retirer `livreurs.fabricant_id`. Vérifie les vues de `008` avant tout
+  `DROP COLUMN`.
+
 - Le token JWT porte **l'ID métier** en plus de l'ID utilisateur
   (`fabricantId` / `livreurId` / `pointDeVenteId` / `agentRecenseurId`). C'est un
   correctif d'architecture assumé ; il a nécessité la colonne `utilisateur_id`
@@ -202,7 +277,14 @@ NindoHost.** `.gitignore` couvre les cas courants, vérifie avant de committer.
   `node-pre-gyp` peut être bloqué : l'installation réussit, puis `require('bcrypt')`
   échoue au démarrage. Si tu vois une erreur de binding au boot, c'est ça —
   réinstalle en autorisant les scripts, ou bascule sur `bcryptjs` (pur JS, même API).
-- **Provisionner PostgreSQL sous Windows peut buter sur la locale.** Si le compte
+- **Provisionner PostgreSQL sous Windows bute effectivement sur la locale.**
+  Confirmé le 2026-09-15 sur la machine du projet : l'installateur EDB s'arrête
+  sur `initdb: erreur : le nom de la locale « French_Côte d'Ivoire.1252 »
+  contient des caractères non ASCII`. Contournement qui fonctionne sans toucher
+  aux réglages Windows : lancer `initdb` à la main avec `--locale=C`, ce qui
+  évite la lecture de la locale système. C'est ainsi que la base de validation a
+  été montée.
+- **Détail historique de ce piège.** Si le compte
   utilise une locale dont le nom contient une apostrophe typographique — cas de
   « French_Côte d'Ivoire.1252 », donc très probable sur ce projet — `initdb`
   échoue avec « failed to restore old locale ». C'est une limite du CRT Microsoft,

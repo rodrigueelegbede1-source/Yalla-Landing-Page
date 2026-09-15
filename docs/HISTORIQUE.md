@@ -12,7 +12,7 @@ Lancement prévu sur Abidjan, Côte d'Ivoire, en iOS et Android.
 | `01_cahier_des_charges/` | Version structurée du cahier des charges d'origine |
 | `02_modele_de_donnees/` | Schéma conceptuel : entités, champs, règles métier |
 | `03_stack_technique/` | Choix techniques justifiés (mobile, backend, base, paiement, hébergement) |
-| `04_maquettes/` | 5 prototypes HTML cliquables, un par interface |
+| `04_maquettes/` | 6 prototypes HTML cliquables, un par interface |
 | `05_base_de_donnees/` | Migrations SQL exécutables (PostgreSQL + PostGIS) |
 | `06_backend_api/` | API NestJS qui expose ce schéma |
 | `07_mobile/` | Squelette Flutter connecté à cette API |
@@ -51,12 +51,108 @@ Lancement prévu sur Abidjan, Côte d'Ivoire, en iOS et Android.
    Le corollaire à traiter : soigner le comportement en réseau faible plutôt
    que de masquer la coupure.
 
+9. **Le distributeur entre dans le produit, et la rupture est enfin routée**
+   (2026-09-15, migration `011_distributeurs_et_escalade.sql`).
+
+   Le schéma des acteurs a fait apparaître un sixième rôle, absent du cahier
+   des charges initial : le **distributeur**. Décision : une rupture part au
+   distributeur, **qui agit**, et le fabricant la voit **en lecture** sur son
+   seul catalogue. Les trois cas de terrain (distributeur affilié, distributeur
+   indépendant, fabricant qui distribue lui-même) tiennent dans une seule table,
+   le troisième étant modélisé par un distributeur `auto_distribution`. Aucun
+   cas particulier ne subsiste dans le code, tout passe toujours par un
+   distributeur.
+
+   Trois trous du schéma initial ont été comblés au passage, et ils étaient
+   bloquants :
+
+   - **La rupture n'enregistrait aucun acteur.** Elle passait de `signalee` à
+     `prise_en_charge` sans dire à qui elle avait été envoyée ni qui l'avait
+     prise. Aucun délai n'était mesurable, donc aucune escalade n'était
+     déclenchable. Ajout de `distributeur_id`, `livreur_id`,
+     `date_prise_en_charge` et `escaladee_le`.
+   - **`prendreEnCharge` laissait passer deux preneurs.** L'UPDATE n'avait
+     aucune condition sur le statut courant : deux livreurs pouvaient partir sur
+     la même course en croyant chacun l'avoir obtenue. Remplacé par un UPDATE
+     conditionnel qui renvoie 409 au perdant.
+   - **Il manquait un statut terminal.** Une rupture que personne ne prenait
+     restait ouverte à vie, et le taux de service, qui est l'argument vendu au
+     fabricant, n'était pas calculable. Ajout de `non_servie` et de la vue
+     `v_taux_de_service_par_fabricant`.
+
+   **Règle d'escalade retenue : cercles concentriques puis péremption.** Passé
+   `delai_escalade()` (2 h), la rupture s'ouvre aux autres distributeurs qui
+   portent le même fabricant dans la même commune. Passé `delai_peremption()`
+   (24 h), elle est close en `non_servie`. L'élargissement ne franchit jamais
+   la frontière de la marque : en Côte d'Ivoire la distribution est
+   territoriale, et proposer une rupture à un distributeur qui ne travaille pas
+   cette marque casserait un accord au lieu de rendre service.
+
+   **Choix d'implémentation structurant : le routage est en SQL.** La rupture la
+   plus importante du produit, celle que la caisse déclenche quand une vente
+   vide un stock, est créée par un trigger de `006` et ne passe jamais par
+   NestJS. La résolution du destinataire est donc elle aussi un trigger
+   (`BEFORE INSERT` sur `ruptures`). Écrite dans le service, elle aurait
+   couvert le signalement manuel et manqué le mécanisme central.
+
+   Conséquence de schéma : `livreurs.fabricant_id` devient
+   `livreurs.distributeur_id`. Un livreur n'a jamais été l'employé d'une
+   marque, mais de celui qui distribue.
+
+10. **La chaîne complète tourne pour la première fois** (2026-09-15).
+
+   Jusqu'ici, tout le code de ce dépôt avait été écrit sans jamais être exécuté :
+   aucune migration appliquée, aucun endpoint interrogé. Ce jalon est franchi.
+   Base PostgreSQL 17 + PostGIS 3.6 provisionnée, **11 migrations appliquées**,
+   seed chargé, **API démarrée et interrogée**.
+
+   **Trois bugs sont sortis, qu'aucune relecture n'avait vus** et qu'aucun outil
+   d'analyse statique ne pouvait voir :
+
+   - **Le seed n'avait jamais pu fonctionner.** Cinq `INSERT INTO utilisateurs`
+     omettaient `mot_de_passe_hash`, qui est NOT NULL. Il échouait au deuxième
+     utilisateur.
+   - **Toutes les routes protégées répondaient 401.** `JwtModule.register()` lit
+     `process.env.JWT_SECRET` à l'évaluation du décorateur, avant que
+     `ConfigModule.forRoot()` ait chargé le `.env` ; `JwtStrategy`, instanciée
+     plus tard, lisait la vraie valeur. Signature et vérification utilisaient donc
+     deux secrets différents. Corrigé par `registerAsync` + `ConfigService`.
+   - **Le garde-fou de concurrence était muet.** Sur un `UPDATE ... RETURNING`,
+     TypeORM renvoie `[lignes, nombreAffecté]` et non les lignes : le test
+     `length === 0` n'était jamais vrai, et le second livreur recevait un 200
+     avec un tableau vide au lieu d'un 409.
+
+   Le troisième est le plus instructif : la logique SQL était juste, et la suite
+   de tests SQL la validait déjà. C'est la couche TypeScript qui trahissait. Les
+   deux niveaux devaient être testés.
+
+   **Première suite de tests du dépôt** : `database/tests/test_escalade.sql`,
+   10 cas, branchée sur `npm test`. Elle vérifie le routage automatique depuis la
+   caisse, les deux cercles d'accès, la non-réescalade, la concurrence entre deux
+   preneurs, la péremption et les trois cas de terrain du modèle. Elle tourne dans
+   une transaction close par `ROLLBACK`, donc rejouable à l'infini.
+
+   **Le piège `initdb` documenté dans AGENTS.md est confirmé** : l'installateur
+   standard s'arrête sur la locale « French_Côte d'Ivoire.1252 ». Contournement
+   qui marche sans toucher aux réglages Windows : `initdb --locale=C`.
+
 ## Où ça en est, honnêtement
 
-- Le code (base de données, backend, mobile) a été écrit avec soin mais
-  **jamais exécuté** dans cet environnement, faute d'accès réseau pour
-  installer PostgreSQL/PostGIS, les dépendances npm ou le SDK Flutter — le
-  premier test réel se fera de votre côté ou via un développeur.
+- **La base, le backend et le routage ont maintenant tourné pour de vrai**
+  (voir l'entrée 10). Ce qui suit reste vrai en revanche.
+- La validation a eu lieu sur **PostgreSQL 17**, alors que la cible documentée
+  est la 15, et sur un cluster jetable en **locale C** monté hors de
+  `Program Files` faute de droits administrateur. Le comportement en locale
+  française n'est donc pas testé.
+- Le **mobile n'a toujours jamais été compilé** : le SDK Flutter est absent de
+  l'environnement. L'écran Distributeur est écrit mais n'a jamais tourné.
+- Les modules **caisse, notifications, livraisons et transactions** n'ont aucun
+  endpoint testé. Seuls l'authentification et le parcours de rupture l'ont été.
+- Le distributeur a désormais sa maquette (`maquettes/distributeur/`, 4 écrans :
+  courses, réseau, flotte, marques) et son écran Flutter d'accueil, au même
+  niveau que les cinq autres rôles. Sa maquette est la seule à montrer les deux
+  cercles d'accès, ce qui en fait le support de démonstration de la règle
+  d'escalade.
 - Chaque interface mobile n'a pour l'instant qu'un **écran d'accueil**
   fonctionnel ; le reste de chaque maquette HTML reste à reproduire en Flutter.
 - Le backend n'est **pas encore déployé** sur NindoHost.
@@ -65,7 +161,12 @@ Lancement prévu sur Abidjan, Côte d'Ivoire, en iOS et Android.
 
 ## Prochaines étapes possibles
 
+- **Rejouer la validation sur PostgreSQL 15**, la version cible, et en locale
+  française, pour lever les deux réserves de l'entrée 10.
+- Étendre la suite de tests aux modules non couverts : caisse, livraisons,
+  notifications. Le modèle est posé, il ne reste qu'à l'étendre.
 - Déployer la base et l'API sur NindoHost pour avoir un environnement de test réel.
+- Porter l'écran Distributeur au-delà de son accueil, comme les cinq autres.
 - Étoffer une interface mobile au-delà de son écran d'accueil.
 - Mettre en place un build automatique (Codemagic ou GitHub Actions) pour
   obtenir un `.apk` installable sans matériel local.

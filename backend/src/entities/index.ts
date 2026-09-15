@@ -1,5 +1,6 @@
 export * from './utilisateur.entity';
 export * from './fabricant.entity';
+export * from './distributeur.entity';
 export * from './agent-recenseur.entity';
 export * from './livreur.entity';
 export * from './position-livreur.entity';
