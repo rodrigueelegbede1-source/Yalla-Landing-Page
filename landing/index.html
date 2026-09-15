@@ -59,13 +59,13 @@
 
     <nav class="nav__links" aria-label="Navigation principale">
       <a href="#fonctionnement"><span>Comment ça marche</span></a>
-      <a href="#fonctions"><span>Fonctions</span></a>
-      <a href="#profils"><span>Profils</span></a>
-      <a href="#faq"><span>FAQ</span></a>
+      <a href="#profils"><span>La chaîne</span></a>
+      <a href="faq.html"><span>FAQ</span></a>
+      <a href="contact.html"><span>Contact</span></a>
     </nav>
 
     <div class="nav__actions">
-      <a href="#rejoindre" class="btn btn--sm btn--yellow" data-magnetic>
+      <a href="contact.html" class="btn btn--sm btn--yellow" data-magnetic>
         <span>Rejoindre</span>
       </a>
       <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="mobileMenu">
@@ -78,10 +78,10 @@
 <div class="mobile-menu" id="mobileMenu" inert>
   <nav aria-label="Navigation mobile">
     <a href="#fonctionnement" style="--i:0">Comment ça marche</a>
-    <a href="#fonctions" style="--i:1">Fonctions</a>
-    <a href="#profils" style="--i:2">Profils</a>
-    <a href="#faq" style="--i:3">FAQ</a>
-    <a href="#rejoindre" class="mobile-menu__cta" style="--i:4">Rejoindre le réseau</a>
+    <a href="#profils" style="--i:1">La chaîne</a>
+    <a href="faq.html" style="--i:2">FAQ</a>
+    <a href="contact.html" style="--i:3">Contact</a>
+    <a href="contact.html" class="mobile-menu__cta" style="--i:4">Rejoindre le réseau</a>
   </nav>
   <div class="mobile-menu__foot" style="--i:5">
     <span class="mono">ABIDJAN · CÔTE D'IVOIRE</span>
@@ -258,8 +258,8 @@
       <p>Pour signaler une rupture depuis la boutique</p>
     </div>
     <div class="stat reveal" style="--d:90ms">
-      <div class="stat__num"><span data-count="5">0</span></div>
-      <p>Interfaces métier, une seule plateforme</p>
+      <div class="stat__num"><span data-count="6">0</span></div>
+      <p>Métiers connectés sur une seule plateforme</p>
     </div>
     <div class="stat reveal" style="--d:180ms">
       <div class="stat__num"><span data-count="3" data-suffix=" en 1">0 en 1</span></div>
@@ -304,8 +304,8 @@
             </svg>
           </div>
           <h3>Le point de vente signale</h3>
-          <p>Un produit manque en rayon&nbsp;? Le gérant le signale en un geste depuis l'application. Photo, quantité, catégorie&nbsp;: tout part en une fois.</p>
-          <span class="step__meta mono">TEMPS RÉEL · POSITION JOINTE</span>
+          <p>Un produit manque en rayon&nbsp;? Le gérant le signale en un geste. Photo, quantité, catégorie&nbsp;: tout part en une fois. Et quand une vente vide le dernier article, la caisse enregistreuse déclenche le signalement toute seule.</p>
+          <span class="step__meta mono">CAISSE INTÉGRÉE · POSITION JOINTE</span>
         </li>
 
         <li class="step reveal" style="--d:120ms">
@@ -318,7 +318,7 @@
             </svg>
           </div>
           <h3>La rupture se géolocalise</h3>
-          <p>Elle s'affiche instantanément sur la carte du fabricant concerné — et uniquement sur son catalogue — ainsi que chez les livreurs affiliés à proximité.</p>
+          <p>Elle part au distributeur qui sert la boutique, qui affecte un livreur. Le fabricant la voit apparaître sur son réseau — et uniquement sur son catalogue, jamais celui d'un concurrent.</p>
           <span class="step__meta mono">CARTE VIVANTE · CIBLAGE PAR CATALOGUE</span>
         </li>
 
@@ -340,89 +340,117 @@
   </div>
 </section>
 
-<!-- ══════════════════════════ 3 EN 1 ══════════════════════════ -->
-<section class="feats" id="fonctions">
-  <div class="wrap">
-    <header class="sec-head">
-      <p class="sec-head__eyebrow mono reveal" style="--d:0ms"><span></span>UNE PLATEFORME, TROIS OUTILS</p>
-      <h2 class="sec-head__title reveal" style="--d:80ms">Trois métiers d'outils,<br><em>réunis dans une seule app.</em></h2>
-      <p class="sec-head__sub reveal" style="--d:160ms">Pas trois abonnements, pas trois applications à installer, pas trois bases de données qui se contredisent.</p>
-    </header>
-
-    <div class="feats__grid">
-      <article class="feat reveal" style="--d:0ms">
-        <div class="feat__head">
-          <span class="feat__num mono">01</span>
-          <div class="feat__icon" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-              <path d="M16 29s10-8 10-15.5A10 10 0 0 0 6 13.5C6 21 16 29 16 29Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
-              <circle cx="16" cy="13.5" r="3.4" stroke="currentColor" stroke-width="1.9"/>
-            </svg>
-          </div>
-        </div>
-        <h3>Géolocalisation temps réel</h3>
-        <p>Le suivi type Uber, appliqué à la distribution. Les positions des livreurs sont horodatées et historisées, pas seulement affichées à l'instant T.</p>
-        <ul>
-          <li>Carte du réseau par ville et par commune</li>
-          <li>Suivi simultané de plusieurs livreurs</li>
-          <li>Historique des trajets conservé</li>
-        </ul>
-      </article>
-
-      <article class="feat reveal" style="--d:110ms">
-        <div class="feat__head">
-          <span class="feat__num mono">02</span>
-          <div class="feat__icon" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-              <path d="M24 13a8 8 0 1 0-16 0c0 8-3 9.5-3 9.5h22S24 21 24 13Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
-              <path d="M13.4 26.5a3 3 0 0 0 5.2 0" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
-            </svg>
-          </div>
-        </div>
-        <h3>Signalement des ruptures</h3>
-        <p>Le cœur du produit. Une rupture signalée en boutique atteint le bon fabricant en quelques secondes, avec la photo du produit et la position exacte.</p>
-        <ul>
-          <li>Ciblage automatique par catalogue</li>
-          <li>Photo et quantité manquante</li>
-          <li>Alerte aux livreurs à proximité</li>
-        </ul>
-      </article>
-
-      <article class="feat reveal" style="--d:220ms">
-        <div class="feat__head">
-          <span class="feat__num mono">03</span>
-          <div class="feat__icon" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-              <rect x="6" y="4" width="20" height="24" rx="2.6" stroke="currentColor" stroke-width="1.9"/>
-              <path d="M11 10h10M11 15.5h4m6 0h.01M11 21h4m6 0h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
-            </svg>
-          </div>
-        </div>
-        <h3>Caisse enregistreuse</h3>
-        <p>Vos ventes s'enregistrent dans l'application, même sans réseau. Une vente qui vide un stock déclenche automatiquement le signalement de rupture.</p>
-        <ul>
-          <li>Encaissement et suivi des ventes</li>
-          <li>Chiffre d'affaires en temps réel</li>
-          <li>Export Excel et PDF</li>
-        </ul>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════ PROFILS ══════════════════════════ -->
-<section class="profiles" id="profils">
+<!-- ══════════════════════════ LA CHAÎNE ══════════════════════════ -->
+<section class="chain" id="profils">
   <div class="wrap">
     <header class="sec-head sec-head--light">
-      <p class="sec-head__eyebrow mono reveal" style="--d:0ms"><span></span>UNE APP, TROIS MÉTIERS</p>
-      <h2 class="sec-head__title reveal" style="--d:80ms">Chacun voit exactement<br><em>ce dont il a besoin.</em></h2>
-      <p class="sec-head__sub reveal" style="--d:160ms">Des interfaces dédiées, avec leurs propres droits et leur propre carte. Rien de superflu, rien de manquant.</p>
+      <p class="sec-head__eyebrow mono reveal" style="--d:0ms"><span></span>SIX MÉTIERS, UNE SEULE CHAÎNE</p>
+      <h2 class="sec-head__title reveal" style="--d:80ms">La distribution ivoirienne,<br><em>telle qu'elle est vraiment.</em></h2>
+      <p class="sec-head__sub reveal" style="--d:160ms">Sur le terrain, la chaîne n'a pas la même forme d'un produit à l'autre. Yalla épouse les trois cas réels au lieu d'en imposer un seul.</p>
     </header>
 
-    <div class="cards">
+    <div class="chain__cases reveal" style="--d:200ms" role="tablist" aria-label="Cas de figure de la distribution">
+      <button type="button" class="chain__case is-active" role="tab" id="case-complete" aria-selected="true" aria-controls="chainFlow" data-case="complete">
+        <span class="chain__case-num mono">CAS 01</span>
+        <span class="chain__case-label">Fabricant avec distributeurs</span>
+      </button>
+      <button type="button" class="chain__case" role="tab" id="case-independant" aria-selected="false" aria-controls="chainFlow" data-case="independant">
+        <span class="chain__case-num mono">CAS 02</span>
+        <span class="chain__case-label">Distributeur indépendant</span>
+      </button>
+      <button type="button" class="chain__case" role="tab" id="case-integre" aria-selected="false" aria-controls="chainFlow" data-case="integre">
+        <span class="chain__case-num mono">CAS 03</span>
+        <span class="chain__case-label">Fabricant qui distribue</span>
+      </button>
+    </div>
 
-      <!-- Point de vente -->
-      <article class="card reveal" style="--d:0ms" data-spot>
+    <div class="chain__board reveal" style="--d:260ms">
+      <div class="chain__flow" id="chainFlow" data-case="complete">
+
+        <button type="button" class="link" data-role="fabricant" aria-pressed="false">
+          <span class="link__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M4 27V13l8 5V13l8 5V8l8 4v15z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M11 27v-4h4v4" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="link__name">Fabricant</span>
+          <span class="link__sub mono">MARQUE · INDUSTRIEL</span>
+        </button>
+
+        <span class="chain__arrow" aria-hidden="true"><i></i></span>
+
+        <button type="button" class="link link--new" data-role="distributeur" aria-pressed="false">
+          <span class="link__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M4 11h16v12H4zM20 15h4.5l3.5 3.5V23H20z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M8 11V7h8v4" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="link__name">Distributeur</span>
+          <span class="link__sub mono">GROSSISTE · DÉPÔT</span>
+        </button>
+
+        <span class="chain__arrow" aria-hidden="true"><i></i></span>
+
+        <button type="button" class="link" data-role="livreur" aria-pressed="false">
+          <span class="link__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M3 8h14v13H3zM17 13h5l4 4v4h-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="9" cy="24" r="2.6" stroke="currentColor" stroke-width="2"/>
+              <circle cx="22" cy="24" r="2.6" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </span>
+          <span class="link__name">Livreur</span>
+          <span class="link__sub mono">AGENT AFFILIÉ</span>
+        </button>
+
+        <span class="chain__arrow" aria-hidden="true"><i></i></span>
+
+        <button type="button" class="link" data-role="point-de-vente" aria-pressed="false">
+          <span class="link__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M5 12h22v15H5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M4 12 6.5 5h19L28 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M13 27v-7h6v7" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="link__name">Point de vente</span>
+          <span class="link__sub mono">BOUTIQUE · MAQUIS</span>
+        </button>
+
+      </div>
+
+      <p class="chain__note mono" id="chainNote">LE FABRICANT CONFIE LA DISTRIBUTION À DES GROSSISTES AFFILIÉS · CHACUN PILOTE SES PROPRES LIVREURS</p>
+
+      <div class="chain__aside">
+        <button type="button" class="link link--aside" data-role="administrateur" aria-pressed="false">
+          <span class="link__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="2"/>
+              <path d="M16 5v22M5 16h22" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </span>
+          <span class="link__name">Administrateur</span>
+          <span class="link__sub mono">SUPERVISE TOUT LE RÉSEAU</span>
+        </button>
+
+        <button type="button" class="link link--aside" data-role="agent-recenseur" aria-pressed="false">
+          <span class="link__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M16 29s9-7.4 9-14a9 9 0 1 0-18 0c0 6.6 9 14 9 14Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M12.5 15.2l2.6 2.6 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="link__name">Agent recenseur</span>
+          <span class="link__sub mono">ENREGISTRE LES BOUTIQUES</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="chain__panels" id="chainPanels">
+
+      <article class="card chain__panel is-shown" data-panel="point-de-vente">
         <div class="card__top">
           <div class="card__icon" aria-hidden="true">
             <svg viewBox="0 0 32 32" fill="none">
@@ -431,19 +459,16 @@
               <path d="M13 27v-7h6v7" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
             </svg>
           </div>
-          <span class="card__index mono">01 / PROFIL</span>
+          <span class="card__index mono">MAILLON 04</span>
         </div>
-
         <h3 class="card__title">Point de vente</h3>
         <p class="card__role">Boutique, supérette, kiosque ou maquis</p>
-        <p class="card__desc">Signalez vos ruptures en temps réel, encaissez vos ventes et restez visible auprès de tous les fabricants du réseau.</p>
-
+        <p class="card__desc">Signalez vos ruptures en temps réel, encaissez vos ventes et restez visible auprès de tout le réseau.</p>
         <div class="mini mini--pdv" aria-hidden="true">
           <div class="mini__bar"><span class="mono">NOUVEAU SIGNALEMENT</span><span class="mini__live"></span></div>
           <div class="mini__row"><span class="mini__thumb"></span><span class="mini__txt"><b>Lait concentré 400g</b><i>Catégorie · Épicerie</i></span><span class="mini__tag">0 EN STOCK</span></div>
           <div class="mini__cta">Envoyer le signalement</div>
         </div>
-
         <ul class="card__list">
           <li>Signalement de rupture instantané</li>
           <li>Caisse enregistreuse intégrée</li>
@@ -452,8 +477,33 @@
         </ul>
       </article>
 
-      <!-- Fabricant -->
-      <article class="card card--feature reveal" style="--d:120ms" data-spot>
+      <article class="card card--feature chain__panel" data-panel="distributeur">
+        <div class="card__top">
+          <div class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M4 11h16v12H4zM20 15h4.5l3.5 3.5V23H20z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M8 11V7h8v4" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="card__index mono">MAILLON 02</span>
+        </div>
+        <h3 class="card__title">Distributeur</h3>
+        <p class="card__role">Grossiste affilié ou indépendant</p>
+        <p class="card__desc">Vous recevez les ruptures des boutiques de votre zone, vous affectez un livreur et vous suivez la course jusqu'à la livraison.</p>
+        <div class="mini" aria-hidden="true">
+          <div class="mini__bar"><span class="mono">RUPTURES À AFFECTER</span><span class="mini__live"></span></div>
+          <div class="mini__row mini__row--flat"><span class="mini__txt"><b>Supérette La Grâce · Cocody</b><i>Lait concentré 400g · 16 min</i></span><span class="mini__go">GO</span></div>
+          <div class="mini__legend"><span><i class="dot dot--alert"></i>7 à affecter</span><span><i class="dot dot--ok"></i>12 livreurs</span></div>
+        </div>
+        <ul class="card__list">
+          <li>Ruptures des boutiques que vous servez</li>
+          <li>Affectation du livreur en un geste</li>
+          <li>Suivi des courses en temps réel</li>
+          <li>Rattachement à un fabricant, ou indépendance totale</li>
+        </ul>
+      </article>
+
+      <article class="card chain__panel" data-panel="fabricant">
         <div class="card__top">
           <div class="card__icon" aria-hidden="true">
             <svg viewBox="0 0 32 32" fill="none">
@@ -461,13 +511,11 @@
               <path d="M11 27v-4h4v4" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
             </svg>
           </div>
-          <span class="card__index mono">02 / PROFIL</span>
+          <span class="card__index mono">MAILLON 01</span>
         </div>
-
         <h3 class="card__title">Fabricant</h3>
-        <p class="card__role">Marque, fournisseur, distributeur</p>
-        <p class="card__desc">Voyez votre réseau attribué sur une carte vivante, recevez les ruptures de votre seul catalogue et pilotez vos livreurs affiliés.</p>
-
+        <p class="card__role">Marque, fournisseur, industriel</p>
+        <p class="card__desc">Voyez votre réseau sur une carte vivante et suivez les ruptures de votre seul catalogue, quel que soit le distributeur qui les traite.</p>
         <div class="mini mini--fab" aria-hidden="true">
           <div class="mini__bar"><span class="mono">RÉSEAU · COCODY</span><span class="mono mini__kpi">+18%</span></div>
           <div class="mini__chart">
@@ -476,17 +524,15 @@
           </div>
           <div class="mini__legend"><span><i class="dot dot--alert"></i>12 ruptures</span><span><i class="dot dot--ok"></i>34 livreurs</span></div>
         </div>
-
         <ul class="card__list">
           <li>Carte du réseau attribué, par commune</li>
           <li>Ruptures filtrées sur votre catalogue</li>
-          <li>Chiffre d'affaires en temps réel par livreur</li>
+          <li>Chiffre d'affaires en temps réel par distributeur</li>
           <li>Gestion du catalogue et des affiliés</li>
         </ul>
       </article>
 
-      <!-- Livreur -->
-      <article class="card reveal" style="--d:240ms" data-spot>
+      <article class="card chain__panel" data-panel="livreur">
         <div class="card__top">
           <div class="card__icon" aria-hidden="true">
             <svg viewBox="0 0 32 32" fill="none">
@@ -495,13 +541,11 @@
               <circle cx="22" cy="24" r="2.6" stroke="currentColor" stroke-width="2"/>
             </svg>
           </div>
-          <span class="card__index mono">03 / PROFIL</span>
+          <span class="card__index mono">MAILLON 03</span>
         </div>
-
         <h3 class="card__title">Livreur</h3>
         <p class="card__role">Agent de livraison affilié</p>
         <p class="card__desc">Les ruptures autour de vous, triées par distance. Vous prenez la course, vous appelez la boutique, vous livrez.</p>
-
         <div class="mini mini--liv" aria-hidden="true">
           <div class="mini__bar"><span class="mono">COURSE PROPOSÉE</span><span class="mono mini__dist">1,2 KM</span></div>
           <div class="mini__route">
@@ -511,7 +555,6 @@
           </div>
           <div class="mini__row mini__row--flat"><span class="mini__txt"><b>Boutique Awa · Yopougon</b><i>4 articles · 6 min</i></span><span class="mini__go">GO</span></div>
         </div>
-
         <ul class="card__list">
           <li>Ruptures à proximité en temps réel</li>
           <li>Fiche produit avec photo</li>
@@ -520,113 +563,62 @@
         </ul>
       </article>
 
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════ FAQ ══════════════════════════ -->
-<section class="faq" id="faq">
-  <div class="wrap faq__inner">
-    <header class="sec-head sec-head--light faq__head">
-      <p class="sec-head__eyebrow mono reveal" style="--d:0ms"><span></span>QUESTIONS FRÉQUENTES</p>
-      <h2 class="sec-head__title reveal" style="--d:80ms">Ce qu'on nous<br><em>demande le plus.</em></h2>
-      <p class="sec-head__sub reveal" style="--d:160ms">Une question qui n'est pas ici&nbsp;? Écrivez-nous, on répond.</p>
-    </header>
-
-    <div class="faq__list reveal" style="--d:120ms">
-      <details class="qa" name="faq">
-        <summary><span>Faut-il une connexion internet&nbsp;?</span><i aria-hidden="true"></i></summary>
-        <div class="qa__body"><p>Oui. Yalla repose sur le temps réel&nbsp;: une rupture n'a de valeur que si elle atteint le fabricant et les livreurs immédiatement. Une connexion mobile standard suffit, l'application est conçue pour être économe en données.</p></div>
-      </details>
-
-      <details class="qa" name="faq">
-        <summary><span>Qui voit les ruptures que je signale&nbsp;?</span><i aria-hidden="true"></i></summary>
-        <div class="qa__body"><p>Uniquement le fabricant du produit concerné et ses livreurs affiliés. Un fabricant ne voit jamais les ruptures portant sur le catalogue d'un concurrent&nbsp;: le filtrage par catalogue est une règle du système, pas un réglage.</p></div>
-      </details>
-
-      <details class="qa" name="faq">
-        <summary><span>Comment se passe le paiement&nbsp;?</span><i aria-hidden="true"></i></summary>
-        <div class="qa__body"><p>Le paiement mobile est intégré à l'application&nbsp;: la livraison se règle sans espèces, et la vente entre directement en caisse. Chaque transaction est tracée et rattachée à sa livraison.</p></div>
-      </details>
-
-      <details class="qa" name="faq">
-        <summary><span>Sur quelles villes êtes-vous présents&nbsp;?</span><i aria-hidden="true"></i></summary>
-        <div class="qa__body"><p>Abidjan au lancement. La plateforme est conçue dès le départ pour un découpage par ville et par commune, de sorte que l'extension à d'autres villes de Côte d'Ivoire ne demande pas de refonte.</p></div>
-      </details>
-
-      <details class="qa" name="faq">
-        <summary><span>Faut-il un téléphone particulier&nbsp;?</span><i aria-hidden="true"></i></summary>
-        <div class="qa__body"><p>Non. Yalla est disponible sur iOS et Android, et pensée pour fonctionner sur du matériel d'entrée de gamme — c'est la réalité du parc de téléphones chez les commerçants de proximité.</p></div>
-      </details>
-
-      <details class="qa" name="faq">
-        <summary><span>Comment rejoindre le réseau&nbsp;?</span><i aria-hidden="true"></i></summary>
-        <div class="qa__body"><p>Les points de vente s'enregistrent depuis l'application ou via un agent recenseur qui passe en boutique. Fabricants et livreurs sont activés par l'administrateur du réseau après vérification. Le formulaire ci-dessous est le point de départ.</p></div>
-      </details>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════ CONTACT ══════════════════════════ -->
-<section class="lead" id="rejoindre">
-  <div class="wrap lead__inner">
-    <div class="lead__copy">
-      <p class="sec-head__eyebrow mono reveal" style="--d:0ms"><span></span>REJOINDRE LE RÉSEAU</p>
-      <h2 class="lead__title reveal" style="--d:80ms">Parlons de votre<br><em>activité.</em></h2>
-      <p class="lead__sub reveal" style="--d:160ms">Boutique, marque ou livreur&nbsp;: dites-nous qui vous êtes, on revient vers vous avec la marche à suivre.</p>
-
-      <ul class="lead__direct reveal" style="--d:240ms">
-        <li>
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a1.5 1.5 0 0 1-1.7 1.5C10.5 19.8 4.2 13.5 3.5 5.7A1.5 1.5 0 0 1 5 4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
-          <a href="tel:+2250700000000">+225 07 00 00 00 00</a>
-        </li>
-        <li>
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="m4 7.5 8 5.5 8-5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-          <a href="mailto:contact@yalla.ci">contact@yalla.ci</a>
-        </li>
-      </ul>
-    </div>
-
-    <form class="lead__form reveal" id="leadForm" style="--d:200ms" novalidate>
-      <div class="field">
-        <label for="f-nom">Nom et prénoms</label>
-        <input id="f-nom" name="nom" type="text" autocomplete="name" required placeholder="Awa Koné">
-        <span class="field__err" data-for="f-nom"></span>
-      </div>
-
-      <div class="field">
-        <label for="f-profil">Vous êtes</label>
-        <div class="select-wrap">
-          <select id="f-profil" name="profil" required>
-            <option value="">Choisissez…</option>
-            <option>Point de vente</option>
-            <option>Fabricant</option>
-            <option>Livreur</option>
-            <option>Autre</option>
-          </select>
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <article class="card chain__panel" data-panel="agent-recenseur">
+        <div class="card__top">
+          <div class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M16 29s9-7.4 9-14a9 9 0 1 0-18 0c0 6.6 9 14 9 14Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M12.5 15.2l2.6 2.6 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="card__index mono">LE RÉSEAU PHYSIQUE</span>
         </div>
-        <span class="field__err" data-for="f-profil"></span>
-      </div>
+        <h3 class="card__title">Agent recenseur</h3>
+        <p class="card__role">Celui qui construit le réseau, quartier par quartier</p>
+        <p class="card__desc">Une boutique repérée s'enregistre en deux minutes : responsable, activité, photo de la devanture et position GPS vérifiée.</p>
+        <div class="mini" aria-hidden="true">
+          <div class="mini__bar"><span class="mono">GPS CAPTÉ · PRÉCISION 4 M</span><span class="mini__live"></span></div>
+          <div class="mini__row"><span class="mini__thumb"></span><span class="mini__txt"><b>Kiosque Bonheur</b><i>Deux Plateaux · Kiosque</i></span><span class="mini__tag">À VÉRIFIER</span></div>
+          <div class="mini__cta">Enregistrer le point de vente</div>
+        </div>
+        <ul class="card__list">
+          <li>Enregistrement géolocalisé en deux minutes</li>
+          <li>Photo de devanture et type d'activité</li>
+          <li>Suivi de tournée par commune</li>
+          <li>Points à vérifier signalés automatiquement</li>
+        </ul>
+      </article>
 
-      <div class="field">
-        <label for="f-tel">Téléphone</label>
-        <input id="f-tel" name="telephone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="07 00 00 00 00">
-        <span class="field__err" data-for="f-tel"></span>
-      </div>
+      <article class="card chain__panel" data-panel="administrateur">
+        <div class="card__top">
+          <div class="card__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="2"/>
+              <path d="M16 5v22M5 16h22" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <span class="card__index mono">POSTE DE TRAVAIL</span>
+        </div>
+        <h3 class="card__title">Administrateur</h3>
+        <p class="card__role">Supervision de l'ensemble du réseau</p>
+        <p class="card__desc">Le seul écran pensé pour un grand écran : chiffre d'affaires du jour, ruptures non prises, livreurs en course, carte globale.</p>
+        <div class="mini" aria-hidden="true">
+          <div class="mini__bar"><span class="mono">RÉSEAU ABIDJAN · TEMPS RÉEL</span><span class="mono mini__kpi">+9%</span></div>
+          <div class="mini__chart">
+            <span style="--h:44%"></span><span style="--h:62%"></span><span style="--h:51%"></span>
+            <span style="--h:78%"></span><span style="--h:66%"></span><span style="--h:92%"></span><span style="--h:71%"></span>
+          </div>
+          <div class="mini__legend"><span><i class="dot dot--alert"></i>23 ruptures</span><span><i class="dot dot--ok"></i>412 points</span></div>
+        </div>
+        <ul class="card__list">
+          <li>Vue temps réel sur le réseau complet</li>
+          <li>Carte par ville et par commune</li>
+          <li>Gestion des acteurs et des affiliations</li>
+          <li>Diffusion de messages et statistiques</li>
+        </ul>
+      </article>
 
-      <div class="field">
-        <label for="f-msg">Votre message <span class="field__opt">(facultatif)</span></label>
-        <textarea id="f-msg" name="message" rows="3" placeholder="Votre commune, votre activité…"></textarea>
-      </div>
-
-      <button type="submit" class="btn btn--yellow btn--lg lead__submit">
-        <span>Envoyer ma demande</span>
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-
-      <p class="lead__note mono" id="leadNote">VOS COORDONNÉES NE SERVENT QU'À VOUS RECONTACTER</p>
-    </form>
+    </div>
   </div>
 </section>
 
@@ -646,6 +638,7 @@
           <span>Google Play</span>
         </a>
       </div>
+      <p class="cta__alt reveal" style="--d:280ms">Vous êtes fabricant ou distributeur&nbsp;? <a href="contact.html">Parlons de votre réseau</a>.</p>
     </div>
     <div class="cta__deco" aria-hidden="true">
       <div class="cta__ring"></div><div class="cta__ring"></div><div class="cta__ring"></div>
@@ -706,8 +699,8 @@
         <ul class="footer__links footer__links--plain">
           <li><a href="#fonctionnement">Comment ça marche</a></li>
           <li><a href="#profils">Point de vente</a></li>
-          <li><a href="#profils">Fabricant</a></li>
-          <li><a href="#profils">Livreur</a></li>
+          <li><a href="#profils">Distributeur</a></li>
+          <li><a href="#profils">Livreur et fabricant</a></li>
         </ul>
       </div>
 
