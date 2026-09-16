@@ -52,11 +52,18 @@ pas les autres, dans un état dont on ne sort pas proprement.
 **Étape à ne pas sauter.** Sans elle, l'application se connecte mais n'obtient
 ni rôle ni identifiant métier, et n'affiche donc aucune interface.
 
-Tableau de bord, Authentication, Hooks, `Customize Access Token (JWT) Claims` :
+Elle s'automatise, ce qui évite de l'oublier :
 
-- activer le hook
-- choisir **Postgres function**
-- sélectionner `public.custom_access_token_hook`
+```bash
+curl -X PATCH "https://api.supabase.com/v1/projects/<ref>/config/auth" \
+  -H "Authorization: Bearer <jeton de compte>" \
+  -H "Content-Type: application/json" \
+  -d '{"hook_custom_access_token_enabled": true,
+       "hook_custom_access_token_uri": "pg-functions://postgres/public/custom_access_token_hook"}'
+```
+
+Ou à la main : Authentication, Hooks, `Customize Access Token (JWT) Claims`,
+Postgres function, `public.custom_access_token_hook`.
 
 Ce hook lit la ligne `utilisateurs` correspondant au compte et injecte
 `user_role`, `id_metier`, `utilisateur_id` et `nom` dans le jeton. Les politiques
@@ -165,6 +172,46 @@ L'identité se lit dans le jeton, par `auth_id_metier()`, et nulle part ailleurs
 `rpc_actions_metier.sql` en sont toutes, par nécessité. Chacune vérifie donc le
 rôle et la propriété de la ressource dès sa première ligne. Si vous en ajoutez
 une, faites de même, sinon vous ouvrez une porte dérobée.
+
+---
+
+## Deux pièges rencontrés au premier déploiement
+
+Les deux ont le même symptôme, un échec net qui ne dit pas sa cause, et la même
+origine : **ce qui passe sous `psql` ne passe pas forcément sur Supabase**.
+
+### Une valeur d'énumération ne s'utilise pas dans la transaction qui l'ajoute
+
+`supabase db push` enveloppe chaque fichier dans une transaction unique, alors
+que `psql -f` valide instruction par instruction. Une migration qui ajoute une
+valeur d'énumération puis s'en sert passe donc en local et échoue en ligne
+(SQLSTATE 55P04), en laissant la base distante à mi-chemin.
+
+Toute nouvelle valeur d'énumération va dans son propre fichier. Le harnais local
+applique désormais chaque migration avec `--single-transaction`, ce qui
+reproduit le comportement de Supabase et attrape le problème avant le déploiement.
+
+### Le hook ne voit pas le schéma `public`
+
+Symptôme : toute connexion échoue en HTTP 500 avec « Error running hook URI ».
+La réponse de l'API ne dit rien de plus. Seuls les journaux d'authentification
+du projet donnent la cause :
+
+    ERROR: type "role_utilisateur" does not exist (SQLSTATE 42704)
+
+Le hook n'est pas exécuté par `postgres` mais par `supabase_auth_admin`, dont
+le `search_path` ne contient pas `public`. La fonction marche parfaitement
+appelée à la main, et échoue en production.
+
+Toute fonction appelée par un service Supabase porte donc `SET search_path =
+public` **et** qualifie ses objets. Il lui faut aussi une politique RLS dédiée
+si elle lit une table protégée : le GRANT seul ne suffit pas, RLS filtre ensuite.
+
+En cas de doute, les journaux se lisent ainsi :
+
+```bash
+curl -H "Authorization: Bearer <jeton>"   "https://api.supabase.com/v1/projects/<ref>/analytics/endpoints/logs.all?sql=<requête encodée>"
+```
 
 ---
 

@@ -26,6 +26,19 @@ cd "$ROOT"
 
 DB="${PGDATABASE_TEST:-yalla_sb}"
 PSQL="psql -v ON_ERROR_STOP=1 -q"
+
+# Les migrations, elles, sont appliquées avec --single-transaction.
+#
+# C'est volontaire et c'est le point le plus important de ce harnais : `supabase
+# db push` enveloppe CHAQUE fichier de migration dans une transaction unique,
+# alors que `psql -f` valide instruction par instruction. La différence n'est pas
+# théorique. Une migration qui ajoute une valeur d'énumération puis s'en sert
+# passe sous psql et échoue sur Supabase, parce que PostgreSQL interdit d'utiliser
+# une valeur dans la transaction qui l'ajoute.
+#
+# Sans cette option, le harnais donnait un faux vert et le problème n'apparaissait
+# qu'au déploiement, après avoir laissé la base distante à mi-chemin.
+PSQL_MIGRATION="psql -v ON_ERROR_STOP=1 -q --single-transaction"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
@@ -67,7 +80,7 @@ for f in supabase/migrations/*.sql; do
   fi
 
   printf '  %-56s' "${nom:15}"
-  if $PSQL -d "$DB" -f "$cible" >"$TMP/sortie" 2>&1; then
+  if $PSQL_MIGRATION -d "$DB" -f "$cible" >"$TMP/sortie" 2>&1; then
     printf '\033[32mOK\033[0m\n'
   else
     printf '\033[31mECHEC\033[0m\n'

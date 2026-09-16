@@ -23,18 +23,17 @@
 -- créée par le trigger de 006 et ne passe jamais par NestJS. Router côté
 -- TypeScript aurait laissé ces ruptures sans destinataire.
 
--- ── 1. Nouvelles valeurs d'énumération ──────────────────────────────────────
--- `db:provision` et `db:migrate` appellent psql sans -1 : chaque instruction est
--- validée séparément, une valeur ajoutée ici est donc utilisable plus bas.
-
-ALTER TYPE role_utilisateur ADD VALUE IF NOT EXISTS 'distributeur';
-
--- Statut terminal qui manquait. Sans lui, une rupture que personne ne prend
--- reste « ouverte » indéfiniment et le taux de service ne se mesure pas. Or
--- c'est l'indicateur que Yalla vend au fabricant.
-ALTER TYPE statut_rupture ADD VALUE IF NOT EXISTS 'non_servie';
-
-ALTER TYPE cible_notification ADD VALUE IF NOT EXISTS 'distributeurs';
+-- ── 1. Nouvelles valeurs d'énumération ────────────────────────────
+--
+-- Elles sont ajoutées par la migration précédente, dans un fichier séparé.
+--
+-- PostgreSQL interdit d'utiliser une valeur d'énumération dans la transaction
+-- qui l'ajoute, et `supabase db push` enveloppe chaque fichier dans une
+-- transaction unique. Les remettre ici ferait échouer le déploiement, alors
+-- même que le fichier passerait en local sous psql, qui valide instruction par
+-- instruction. C'est exactement ce qui s'est produit au premier déploiement.
+--
+-- Voir 20260916001050_valeurs_enum_distributeur.sql.
 
 -- ── 2. Le distributeur ──────────────────────────────────────────────────────
 
