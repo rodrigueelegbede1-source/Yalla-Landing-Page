@@ -1,76 +1,121 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../api/api_client.dart';
-import '../storage/token_storage.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-final tokenStorageProvider = Provider<TokenStorage>((ref) => TokenStorage());
+import '../supabase.dart';
+import '../telephone.dart';
 
-final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient(ref.watch(tokenStorageProvider));
-});
-
+/// Identité de l'utilisateur connecté, telle que la porte le jeton.
+///
+/// `role` et `idMetier` ne viennent pas d'un appel réseau mais des claims
+/// injectés dans le jeton par le hook `custom_access_token_hook` (voir
+/// `supabase/migrations/*_auth_supabase.sql`). Ils sont donc disponibles
+/// immédiatement, sans requête, et ils sont signés : l'application ne peut pas
+/// se mentir à elle-même sur son propre rôle.
 class SessionYalla {
-  const SessionYalla({this.role, this.nom, this.idMetier, required this.enCoursDeChargement});
+  const SessionYalla({
+    this.role,
+    this.nom,
+    this.idMetier,
+    this.utilisateurId,
+    this.enCoursDeChargement = false,
+  });
+
+  const SessionYalla.chargement() : this(enCoursDeChargement: true);
+  const SessionYalla.deconnecte() : this();
 
   final String? role;
   final String? nom;
+
+  /// Identifiant dans la table du rôle : `points_de_vente.id`,
+  /// `distributeurs.id` ou `livreurs.id`. Nul pour un administrateur.
   final String? idMetier;
+
+  final String? utilisateurId;
   final bool enCoursDeChargement;
 
   bool get estConnecte => role != null;
 
-  SessionYalla copyWith({String? role, String? nom, String? idMetier, bool? enCoursDeChargement}) => SessionYalla(
-        role: role ?? this.role,
-        nom: nom ?? this.nom,
-        idMetier: idMetier ?? this.idMetier,
-        enCoursDeChargement: enCoursDeChargement ?? this.enCoursDeChargement,
-      );
+  /// Un compte authentifié mais sans ligne de rôle rattachée. Cela arrive quand
+  /// un compte Supabase a été créé sans passer par `rattacher_compte_auth()`.
+  /// L'application ne peut rien afficher d'utile dans cet état, et doit le dire
+  /// plutôt que de montrer un écran vide.
+  bool get rattachementIncomplet => estConnecte && idMetier == null && role != 'administrateur';
 }
 
-class SessionNotifier extends StateNotifier<SessionYalla> {
-  SessionNotifier(this._api, this._storage) : super(const SessionYalla(enCoursDeChargement: true)) {
-    _restaurerSession();
-  }
-
-  final ApiClient _api;
-  final TokenStorage _storage;
-
-  Future<void> _restaurerSession() async {
-    final role = await _storage.lireRole();
-    final nom = await _storage.lireNom();
-    final idMetier = await _storage.lireIdMetier();
-    state = SessionYalla(role: role, nom: nom, idMetier: idMetier, enCoursDeChargement: false);
-  }
-
-  /// Les 6 rôles (`administrateur`, `fabricant`, `distributeur`, `livreur`, `point_de_vente`,
-  /// `agent_recenseur`) partagent le même endpoint de connexion — l'API renvoie
-  /// le rôle et l'ID métier (fabricantId/livreurId/pointDeVenteId/agentRecenseurId)
-  /// dans la même réponse, ce qui pilote à la fois le routage et les appels API
-  /// suivants sans requête supplémentaire.
-  Future<void> connecter(String telephone, String motDePasse) async {
-    final reponse = await _api.dio.post('/auth/login', data: {
-      'telephone': telephone,
-      'motDePasse': motDePasse,
-    });
-
-    final token = reponse.data['access_token'] as String;
-    final utilisateur = reponse.data['utilisateur'] as Map<String, dynamic>;
-    final idMetier = utilisateur['idMetier'] as String?;
-
-    await _storage.enregistrer(
-      token: token,
-      role: utilisateur['role'],
-      nom: utilisateur['nom'],
-      idMetier: idMetier,
-    );
-    state = SessionYalla(role: utilisateur['role'], nom: utilisateur['nom'], idMetier: idMetier, enCoursDeChargement: false);
-  }
-
-  Future<void> deconnecter() async {
-    await _storage.effacer();
-    state = const SessionYalla(enCoursDeChargement: false);
+/// Lit les claims d'un jeton JWT sans vérifier sa signature.
+///
+/// L'absence de vérification est volontaire et sans risque ici : le jeton vient
+/// du client Supabase, qui l'a obtenu du serveur, et il n'est utilisé que pour
+/// afficher la bonne interface. Les décisions qui comptent sont prises côté
+/// base, par les politiques RLS, qui vérifient la signature elles-mêmes.
+Map<String, dynamic> _claimsDuJeton(String jeton) {
+  final parties = jeton.split('.');
+  if (parties.length != 3) return const {};
+  try {
+    final charge = parties[1];
+    final normalise = base64Url.normalize(charge);
+    return jsonDecode(utf8.decode(base64Url.decode(normalise))) as Map<String, dynamic>;
+  } catch (_) {
+    // Un jeton illisible équivaut à pas de session : on ne devine pas.
+    return const {};
   }
 }
 
-final sessionProvider = StateNotifierProvider<SessionNotifier, SessionYalla>((ref) {
-  return SessionNotifier(ref.watch(apiClientProvider), ref.watch(tokenStorageProvider));
+SessionYalla _sessionDepuis(Session? session) {
+  if (session == null) return const SessionYalla.deconnecte();
+
+  final claims = _claimsDuJeton(session.accessToken);
+  final role = claims['user_role'] as String?;
+  if (role == null) {
+    // Authentifié côté Supabase, mais le hook n'a rien trouvé dans
+    // `utilisateurs`. Le compte existe sans profil métier.
+    return const SessionYalla(role: null);
+  }
+
+  return SessionYalla(
+    role: role,
+    nom: claims['nom'] as String?,
+    idMetier: claims['id_metier'] as String?,
+    utilisateurId: claims['utilisateur_id'] as String?,
+  );
+}
+
+/// La session, tenue à jour en continu.
+///
+/// On s'abonne au flux d'état de Supabase plutôt que de lire la session une
+/// fois au démarrage : un rafraîchissement de jeton, une déconnexion depuis un
+/// autre appareil ou une expiration se répercutent alors tout seuls sur
+/// l'interface. L'ancienne version lisait le rôle une fois sur le disque et
+/// considérait l'utilisateur connecté même avec un jeton expiré.
+final sessionProvider = StreamProvider<SessionYalla>((ref) async* {
+  yield _sessionDepuis(supabase.auth.currentSession);
+
+  await for (final etat in supabase.auth.onAuthStateChange) {
+    yield _sessionDepuis(etat.session);
+  }
 });
+
+/// Actions d'authentification.
+final authProvider = Provider((ref) => const ServiceAuth());
+
+class ServiceAuth {
+  const ServiceAuth();
+
+  /// Connexion par numéro de téléphone.
+  ///
+  /// Le numéro est converti en adresse technique, exactement comme le fait la
+  /// base. Voir `lib/core/telephone.dart` pour le pourquoi.
+  Future<void> connecter({required String telephone, required String motDePasse}) async {
+    if (!telephoneValide(telephone)) {
+      throw const FormatException('Numéro incomplet. Exemple : 07 06 30 30 30');
+    }
+    await supabase.auth.signInWithPassword(
+      email: emailTechnique(telephone),
+      password: motDePasse,
+    );
+  }
+
+  Future<void> deconnecter() => supabase.auth.signOut();
+}

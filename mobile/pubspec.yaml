@@ -1,42 +1,35 @@
 name: yalla_mobile
-description: Application mobile Yalla — géolocalisation, ruptures de stock, caisse enregistreuse.
+description: Application mobile Yalla — caisse, signalement de ruptures et livraison pour la distribution de proximité en Côte d'Ivoire.
 publish_to: 'none'
 version: 0.1.0
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
 
+# Périmètre du MVP : trois rôles seulement, Point de vente, Distributeur et
+# Livreur. Les dépendances des rôles hors périmètre ont été retirées, ainsi que
+# celles qui étaient déclarées « en prévision » et n'ont jamais servi.
 dependencies:
   flutter:
     sdk: flutter
 
-  # Navigation par rôle (5 interfaces)
-  go_router: ^14.2.0
+  # Base, authentification et temps réel. Remplace à lui seul dio,
+  # socket_io_client et flutter_secure_storage : le client Supabase porte la
+  # session, la rafraîchit et gère la persistance sécurisée du jeton.
+  supabase_flutter: ^2.5.6
 
   # Gestion d'état
   flutter_riverpod: ^2.5.1
 
-  # Réseau
-  dio: ^5.4.3
-  socket_io_client: ^2.0.3+1
-
-  # Cartographie et géolocalisation
-  google_maps_flutter: ^2.7.0
+  # Position du livreur. Seul besoin natif du MVP.
   geolocator: ^13.0.1
 
-  # Stockage sécurisé du token JWT
-  flutter_secure_storage: ^9.2.2
-
-  # Notifications push
-  firebase_core: ^3.1.0
-  firebase_messaging: ^15.0.1
-
+  # Formatage des montants en francs CFA et des dates en français.
   intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^2.4.11
   flutter_lints: ^4.0.0
 
 flutter:
