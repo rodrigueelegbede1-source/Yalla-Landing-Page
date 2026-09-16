@@ -24,6 +24,9 @@ dependencies:
   # Position du livreur. Seul besoin natif du MVP.
   geolocator: ^13.0.1
 
+  # Appel téléphonique de la boutique et ouverture de l itinéraire.
+  url_launcher: ^6.3.0
+
   # Formatage des montants en francs CFA et des dates en français.
   intl: ^0.19.0
 

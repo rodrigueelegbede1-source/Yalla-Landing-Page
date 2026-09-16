@@ -135,13 +135,17 @@ else
   die "le seed échoue"
 fi
 
-say "Suite d'escalade"
-if $PSQL -d "$DB" -f supabase/tests/test_escalade.sql >"$TMP/esc" 2>&1; then
-  grep -c "ok " "$TMP/esc" | xargs printf '  %s cas passés\n'
-  ok "règle d'escalade validée"
-else
-  sed 's/^/    /' "$TMP/esc" | grep -E "ERROR|ok |NOTICE" | head -14
-  die "la suite d'escalade échoue"
-fi
+say "Suites de tests"
+for suite in supabase/tests/test_*.sql; do
+  nom="$(basename "$suite" .sql)"
+  if $PSQL -d "$DB" -f "$suite" >"$TMP/suite" 2>&1; then
+    n=$(grep -c "ok " "$TMP/suite")
+    ok "$nom : $n cas passés"
+  else
+    printf '  \033[31m✗ %s\033[0m\n' "$nom"
+    grep -E "ERROR|ERREUR|assertion|ok " "$TMP/suite" | head -14 | sed 's/^/      /'
+    die "suite en échec"
+  fi
+done
 
 printf '\n\033[32mMigrations Supabase validées.\033[0m\n\n'
