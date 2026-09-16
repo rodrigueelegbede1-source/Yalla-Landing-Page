@@ -31,8 +31,7 @@ Le cahier des charges fait foi : `docs/01_cahier_des_charges/`.
 
 | Dossier | Contenu | Techno |
 |---|---|---|
-| `backend/` | API REST + WebSocket, 9 modules | NestJS 10, TypeScript |
-| `database/` | Migrations SQL numérotées + seed de dev | PostgreSQL 15 + PostGIS |
+| `supabase/` | Migrations, seed, politiques RLS, fonctions métier | Supabase (PostgreSQL + PostGIS) |
 | `mobile/` | Squelette app (auth + 1 écran par rôle) | Flutter / Dart |
 | `landing/` | Site vitrine public | HTML/CSS/JS sans framework |
 | `maquettes/` | 6 prototypes HTML cliquables, un par rôle | HTML statique |
@@ -46,14 +45,13 @@ toute décision d'architecture, pour ne pas revenir sur un arbitrage déjà tran
 ## 3. Commandes
 
 ```bash
-npm run setup          # installe les dépendances de tous les sous-projets
-npm run dev:backend    # API sur http://localhost:3000
+npm run setup          # vérifie l'outillage et résout les dépendances Flutter
+npm run lint           # analyse Dart, cohérence des migrations, syntaxe de la landing
+npm run db:verifier    # applique les migrations sur un PostgreSQL local et les teste
+npm run db:push        # applique les migrations sur le projet Supabase distant
+npm run db:reset       # remet la base locale à zéro et rejoue le seed
 npm run dev:landing    # landing page sur http://localhost:4180
-npm run build:backend  # compile le backend
-npm run lint           # vérifications disponibles
 npm test               # tests — suite SQL d'escalade, plus l'inventaire backend/mobile (§7)
-npm run audit:schema   # vérifie l'alignement entités TypeORM / migrations SQL
-npm run db:provision   # crée la base, applique migrations + seed (psql requis)
 ```
 
 Les scripts sous `scripts/` sont conçus pour ne jamais échouer sur un outil absent
@@ -64,28 +62,32 @@ environnement partiellement provisionné reste utilisable.
 
 ## 4. Base de données — règle non négociable
 
-**Les migrations SQL sont la source de vérité du schéma, pas TypeORM.**
+**Les migrations SQL sont la source de vérité, et la base porte la logique métier.**
 
-`backend/src/config/database.config.ts` force `synchronize: false`. Ne le passe
-jamais à `true` : le schéma contient des éléments que TypeORM ne sait pas
-reproduire et écraserait silencieusement —
+Ce n'est pas un choix d'organisation, c'est une contrainte du produit. La rupture
+la plus importante, celle que la caisse déclenche quand une vente vide un stock,
+est créée par un **trigger**. Aucun client ne la voit passer. Toute règle qui doit
+s'appliquer à *toutes* les ruptures va donc en SQL, jamais dans l'application.
 
-- colonnes `geography` (PostGIS) et leurs index spatiaux ;
-- un **trigger qui crée automatiquement une rupture** quand une vente vide un stock ;
-- des vues de tableaux de bord (`008_vues_tableaux_de_bord.sql`).
+Vivent en base, et doivent y rester :
 
-Toute évolution de schéma = un nouveau fichier numéroté dans
-`database/migrations/`, jamais une modification d'un fichier déjà appliqué,
-puis mise à jour de l'entité TypeORM correspondante pour rester aligné.
+- le trigger qui crée une rupture quand un stock tombe à zéro ;
+- le trigger qui résout le destinataire d'une rupture à l'insertion ;
+- la règle des deux cercles et l'escalade (`escalader_ruptures_en_attente()`) ;
+- les périmètres par rôle, sous forme de politiques RLS ;
+- les actions qui écrivent, sous forme de fonctions RPC.
 
-Application dans l'ordre :
+Toute évolution de schéma = un **nouveau** fichier horodaté dans
+`supabase/migrations/`, jamais la modification d'un fichier déjà appliqué.
 
 ```bash
-npm run db:provision     # base + PostGIS + migrations + seed, d'un coup
-# ou, sur une base déjà créée :
-npm run db:migrate
-npm run db:seed
+npm run db:verifier      # valide tout sur un PostgreSQL local, sans Supabase ni Docker
+npm run db:push          # applique sur le projet Supabase distant
+npm run db:reset         # base locale à zéro + seed
 ```
+
+`npm run db:verifier` est à lancer **avant** tout `db:push` : une migration qui
+échoue à mi-parcours laisse la base distante dans un état intermédiaire.
 
 ---
 
@@ -130,7 +132,7 @@ consulte aussi l'UPDATE conditionnel de prise en charge.
 
 ## 7. État réel du projet — à lire avant de promettre quoi que ce soit
 
-Ce qui a été **vérifié par exécution** (2026-08-16, complété le 2026-09-15) :
+Ce qui a été **vérifié par exécution** (2026-08-16, complété les 2026-09-15 et 16) :
 
 | Vérification | Résultat |
 |---|---|
@@ -144,6 +146,9 @@ Ce qui a été **vérifié par exécution** (2026-08-16, complété le 2026-09-1
 | API connectée à la base | **démarre et sert** — « Nest application successfully started », toutes les routes montées |
 | Endpoints HTTP | **répondent** — login, carnet distributeur, passe d'escalade, prise en charge (200 puis 409) |
 | Suite SQL d'escalade | **10 cas verts** (`npm test`) |
+| Migrations Supabase | **les 16 passent** sur PostgreSQL local, via les simulacres de `supabase/tests/` |
+| Périmètres RLS | **34 politiques**, 19 tables sous RLS, aucune vue qui contourne les politiques |
+| Analyse Dart | **propre** (`flutter analyze`) — une première, deux erreurs de compilation bloquaient jusqu'ici |
 | Alignement entités ↔ migrations SQL | **19 tables, 133 colonnes, 0 désalignement** (`npm run audit:schema`, revérifié le 2026-09-15 après `011`) |
 | Landing servie sur `:4180` | 200 sur HTML/CSS/JS, MIME corrects, 404 géré |
 | Tests automatisés | **suite SQL uniquement** — `database/tests/test_escalade.sql`, 10 cas. Toujours 0 `.spec.ts`, 0 `_test.dart` |
@@ -208,6 +213,24 @@ NindoHost.** `.gitignore` couvre les cas courants, vérifie avant de committer.
 ---
 
 ## 9. Pièges connus
+
+- **Une vue PostgreSQL contourne RLS par défaut.** Elle s'exécute avec les droits
+  de son propriétaire, donc une requête sur `v_ruptures_ouvertes` rendrait le
+  réseau entier, politiques ou pas. Toute vue doit être en
+  `security_invoker = on`. `npm run db:verifier` refuse de passer si une vue y
+  échappe, ne désactive pas ce contrôle.
+- **Une fonction SECURITY DEFINER ne passe pas par RLS.** Les fonctions de
+  `supabase/migrations/*rpc_actions_metier.sql` en sont toutes, par nécessité :
+  elles doivent lire des tables que l'appelant ne peut pas voir. Chacune vérifie
+  donc le rôle et la propriété de la ressource **en première ligne de son corps**.
+  Si tu en ajoutes une, fais pareil, sinon tu ouvres une porte dérobée.
+- **Ne lis jamais un identifiant métier depuis le client.** L'ancienne API prenait
+  le point de vente ou le fabricant dans l'URL ou le corps de la requête, ce qui
+  ouvrait sept fuites réelles. L'identité se lit dans le jeton, via
+  `auth_id_metier()`, et nulle part ailleurs.
+- **Ajouter une table sans politique la rend inaccessible, pas ouverte.** C'est
+  voulu : RLS activé sans politique refuse tout. `npm run db:verifier` échoue si
+  une table du schéma public n'est pas sous RLS.
 
 - **La landing est publiée deux fois, et `landing/` reste la source unique.**
   Le site en ligne est servi par GitHub Pages depuis le dépôt public

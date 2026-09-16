@@ -10,15 +10,12 @@
     "setup": "bash scripts/setup.sh",
     "lint": "bash scripts/lint.sh",
     "test": "bash scripts/test.sh",
-    "dev:backend": "npm run start:dev --prefix backend",
+    "db:verifier": "bash supabase/tests/verifier-migrations.sh",
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset",
     "dev:landing": "node landing/server.js",
-    "publish:landing": "bash scripts/publish-landing.sh",
-    "build:backend": "npm run build --prefix backend",
-    "db:migrate": "bash -c 'for f in database/migrations/*.sql; do echo \"-> $f\"; psql -v ON_ERROR_STOP=1 -d \"${PGDATABASE:-yalla}\" -f \"$f\" || exit 1; done'",
-    "db:seed": "psql -v ON_ERROR_STOP=1 -d \"${PGDATABASE:-yalla}\" -f database/seed/seed_dev.sql",
-    "audit:schema": "node scripts/audit-schema.js",
-    "db:provision": "bash scripts/db-provision.sh",
-    "dev:maquettes": "node landing/server.js maquettes 4181"
+    "dev:maquettes": "node landing/server.js maquettes 4181",
+    "publish:landing": "bash scripts/publish-landing.sh"
   },
   "workspaces": [],
   "license": "UNLICENSED"

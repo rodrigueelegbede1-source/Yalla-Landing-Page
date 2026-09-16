@@ -2,25 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/auth/auth_providers.dart';
 
-/// Reprend le bouton central de la maquette Point de vente : "Signaler une
-/// rupture". Le catalogue complet par catégorie (écran de sélection du
-/// produit) reste à construire sur le même modèle que FabricantHomeScreen —
-/// GET /produits/catalogue-global est déjà prêt côté API.
+/// Écran d'attente du rôle Point de vente.
+///
+/// Il ne fait rien d'utile, et il l'annonce. C'est délibéré : la méthode
+/// `_signaler()` qui vivait ici appelait l'API NestJS, retirée au profit de
+/// Supabase, et son bouton n'était relié à rien. Un bouton actif qui ne
+/// déclenche aucune action est pire qu'un bouton désactivé : le boutiquier
+/// croit avoir signalé sa rupture.
+///
+/// Cet écran sera remplacé par les quatre vues de la maquette Point de vente :
+/// caisse, stock, signalement et historique. Le signalement passera alors par
+/// la fonction `enregistrer_vente()` ou par une insertion directe dans
+/// `ruptures`, les deux étant protégées par les politiques RLS qui vérifient
+/// que le point de vente signale bien pour lui-même.
 class PointDeVenteHomeScreen extends ConsumerWidget {
   const PointDeVenteHomeScreen({super.key, required this.pointDeVenteId});
 
   final String pointDeVenteId;
-
-  Future<void> _signaler(BuildContext context, WidgetRef ref, String produitId) async {
-    await ref.read(apiClientProvider).dio.post('/ruptures/point-de-vente/$pointDeVenteId', data: {
-      'produitId': produitId,
-    });
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Rupture signalée au fabricant')),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,19 +38,29 @@ class PointDeVenteHomeScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Icon(Icons.storefront_outlined, size: 64),
+            const SizedBox(height: 24),
             const Text(
-              'Un produit manque en rayon ?',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              'Votre caisse arrive',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            const Text(
+              'Encaissez vos ventes, suivez votre stock, et laissez Yalla '
+              'prévenir votre distributeur quand un produit tombe à zéro.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, height: 1.5),
+            ),
+            const SizedBox(height: 24),
+            // Volontairement désactivé tant que l'écran de sélection du produit
+            // n'existe pas. Voir le commentaire de classe.
             FilledButton.icon(
               icon: const Icon(Icons.warning_amber),
               label: const Text('Signaler une rupture'),
-              onPressed: () {
-                // TODO : ouvrir l'écran de sélection du produit dans le catalogue
-                // global (GET /produits/catalogue-global) avant d'appeler _signaler().
-              },
+              onPressed: null,
             ),
           ],
         ),

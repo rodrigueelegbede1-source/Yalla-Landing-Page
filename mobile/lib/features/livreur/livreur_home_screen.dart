@@ -48,8 +48,11 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
     super.dispose();
   }
 
+  // Sur un ConsumerState, 'ref' est deja un membre de la classe. L'ajouter en
+  // parametre casse la signature heritee de State.build() et le fichier ne
+  // compile pas.
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final api = ref.watch(apiClientProvider);
     final session = ref.watch(sessionProvider);
 
