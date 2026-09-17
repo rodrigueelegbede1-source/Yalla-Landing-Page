@@ -1,8 +1,31 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// La clé de signature, lue dans `android/key.properties`, lui-même ignoré par
+// Git et généré depuis le `.env` par `scripts/preparer-signature.sh`.
+//
+// POURQUOI ÇA COMPTE PLUS QU'IL N'Y PARAÎT. Android identifie une application
+// par son couple (identifiant, signature). Deux APK du même identifiant signés
+// par des clés différentes sont deux applications étrangères l'une à l'autre :
+// la mise à jour échoue, et il faut désinstaller, ce qui efface les données du
+// téléphone. Tant que l'APK était signé par la clé de débogage, générée
+// localement et différente sur chaque machine, chaque reconstruction depuis un
+// autre poste aurait obligé chaque boutiquier à désinstaller. Pendant un pilote
+// qui dure des semaines et se met à jour souvent, c'est rédhibitoire.
+//
+// Le fichier .jks vit hors du dépôt. Le perdre interdit définitivement toute
+// mise à jour des installations existantes : à sauvegarder comme un acte
+// notarié, pas comme un fichier de build.
+val proprietesSignature = Properties().apply {
+    val fichier = rootProject.file("key.properties")
+    if (fichier.exists()) fichier.inputStream().use { load(it) }
+}
+val signatureDisponible = proprietesSignature.getProperty("storeFile") != null
 
 android {
     namespace = "ci.yalla.yalla_mobile"
@@ -15,8 +38,12 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "ci.yalla.yalla_mobile"
+        // `ci.yalla.app` et non le `ci.yalla.yalla_mobile` généré par défaut :
+        // c'est l'identité de l'application sur le téléphone, et elle ne se
+        // change plus une fois distribuée sans imposer une désinstallation à
+        // chaque boutiquier. Rien n'étant encore installé nulle part, c'est le
+        // seul moment où le corriger est gratuit.
+        applicationId = "ci.yalla.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -29,11 +56,34 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (signatureDisponible) {
+            create("production") {
+                storeFile = file(proprietesSignature.getProperty("storeFile"))
+                storePassword = proprietesSignature.getProperty("storePassword")
+                keyAlias = proprietesSignature.getProperty("keyAlias")
+                keyPassword = proprietesSignature.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Sans `key.properties`, on retombe sur la clé de débogage plutôt que
+            // d'échouer : un développeur qui clone le dépôt doit pouvoir compiler
+            // sans détenir la clé de production. L'APK produit est alors utilisable
+            // pour essayer, jamais pour distribuer, et la ligne affichée à la
+            // compilation le dit.
+            signingConfig = if (signatureDisponible) {
+                signingConfigs.getByName("production")
+            } else {
+                logger.warn(
+                    "\n  ATTENTION : key.properties absent, APK signé avec la clé de " +
+                    "débogage.\n  Ne pas distribuer : la mise à jour échouerait chez " +
+                    "l'utilisateur.\n  Pour signer correctement : bash scripts/preparer-signature.sh\n"
+                )
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

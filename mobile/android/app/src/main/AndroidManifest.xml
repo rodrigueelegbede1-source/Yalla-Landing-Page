@@ -37,8 +37,10 @@
          hors ligne pour le dire, plutôt que d'attendre un délai d'expiration. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
+    <!-- « Yalla », pas « yalla_mobile » : c'est ce que le boutiquier lit sous
+         l'icône, sur son écran d'accueil, à côté de WhatsApp et d'Orange Money. -->
     <application
-        android:label="yalla_mobile"
+        android:label="Yalla"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

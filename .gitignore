@@ -39,3 +39,8 @@ desktop.ini
 # ── Logs ──────────────────────────────────────────────────────────────────
 *.log
 npm-debug.log*
+
+# Clé de signature de l APK : secret, jamais dans le dépôt
+mobile/android/key.properties
+*.jks
+*.keystore
