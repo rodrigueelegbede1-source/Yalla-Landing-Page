@@ -140,6 +140,36 @@ if [ -n "$VUES_FUITE" ]; then
 fi
 ok "toutes les vues respectent RLS"
 
+# Une politique qui interroge la table qu'elle protège boucle à l'infini.
+#
+# POURQUOI CE CONTRÔLE EXISTE. Une politique sur `points_de_vente` dont la
+# condition faisait un SELECT sur `points_de_vente` a été déployée en
+# production. Symptôme : `infinite recursion detected in policy for relation
+# "points_de_vente"` (42P17), et PLUS AUCUNE lecture de la table ne passait,
+# pour aucun rôle : les politiques PERMISSIVE sont combinées par OU, donc une
+# seule qui boucle fait tomber toute la table.
+#
+# Le harnais ne pouvait pas le voir : il vérifiait que les politiques EXISTENT,
+# jamais qu'elles s'exécutent, faute d'identité. La faute n'est apparue qu'en
+# lançant l'application sur un appareil.
+#
+# La parade est structurelle et sans faux négatif utile : la sous-requête doit
+# passer par une fonction SECURITY DEFINER, qui s'exécute hors RLS et rompt la
+# boucle. C'est déjà ce que font `distributeur_voit_rupture` et ses voisines.
+POLITIQUES_RECURSIVES=$($PSQL -tA -d "$DB" -c "
+  SELECT string_agg(format('%s sur %s', policyname, tablename), ', ')
+    FROM pg_policies p
+   WHERE p.schemaname = 'public'
+     AND (
+       COALESCE(p.qual, '')       ~ ('(FROM|JOIN)[[:space:]]+(public\.)?' || p.tablename || '\M')
+       OR COALESCE(p.with_check, '') ~ ('(FROM|JOIN)[[:space:]]+(public\.)?' || p.tablename || '\M')
+     )")
+if [ -n "$POLITIQUES_RECURSIVES" ]; then
+  printf '  \033[31m✗ politiques qui lisent leur propre table : %s\033[0m\n' "$POLITIQUES_RECURSIVES"
+  die "une politique ne doit jamais interroger la table qu'elle protège : passez par une fonction SECURITY DEFINER"
+fi
+ok "aucune politique ne lit la table qu'elle protège"
+
 say "Données de départ"
 if $PSQL -d "$DB" -f supabase/seed.sql >"$TMP/seed" 2>&1; then
   ok "seed appliqué"

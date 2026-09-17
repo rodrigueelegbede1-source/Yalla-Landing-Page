@@ -1,22 +1,25 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 
 import '../../core/auth/auth_providers.dart';
+import '../../core/format.dart';
 import '../../core/supabase.dart';
+import '../../core/temps_reel.dart';
 import 'courses_tab.dart';
 import 'livraison_tab.dart';
+import 'suivi_position.dart';
 
 /// Interface du livreur : les courses disponibles, et celles qu'il a prises.
 ///
-/// La position est remontée toutes les dix secondes tant que l'application est
-/// ouverte. Le suivi en arrière-plan, qui exige un service de premier plan
-/// Android et la gestion des restrictions de batterie, reste à faire : c'est le
-/// point dur identifié au plan, volontairement laissé de côté pour l'instant.
-/// En attendant, un livreur qui met son téléphone en poche cesse d'être suivi,
-/// et il faut le savoir avant de promettre un suivi type Uber à un fabricant.
+/// Deux choses ont changé ici, et ce sont les deux qui séparaient une maquette
+/// d'un outil de terrain :
+///
+///   * la position est portée par [SuiviPosition], qui tient un service de
+///     premier plan. Le livreur peut ranger son téléphone, le distributeur
+///     continue de le voir avancer ;
+///   * les listes se réveillent seules. Une course affectée par le
+///     distributeur apparaît sans que le livreur touche à rien, ce qui est le
+///     seul comportement acceptable pour quelqu'un qui conduit.
 class LivreurHomeScreen extends ConsumerStatefulWidget {
   const LivreurHomeScreen({super.key, required this.livreurId});
 
@@ -27,9 +30,10 @@ class LivreurHomeScreen extends ConsumerStatefulWidget {
 }
 
 class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
-  Timer? _timerPosition;
+  late final SuiviPosition _suivi = SuiviPosition(livreurId: widget.livreurId);
+
   int _onglet = 0;
-  bool _positionAutorisee = true;
+  bool _enLigne = false;
 
   /// Incrémentées pour forcer le rechargement croisé des deux onglets : une
   /// course prise disparaît de la première liste et apparaît dans la seconde,
@@ -37,78 +41,121 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
   int _cleCourses = 0;
   int _cleLivraisons = 0;
 
+  /// La dernière révision temps réel déjà répercutée, pour ne pas recharger
+  /// deux fois le même évènement.
+  int _revisionVue = 0;
+
   @override
   void initState() {
     super.initState();
-    _demarrerSuiviPosition();
+    _suivi.addListener(_surSuivi);
+    _lireEtatEnLigne();
   }
 
   @override
   void dispose() {
-    _timerPosition?.cancel();
+    _suivi.removeListener(_surSuivi);
+    _suivi.dispose();
     super.dispose();
   }
 
-  Future<void> _demarrerSuiviPosition() async {
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    final autorisee = permission == LocationPermission.always ||
-        permission == LocationPermission.whileInUse;
-
-    if (mounted) setState(() => _positionAutorisee = autorisee);
-    if (!autorisee) return;
-
-    await _envoyerPosition();
-    _timerPosition = Timer.periodic(const Duration(seconds: 10), (_) => _envoyerPosition());
+  void _surSuivi() {
+    if (mounted) setState(() {});
   }
 
-  Future<void> _envoyerPosition() async {
+  Future<void> _lireEtatEnLigne() async {
     try {
-      final p = await Geolocator.getCurrentPosition();
-      // La position courante de `livreurs` est dénormalisée par un trigger :
-      // on écrit uniquement l'historique, la base synchronise le reste.
-      await supabase.from('positions_livreurs').insert({
-        'livreur_id': widget.livreurId,
-        'position': 'SRID=4326;POINT(${p.longitude} ${p.latitude})',
-      });
+      final ligne = await supabase
+          .from('livreurs')
+          .select('en_ligne')
+          .eq('id', widget.livreurId)
+          .single();
+      if (!mounted) return;
+      final enLigne = ligne['en_ligne'] == true;
+      setState(() => _enLigne = enLigne);
+      // Reprise après une fermeture brutale de l'application : la base le croit
+      // encore en service, on redémarre donc le suivi pour que ce soit vrai.
+      if (enLigne) await _suivi.demarrer();
     } catch (_) {
-      // Une position perdue n'est pas un incident : la suivante arrive dans
-      // dix secondes. On ne dérange pas le livreur avec un message pour autant.
+      // Sans cette lecture, l'interrupteur part simplement à « hors ligne ».
+    }
+  }
+
+  /// L'interrupteur qui met le livreur en service.
+  ///
+  /// Il fait les deux choses à la fois, et c'est volontaire : être en ligne
+  /// sans partager sa position n'a aucun sens pour le distributeur, qui affecte
+  /// ses courses à la moto la plus proche. Un seul geste, une seule promesse.
+  Future<void> _basculerEnLigne(bool valeur) async {
+    setState(() => _enLigne = valeur);
+
+    if (valeur) {
+      await _suivi.demarrer();
+      if (!_suivi.actif) {
+        // La permission a été refusée : on ne laisse pas l'interrupteur mentir.
+        if (mounted) setState(() => _enLigne = false);
+        return;
+      }
+    } else {
+      await _suivi.arreter();
+    }
+
+    try {
+      await supabase
+          .from('livreurs')
+          .update({'en_ligne': valeur})
+          .eq('id', widget.livreurId);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _enLigne = !valeur);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(messageErreur(e))));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(sessionProvider).value;
+    final signal = ref.watch(tempsReelCoursesProvider);
+
+    // Une modification reçue en direct recharge les deux onglets. Le
+    // rechargement passe par la vue, qui est sous RLS : rien ne peut arriver
+    // ici que le livreur n'ait le droit de voir.
+    if (signal.revision != _revisionVue) {
+      _revisionVue = signal.revision;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          _cleCourses++;
+          _cleLivraisons++;
+        });
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(session?.nom ?? 'Livreur'),
         actions: [
+          _PastilleTempsReel(connecte: signal.connecte),
+          Switch(
+            value: _enLigne,
+            onChanged: _basculerEnLigne,
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Se déconnecter',
-            onPressed: () => ref.read(authProvider).deconnecter(),
+            onPressed: () async {
+              await _suivi.arreter();
+              if (!context.mounted) return;
+              await ref.read(authProvider).deconnecter();
+            },
           ),
         ],
       ),
       body: Column(
         children: [
-          if (!_positionAutorisee)
-            const MaterialBanner(
-              content: Text(
-                'Sans votre position, les courses ne peuvent pas être triées par distance.',
-              ),
-              leading: Icon(Icons.location_off_outlined),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: Geolocator.openAppSettings,
-                  child: Text('Autoriser'),
-                ),
-              ],
-            ),
+          _BandeauSuivi(suivi: _suivi, enLigne: _enLigne),
           Expanded(
             child: IndexedStack(
               index: _onglet,
@@ -144,4 +191,126 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
       ),
     );
   }
+}
+
+/// L'état du suivi, dit franchement.
+///
+/// Un livreur qui croit être suivi alors qu'il ne l'est pas prend des courses
+/// qu'on ne lui attribuera jamais, et un distributeur qui voit une moto figée
+/// appelle pour rien. Chaque état a donc son message et son geste de sortie.
+class _BandeauSuivi extends StatelessWidget {
+  const _BandeauSuivi({required this.suivi, required this.enLigne});
+
+  final SuiviPosition suivi;
+  final bool enLigne;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!enLigne && suivi.etat == EtatSuivi.arrete) {
+      return const _Bandeau(
+        icone: Icons.toggle_off_outlined,
+        texte: 'Vous êtes hors service. Mettez-vous en ligne pour recevoir des courses.',
+        couleur: Colors.blueGrey,
+      );
+    }
+
+    switch (suivi.etat) {
+      case EtatSuivi.refuse:
+        return _Bandeau(
+          icone: Icons.location_off_outlined,
+          texte: suivi.erreur ??
+              'Sans votre position, les courses ne peuvent pas être triées par distance.',
+          couleur: Colors.orange,
+          action: 'Autoriser',
+          onAction: () => suivi.demarrer(),
+        );
+
+      case EtatSuivi.refuseDefinitivement:
+        return _Bandeau(
+          icone: Icons.block_outlined,
+          texte: 'La localisation est bloquée pour Yalla. Rétablissez-la dans '
+              'les réglages du téléphone.',
+          couleur: Colors.red,
+          action: 'Réglages',
+          onAction: suivi.ouvrirReglages,
+        );
+
+      case EtatSuivi.premierPlan:
+        return _Bandeau(
+          icone: Icons.my_location_outlined,
+          texte: 'Suivi actif, mais seulement application ouverte. Téléphone en '
+              'poche, votre distributeur ne vous verra plus avancer.',
+          couleur: Colors.orange,
+          action: 'Activer en fond',
+          onAction: () => suivi.demarrer(),
+        );
+
+      case EtatSuivi.arrierePlan:
+        final envoi = suivi.dernierEnvoi;
+        return _Bandeau(
+          icone: Icons.gps_fixed,
+          texte: envoi == null
+              ? 'Suivi en cours, première position en attente.'
+              : 'Suivi en cours, position transmise il y a '
+                  '${depuis(DateTime.now().difference(envoi).inSeconds)}.',
+          couleur: Colors.green,
+        );
+
+      case EtatSuivi.arrete:
+        return const SizedBox.shrink();
+    }
+  }
+}
+
+class _Bandeau extends StatelessWidget {
+  const _Bandeau({
+    required this.icone,
+    required this.texte,
+    required this.couleur,
+    this.action,
+    this.onAction,
+  });
+
+  final IconData icone;
+  final String texte;
+  final Color couleur;
+  final String? action;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: double.infinity,
+        color: couleur.withValues(alpha: 0.10),
+        padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+        child: Row(
+          children: [
+            Icon(icone, size: 18, color: couleur),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(texte, style: const TextStyle(fontSize: 12, height: 1.35)),
+            ),
+            if (action != null)
+              TextButton(onPressed: onAction, child: Text(action!)),
+          ],
+        ),
+      );
+}
+
+/// Dit si la liste est vivante ou figée. Discret, mais c'est la différence
+/// entre « aucune course » et « aucune nouvelle reçue ».
+class _PastilleTempsReel extends StatelessWidget {
+  const _PastilleTempsReel({required this.connecte});
+  final bool connecte;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+        message: connecte
+            ? 'Mise à jour en direct'
+            : 'Hors direct, tirez la liste pour rafraîchir',
+        child: Icon(
+          connecte ? Icons.bolt : Icons.bolt_outlined,
+          size: 18,
+          color: connecte ? Colors.green : Colors.grey,
+        ),
+      );
 }

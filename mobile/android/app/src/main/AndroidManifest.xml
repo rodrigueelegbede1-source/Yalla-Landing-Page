@@ -1,4 +1,42 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- SANS CETTE LIGNE, L'APK DE PRODUCTION NE JOINT RIEN.
+         `flutter create` ne déclare INTERNET que dans les manifestes `debug` et
+         `profile`, où l'outil en a besoin pour le rechargement à chaud. Le
+         manifeste `main`, seul retenu dans une compilation `release`, n'en a
+         aucune. L'application se lançait donc parfaitement en débogage et
+         l'APK distribué échouait sur chaque appel à Supabase, avec pour tout
+         message une erreur réseau. Vérification : `aapt2 dump permissions`. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- La position du livreur. `COARSE` accompagne `FINE` parce qu'Android 12
+         et suivants laissent l'utilisateur n'accorder que l'approximative :
+         sans elle déclarée, ce choix rend une permission refusée au lieu d'une
+         position dégradée, et le livreur ne voit plus aucune course. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- Suivi pendant la course, téléphone en poche. Elle se demande séparément
+         et APRÈS l'accord de premier plan : Android 11 et suivants refusent
+         sèchement une demande groupée. Voir `lib/features/livreur/suivi_position.dart`. -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
+    <!-- Le service de premier plan, seul moyen légitime de continuer à
+         localiser écran éteint. `FOREGROUND_SERVICE_LOCATION` est exigée à
+         partir d'Android 14, et son absence fait planter le démarrage du
+         service au lieu de le dégrader. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+
+    <!-- La notification persistante du service. Obligatoire depuis Android 13,
+         et c'est elle qui rend le suivi visible et honnête pour le livreur :
+         il voit qu'il est suivi, et peut arrêter. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <!-- Le réseau ivoirien est irrégulier. L'application doit savoir qu'elle est
+         hors ligne pour le dire, plutôt que d'attendre un délai d'expiration. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
     <application
         android:label="yalla_mobile"
         android:name="${applicationName}"
@@ -40,6 +78,21 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+
+        <!-- Depuis Android 11, une application ne voit pas les autres sans les
+             déclarer ici. `canLaunchUrl` rendait donc faux pour `tel:` et
+             `geo:` alors que le téléphone et la carte étaient bien installés :
+             le livreur ne pouvait ni appeler la boutique ni ouvrir
+             l'itinéraire, les deux seules actions qui le sortent de
+             l'application pendant une course. -->
+        <intent>
+            <action android:name="android.intent.action.DIAL"/>
+            <data android:scheme="tel"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="geo"/>
         </intent>
     </queries>
 </manifest>

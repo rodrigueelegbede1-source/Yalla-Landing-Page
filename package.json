@@ -11,8 +11,10 @@
     "lint": "bash scripts/lint.sh",
     "test": "bash scripts/test.sh",
     "db:verifier": "bash supabase/tests/verifier-migrations.sh",
+    "db:deploy": "bash scripts/deployer-base.sh",
     "db:push": "supabase db push",
     "db:reset": "supabase db reset",
+    "pilote:amorcer": "bash scripts/amorcer-pilote.sh",
     "dev:landing": "node landing/server.js",
     "dev:maquettes": "node landing/server.js maquettes 4181",
     "publish:landing": "bash scripts/publish-landing.sh"

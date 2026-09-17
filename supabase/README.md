@@ -89,48 +89,75 @@ l'application mobile, ni dans le dépôt, ni dans une capture d'écran.
 
 ---
 
-## Créer un compte
-
-Un compte Yalla se crée en deux temps, parce que Supabase Auth et le métier sont
-deux choses distinctes.
-
-**1. La ligne métier**, créée par l'agent recenseur ou l'administrateur :
-
-```sql
-INSERT INTO utilisateurs (nom, telephone, role)
-VALUES ('Aya Kouassi', '+2250745000000', 'point_de_vente')
-RETURNING id;
-
-INSERT INTO points_de_vente (nom, type_activite, commune, position, utilisateur_id, ...)
-VALUES ('Supérette Akwaba', 'superette', 'Cocody',
-        ST_SetSRID(ST_MakePoint(-3.9862, 5.3599), 4326)::geography, '<id>', ...);
-```
-
-**2. Le compte de connexion**, via l'API d'administration, avec l'adresse
-technique dérivée du numéro :
+### 7. Déployer la fonction Edge de création de comptes
 
 ```bash
-curl -X POST 'https://xxxx.supabase.co/auth/v1/admin/users' \
-  -H "apikey: <service_role>" \
-  -H "Authorization: Bearer <service_role>" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"2250745000000@yalla.ci","password":"<mot de passe remis au gérant>","email_confirm":true}'
+supabase functions deploy creer-compte
 ```
 
-Puis on relie les deux :
+Sans elle, ni l'agent recenseur ni le distributeur ne peuvent créer de compte, et
+le réseau se remplit à la main en SQL.
 
-```sql
-SELECT rattacher_compte_auth('+2250745000000', '<id retourné par l''API>');
+---
+
+## Créer un compte
+
+**Les comptes se créent dans l'application**, pas en SQL. L'agent recenseur
+inscrit les boutiques et les distributeurs, le distributeur enrôle ses livreurs.
+Chacun reçoit son numéro et un mot de passe court, affiché une seule fois et
+remis en main propre.
+
+Le chemin technique passe par la fonction Edge `creer-compte`, pour une raison
+qui n'est pas négociable : créer un compte dans `auth.users` exige la clé
+`service_role`, qui contourne RLS et ne peut donc jamais entrer dans un APK.
+La fonction enchaîne trois choses :
+
+1. elle crée le compte de connexion avec `service_role`, côté serveur ;
+2. elle appelle `creer_compte_metier` **avec le jeton de l'appelant**, si bien
+   que `auth_role()` rend son rôle réel et que le contrôle de périmètre
+   s'applique pour de bon ;
+3. si ce contrôle refuse, elle supprime le compte qu'elle vient de créer. Un
+   compte de connexion sans rôle se connecterait sans accès à rien, sans aucun
+   moyen de s'en apercevoir.
+
+Qui peut créer quoi, vérifié en SQL et couvert par `test_gestion_reseau.sql` :
+
+| Créateur | Peut créer |
+|---|---|
+| Administrateur | tout |
+| Agent recenseur | points de vente, distributeurs |
+| Distributeur | livreurs, dans sa propre flotte uniquement |
+
+### Les deux premiers comptes
+
+Personne ne peut créer le premier compte depuis l'application, puisqu'il faut
+déjà un compte pour s'y connecter. Un script couvre ce seul cas :
+
+```bash
+bash scripts/amorcer-pilote.sh
 ```
 
-L'adresse technique se calcule avec `email_technique('+2250745000000')`, qui rend
-`2250745000000@yalla.ci`. Aucun courriel n'y est jamais envoyé : c'est une clé,
-pas une boîte. L'application fait la même conversion côté Dart, et les deux
-implémentations sont verrouillées par des tests.
+Il crée un administrateur et un agent recenseur, affiche leurs identifiants une
+fois, et refuse de s'exécuter si la base contient déjà des comptes. Tout le reste
+du réseau se crée ensuite depuis le téléphone.
+
+### L'adresse technique
+
+Le numéro sert d'identifiant, converti en adresse technique par
+`email_technique('0745000000')`, qui rend `2250745000000@yalla.ci`. Aucun
+courriel n'y est jamais envoyé : c'est une clé, pas une boîte.
 
 Ce détour évite le SMS. Supabase n'accepte un numéro comme identifiant que
 vérifié par SMS, et chaque SMS coûte de l'argent à chaque connexion. Or les
 comptes sont remis en main propre lors du recensement, pas créés en libre-service.
+
+**La normalisation existe en quatre exemplaires** : `normaliser_telephone()` en
+SQL, `normaliserTelephone` en Dart, son homologue dans la fonction Edge, et une
+quatrième dans le script d'amorçage. Les quatre doivent rendre exactement
+`2250745000000`, treize chiffres sans `+`. Si l'une diverge, un compte se crée
+sous une adresse et se connecte sous une autre, et rien dans le message d'erreur
+ne le dit. Une version de la fonction Edge préfixait un `+` : les tests
+verrouillent désormais la forme canonique.
 
 ---
 
@@ -175,9 +202,9 @@ une, faites de même, sinon vous ouvrez une porte dérobée.
 
 ---
 
-## Deux pièges rencontrés au premier déploiement
+## Quatre pièges rencontrés en déployant
 
-Les deux ont le même symptôme, un échec net qui ne dit pas sa cause, et la même
+Ils ont tous le même symptôme, un échec net qui ne dit pas sa cause, et la même
 origine : **ce qui passe sous `psql` ne passe pas forcément sur Supabase**.
 
 ### Une valeur d'énumération ne s'utilise pas dans la transaction qui l'ajoute
@@ -212,6 +239,49 @@ En cas de doute, les journaux se lisent ainsi :
 ```bash
 curl -H "Authorization: Bearer <jeton>"   "https://api.supabase.com/v1/projects/<ref>/analytics/endpoints/logs.all?sql=<requête encodée>"
 ```
+
+### Une politique ne doit jamais lire la table qu'elle protège
+
+Symptôme : `infinite recursion detected in policy for relation "..."`
+(SQLSTATE 42P17), et **plus aucune lecture de la table ne passe, pour aucun
+rôle**. Les politiques PERMISSIVE sont combinées par OU, donc une seule qui
+boucle fait tomber la table entière, y compris pour des rôles qui n'ont rien à
+voir avec elle.
+
+La sous-requête doit passer par une fonction `SECURITY DEFINER`, qui s'exécute
+hors RLS et rompt la boucle. C'est ce que font `distributeur_voit_rupture`,
+`communes_du_distributeur` et leurs voisines.
+
+Ces fonctions **gardent leur droit `EXECUTE` sur `authenticated`** : une
+expression de politique s'évalue sous l'identité qui interroge, et un `REVOKE`
+rendrait la politique inapplicable. Elles ne doivent donc jamais rendre autre
+chose qu'un booléen ou une donnée sans valeur commerciale.
+
+`npm run db:verifier` échoue désormais si une politique lit sa propre table.
+Le contrôle a été ajouté parce que le harnais ne pouvait pas voir la faute : il
+vérifiait que les politiques existent, jamais qu'elles s'exécutent, faute
+d'identité. Le bogue n'est apparu qu'en lançant l'application sur un appareil.
+
+### PostgREST garde en cache un schéma périmé
+
+Symptôme le plus déroutant des quatre : `curl: (52) Empty reply from server`,
+sans code HTTP, sans journal. Une fonction fraîchement déployée existe bien en
+base, répond parfaitement sous `psql`, et l'API ferme la connexion sans rien
+dire.
+
+PostgREST tient un cache du schéma et ne le relit pas de lui-même après un
+`supabase db push`. Il faut le lui demander :
+
+```sql
+NOTIFY pgrst, 'reload schema';
+```
+
+C'est ce que fait `npm run db:deploy`, qui pousse les migrations **et** recharge
+le cache. Utilisez-le plutôt que `db:push` seul.
+
+À ne pas confondre avec les coupures intermittentes : environ un appel sur dix
+se termine aussi en `(52)` sur ce projet, y compris sur des lectures triviales.
+Si le rechargement ne change rien, réessayez avant de chercher un bogue.
 
 ---
 

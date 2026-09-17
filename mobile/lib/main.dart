@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/auth/auth_providers.dart';
 import 'core/supabase.dart';
+import 'features/agent_recenseur/recensement_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/distributeur/distributeur_home_screen.dart';
 import 'features/livreur/livreur_home_screen.dart';
@@ -33,11 +34,17 @@ class YallaApp extends StatelessWidget {
 
 /// Aiguille vers l'écran du rôle, ou vers la connexion.
 ///
-/// Le MVP ne couvre que trois rôles : Point de vente, Distributeur et Livreur.
-/// C'est la boucle qui fait la différence du produit — une vente vide un stock,
-/// la rupture part toute seule, quelqu'un livre. Les trois autres rôles
-/// existent en base et dans les maquettes, mais pas encore ici, et l'écran le
-/// dit franchement plutôt que d'afficher une page vide.
+/// Quatre rôles sur six. Aux trois de la boucle centrale, Point de vente,
+/// Distributeur et Livreur, s'ajoute l'agent recenseur.
+///
+/// Il avait été écarté du périmètre, et c'était une erreur : sans lui, chaque
+/// boutique du pilote demandait deux `INSERT` SQL et un appel à l'API
+/// d'administration, tapés à la main. Le périmètre était juste sur le papier et
+/// faux sur le terrain, puisqu'il rendait le terrain inatteignable.
+///
+/// Restent dehors le fabricant et l'administrateur, qui sont deux tableaux de
+/// bord en lecture. Ils ne bloquent rien, et l'écran le dit franchement plutôt
+/// que d'afficher une page vide.
 class _EcranRacine extends ConsumerWidget {
   const _EcranRacine();
 
@@ -74,13 +81,15 @@ class _EcranRacine extends ConsumerWidget {
             return DistributeurHomeScreen(distributeurId: s.idMetier!);
           case 'livreur':
             return LivreurHomeScreen(livreurId: s.idMetier!);
+          case 'agent_recenseur':
+            return AgentRecenseurHomeScreen(agentId: s.idMetier!);
           default:
             return _EcranMessage(
               icone: Icons.construction_outlined,
               titre: 'Interface en construction',
               message: 'Le rôle « ${s.role} » n\'est pas encore disponible dans '
                   'l\'application. La première version couvre les boutiques, '
-                  'les distributeurs et les livreurs.',
+                  'les distributeurs, les livreurs et le recensement.',
               deconnexion: true,
             );
         }
