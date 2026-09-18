@@ -98,6 +98,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   TextFormField(
                     controller: _telephone,
                     keyboardType: TextInputType.phone,
+                    // Un numéro se lit de gauche à droite même en arabe : sans cette
+                    // direction imposée, le RTL inverse l'ordre des groupes de
+                    // chiffres et l'exemple s'affiche à l'envers.
+                    textDirection: TextDirection.ltr,
+                    textAlign: TextAlign.left,
                     autofillHints: const [AutofillHints.telephoneNumber],
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')),

@@ -419,6 +419,8 @@ class _FormulaireRecensementState extends State<_FormulaireRecensement> {
             TextFormField(
               controller: _telephone,
               keyboardType: TextInputType.phone,
+              textDirection: TextDirection.ltr,
+              textAlign: TextAlign.left,
               decoration: const InputDecoration(
                 labelText: 'Téléphone',
                 hintText: '07 06 30 30 30',
