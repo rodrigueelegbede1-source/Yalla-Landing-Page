@@ -20,6 +20,32 @@ void main() {
     test('ignore la ponctuation', () {
       expect(normaliserTelephone('07-06.30/30(30)'), '2250706303030');
     });
+
+    /// Les fixes ivoiriens commencent par 25 ou 27, pas par zéro.
+    ///
+    /// Une version antérieure n'ajoutait l'indicatif qu'aux numéros commençant
+    /// par zéro, héritage du plan de numérotation d'avant 2021. Conséquence :
+    /// un boutiquier avec un mobile était accepté, un boutiquier avec un fixe
+    /// refusé, sans que rien n'explique la différence. Découvert en inscrivant
+    /// un fabricant dont le seul numéro est un fixe de Treichville.
+    test('accepte les numéros fixes, qui ne commencent pas par zéro', () {
+      const attendu = '2252721219000';
+      expect(normaliserTelephone('2721219000'), attendu);
+      expect(normaliserTelephone('27 21 21 90 00'), attendu);
+      expect(normaliserTelephone('+225 27 21 21 90 00'), attendu);
+      expect(telephoneValide('27 21 21 90 00'), isTrue);
+
+      // Fixe de l'intérieur du pays, préfixe 25.
+      expect(normaliserTelephone('25 30 64 00 00'), '2252530640000');
+    });
+
+    /// L'ancien format à huit chiffres reste refusé, et c'est délibéré : il
+    /// n'est plus attribué depuis 2021, et deviner le préfixe manquant
+    /// donnerait un mauvais numéro une fois sur deux.
+    test('refuse l\'ancien format à huit chiffres', () {
+      expect(telephoneValide('21 21 90 00'), isFalse);
+      expect(telephoneValide('+225 21 21 90 00'), isFalse);
+    });
   });
 
   group('emailTechnique', () {

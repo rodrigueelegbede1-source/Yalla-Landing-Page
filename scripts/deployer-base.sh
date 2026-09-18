@@ -28,6 +28,20 @@ REF="$(printf '%s' "$URL" | sed 's|https://||; s|\.supabase\.co.*||')"
 [ -n "$SUPABASE_DB_PASSWORD" ]  || { echo "SUPABASE_DB_PASSWORD absente de $ENV_FICHIER"; exit 1; }
 [ -n "$REF" ]                   || { echo "SUPABASE_URL absente ou mal formée"; exit 1; }
 
+# Vérifié AVANT de pousser quoi que ce soit. Sans cette garde, les migrations
+# partaient puis le rechargement du cache échouait en « psql: command not
+# found », laissant PostgREST sur un schéma périmé : les nouvelles fonctions
+# répondaient `Empty reply from server`, sans que rien ne relie ce symptôme au
+# déploiement qui venait de réussir.
+if ! command -v psql >/dev/null 2>&1; then
+  echo
+  echo "  psql est introuvable dans le PATH."
+  echo "  Il est nécessaire pour recharger le cache de schéma de PostgREST après"
+  echo "  la migration, sans quoi les fonctions déployées restent invisibles de"
+  echo "  l'API. Ajoutez le dossier bin de PostgreSQL au PATH, puis relancez."
+  exit 1
+fi
+
 echo
 echo "▸ Migrations"
 npx --yes supabase@latest db push --include-all

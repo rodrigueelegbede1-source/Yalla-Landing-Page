@@ -38,13 +38,22 @@ cd "$ROOT"
 NOM="${1:-}"
 TEL_BRUT="${2:-}"
 CSV="${3:-}"
+# Préfixe de référence imposé, facultatif. Utile quand la raison sociale ne
+# donne pas d'initiales lisibles : « Société de Distribution de Toutes
+# Marchandises (SDTM-CI) » produirait « SDD », que personne ne rattacherait à
+# la marque, alors que « SDTM » se reconnaît immédiatement sur un bon.
+PREFIXE_IMPOSE="${4:-}"
 
 if [ -z "$NOM" ] || [ -z "$TEL_BRUT" ] || [ -z "$CSV" ]; then
   echo
-  echo "  Usage : bash scripts/creer-fabricant.sh \"Nom\" <telephone> <catalogue.csv>"
+  echo "  Usage : bash scripts/creer-fabricant.sh \"Nom\" <telephone> <catalogue.csv> [prefixe]"
   echo
-  echo "  Exemple :"
+  echo "  Exemples :"
   echo "    bash scripts/creer-fabricant.sh \"Ivoire Boissons\" 0700000010 catalogue.csv"
+  echo "    bash scripts/creer-fabricant.sh \"SDTM-CI\" 2721219000 catalogue.csv SDTM"
+  echo
+  echo "  Le préfixe est déduit du nom s'il n'est pas donné. Imposez-le quand la"
+  echo "  raison sociale ne donne pas d'initiales reconnaissables."
   echo
   echo "  Le CSV attend : nom;reference;categorie   (une ligne d'en-tête, ignorée)"
   echo "  Catégories acceptées : Boissons, Épicerie, Hygiène, Snacking"
@@ -72,7 +81,9 @@ export PGPASSWORD="$MDP_BASE"
 normaliser() {
   local v="${1//[^0-9]/}"
   if [ "${v:0:5}" = "00225" ]; then v="${v:2}"; fi
-  if [ "${#v}" = "10" ] && [ "${v:0:1}" = "0" ]; then v="225$v"; fi
+  # Dix chiffres = numéro national, quel que soit le premier chiffre : les
+  # mobiles commencent par 01, 05 ou 07, les fixes par 25 ou 27.
+  if [ "${#v}" = "10" ]; then v="225$v"; fi
   printf '%s' "$v"
 }
 
@@ -151,9 +162,15 @@ calculer_prefixe() {
   fi
 }
 
-PREFIXE="$(calculer_prefixe "$NOM")"
+if [ -n "$PREFIXE_IMPOSE" ]; then
+  PREFIXE="$(printf '%s' "$PREFIXE_IMPOSE" | tr -cd 'A-Za-z0-9' | tr '[:lower:]' '[:upper:]')"
+else
+  PREFIXE="$(calculer_prefixe "$NOM")"
+fi
+
 if [ -z "$PREFIXE" ]; then
   echo "  Impossible de tirer un préfixe du nom « $NOM »"
+  echo "  Donnez-en un en quatrième argument, par exemple SDTM."
   exit 1
 fi
 
@@ -170,29 +187,72 @@ REFS_UTILISEES=" "
 # ce que la contrainte d'unicité de `produits` a heureusement rattrapé.
 REF_GENEREE=""
 
-generer_reference() {
-  local propre lettres chiffres candidat n
-  propre="$(sans_accents "$1")"
+deja_pris() {
+  [ "${REFS_UTILISEES#* $1 }" != "$REFS_UTILISEES" ]
+}
 
-  lettres="$(printf '%s' "$propre" \
-    | tr -c 'A-Za-z ' ' ' | tr -s ' ' \
-    | awk '{ print toupper(substr($1, 1, 3)) }')"
+generer_reference() {
+  local propre mots lettres qualifiant chiffres candidat n
+  propre="$(sans_accents "$1" | tr -c 'A-Za-z0-9 ' ' ' | tr -s ' ')"
+
+  lettres="$(printf '%s' "$propre" | awk '{ print toupper(substr($1, 1, 3)) }')"
   [ -z "$lettres" ] && lettres="PRD"
 
-  # Au plus trois chiffres : « 1,5L » devient 15, « 170g » reste 170.
-  chiffres="$(printf '%s' "$propre" | tr -cd '0-9' | cut -c1-3)"
+  # Au plus QUATRE chiffres. Trois suffisaient pour 400g ou 900g, mais
+  # tronquaient « 4500g » en 450 : la référence affichait alors un format qui
+  # n'existe pas, ce qui est pire qu'une référence sans chiffre du tout. Aucun
+  # conditionnement courant ne dépasse quatre chiffres.
+  chiffres="$(printf '%s' "$propre" | tr -cd '0-9' | cut -c1-4)"
 
   candidat="$PREFIXE-$lettres$chiffres"
 
-  # Suffixe incrémental en cas de collision, plutôt qu'un rejet : un catalogue
-  # complet vaut mieux qu'un import qui s'arrête sur deux noms voisins. Deux
-  # parfums d'un même produit sont justement le cas le plus fréquent.
-  if [ "${REFS_UTILISEES#* $candidat }" != "$REFS_UTILISEES" ]; then
-    n=2
-    while [ "${REFS_UTILISEES#* $candidat$n }" != "$REFS_UTILISEES" ]; do
-      n=$((n + 1))
+  # EN CAS DE COLLISION, ON QUALIFIE AVANT DE NUMÉROTER.
+  #
+  # Un fabricant de riz a forcément plusieurs riz de 900 g. Un suffixe
+  # incrémental donnerait RIZ900, RIZ9002, RIZ9003 : unique, et strictement
+  # inutilisable sur un bon de livraison, puisque rien ne dit lequel est le
+  # basmati. On insère donc deux lettres du mot SUIVANT, qui est justement
+  # celui qui distingue les variantes : RIZ900, RIZBA900, RIZPA900.
+  #
+  # Le numéro ne reste qu'en dernier recours, quand même le qualifiant ne
+  # suffit pas à départager.
+  if deja_pris "$candidat"; then
+    # ON ESSAIE CHAQUE MOT SUIVANT, pas seulement le premier.
+    #
+    # S'arrêter au premier mot significatif donnait SAVLI400 pour « Savon
+    # liquide main Madar Marseille » : unique, mais « LI » de « liquide » est
+    # justement le mot que ce produit PARTAGE avec celui qu'il doit distinguer.
+    # En parcourant les mots dans l'ordre, on s'arrête au premier qui libère
+    # réellement la référence, c'est-à-dire au premier qui diffère : ici
+    # « Marseille », d'où SAVMA400.
+    #
+    # Les mots-outils sont écartés d'emblée : « Détergent EN poudre » donnait
+    # DETEN, qui ne dit rien de rien.
+    for qualifiant in $(printf '%s' "$propre" | awk '
+      BEGIN {
+        split("de du des la le les un une en a au aux et avec pour sans par sur", v, " ")
+        for (i in v) vide[v[i]] = 1
+      }
+      {
+        for (i = 2; i <= NF; i++) {
+          m = tolower($i)
+          if ($i ~ /^[A-Za-z]/ && !(m in vide) && length($i) >= 2) print toupper(substr($i, 1, 2))
+        }
+      }'); do
+      if ! deja_pris "$PREFIXE-$lettres$qualifiant$chiffres"; then
+        candidat="$PREFIXE-$lettres$qualifiant$chiffres"
+        break
+      fi
     done
-    candidat="$candidat$n"
+
+    # Dernier recours seulement : quand aucun mot du nom ne suffit à départager.
+    if deja_pris "$candidat"; then
+      n=2
+      while deja_pris "$candidat$n"; do
+        n=$((n + 1))
+      done
+      candidat="$candidat$n"
+    fi
   fi
 
   REFS_UTILISEES="$REFS_UTILISEES$candidat "

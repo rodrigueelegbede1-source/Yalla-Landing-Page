@@ -33,8 +33,16 @@ String normaliserTelephone(String telephone) {
     v = v.substring(2);
   }
 
-  // Numéro national à 10 chiffres commençant par 0 : on préfixe l'indicatif.
-  if (v.length == 10 && v.startsWith('0')) {
+  // Tout numéro national fait dix chiffres depuis le plan de numérotation de
+  // 2021, mobile comme fixe. La condition ne porte PAS sur le premier chiffre :
+  // les mobiles commencent par 01, 05 ou 07, mais les fixes par 25 ou 27. Une
+  // version antérieure n'acceptait que ceux commençant par zéro, et refusait
+  // donc tout numéro fixe sans rien expliquer.
+  //
+  // Aucune ambiguïté : aucun préfixe ivoirien ne commence par « 22 », donc dix
+  // chiffres ne peuvent jamais être confondus avec un indicatif suivi d'un
+  // numéro tronqué.
+  if (v.length == 10) {
     v = '225$v';
   }
 

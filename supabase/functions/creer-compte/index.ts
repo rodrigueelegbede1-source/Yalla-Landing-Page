@@ -48,7 +48,10 @@ const ENTETES = {
 function normaliserTelephone(brut: string): string {
   let v = (brut ?? '').replace(/[^0-9]/g, '');
   if (v.startsWith('00225')) v = v.slice(2);
-  if (v.length === 10 && v.startsWith('0')) v = `225${v}`;
+  // Dix chiffres = numéro national, quel que soit le premier. Les mobiles
+  // commencent par 01, 05 ou 07, les fixes par 25 ou 27 : une condition sur le
+  // zéro initial refusait tous les fixes.
+  if (v.length === 10) v = `225${v}`;
   return v;
 }
 

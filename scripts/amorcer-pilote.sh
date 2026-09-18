@@ -61,7 +61,9 @@ normaliser() {
   if [ "${v:0:5}" = "00225" ]; then
     v="${v:2}"
   fi
-  if [ "${#v}" = "10" ] && [ "${v:0:1}" = "0" ]; then
+  # Dix chiffres = numéro national, quel que soit le premier chiffre : les
+  # mobiles commencent par 01, 05 ou 07, les fixes par 25 ou 27.
+  if [ "${#v}" = "10" ]; then
     v="225$v"
   fi
   printf '%s' "$v"
