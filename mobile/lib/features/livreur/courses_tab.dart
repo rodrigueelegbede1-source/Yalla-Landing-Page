@@ -58,7 +58,8 @@ class _CoursesTabState extends State<CoursesTab> {
     } catch (e) {
       // Cas le plus fréquent et le plus important : un autre livreur a été plus
       // rapide. Le message vient de la base, il est déjà écrit pour être lu.
-      _message(messageErreur(e));
+      if (!mounted) return;
+      _message(messageErreur(context, e));
     }
     await _rafraichir();
   }
@@ -89,7 +90,7 @@ class _CoursesTabState extends State<CoursesTab> {
           if (snap.hasError) {
             return ListView(children: [
               const SizedBox(height: 80),
-              Center(child: Text(messageErreur(snap.error!))),
+              Center(child: Text(messageErreur(context, snap.error!))),
             ]);
           }
 

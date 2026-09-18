@@ -80,7 +80,8 @@ class _ReseauTabState extends State<ReseauTab> {
           'désormais dès la première seconde.');
       await _rafraichir();
     } catch (e) {
-      _message(messageErreur(e));
+      if (!mounted) return;
+      _message(messageErreur(context, e));
     }
   }
 
@@ -115,7 +116,8 @@ class _ReseauTabState extends State<ReseauTab> {
       });
       await _rafraichir();
     } catch (e) {
-      _message(messageErreur(e));
+      if (!mounted) return;
+      _message(messageErreur(context, e));
     }
   }
 
@@ -146,7 +148,7 @@ class _ReseauTabState extends State<ReseauTab> {
               return EtatVide(
                 icone: Icons.cloud_off_outlined,
                 titre: 'Chargement impossible',
-                message: messageErreur(snap.error!),
+                message: messageErreur(context, snap.error!),
               );
             }
 

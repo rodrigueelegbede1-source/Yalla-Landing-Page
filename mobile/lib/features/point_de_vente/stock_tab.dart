@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/format.dart';
+import '../../core/vignette_produit.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/supabase.dart';
 
 /// Stock de la boutique, et signalement manuel.
@@ -63,9 +65,10 @@ class _StockTabState extends State<StockTab> {
   }
 
   Future<void> _reapprovisionner(String produitId, String nom, int actuel) async {
+    final l = L.of(context);
     final variation = await _demanderNombre(
       titre: nom,
-      question: 'Combien d\'unités reçues ?',
+      question: l.combienUnitesRecues,
       suffixe: 'unité(s)',
       valeurInitiale: '',
     );
@@ -74,17 +77,19 @@ class _StockTabState extends State<StockTab> {
     try {
       await supabase.rpc('reapprovisionner_stock',
           params: {'p_produit_id': produitId, 'p_quantite': variation});
-      _message('Stock mis à jour : ${actuel + variation} en rayon');
+      _message(l.stockMisAJour('${actuel + variation}'));
     } catch (e) {
-      _message(messageErreur(e));
+      if (!mounted) return;
+      _message(messageErreur(context, e));
     }
     await _rafraichir();
   }
 
   Future<void> _signaler(String produitId, String nom) async {
+    final l = L.of(context);
     final quantite = await _demanderNombre(
       titre: nom,
-      question: 'Combien de cartons vous faut-il ?',
+      question: l.combienDeCartons,
       suffixe: 'carton(s)',
       valeurInitiale: '1',
     );
@@ -99,17 +104,19 @@ class _StockTabState extends State<StockTab> {
         'quantite_demandee': quantite,
         'signalement_automatique': false,
       });
-      _message('Rupture transmise à votre distributeur');
+      _message(l.ruptureTransmise);
     } catch (e) {
-      _message(messageErreur(e));
+      if (!mounted) return;
+      _message(messageErreur(context, e));
     }
     await _rafraichir();
   }
 
   Future<void> _ajouterAuSuivi(List<Map<String, dynamic>> catalogue, Set<String> dejaSuivis) async {
+    final l = L.of(context);
     final disponibles = catalogue.where((p) => !dejaSuivis.contains(p['id'])).toList();
     if (disponibles.isEmpty) {
-      _message('Tous les produits du catalogue sont déjà suivis');
+      _message(l.tousDejaSuivis);
       return;
     }
 
@@ -195,6 +202,8 @@ class _StockTabState extends State<StockTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = L.of(context);
+
     return RefreshIndicator(
       onRefresh: _rafraichir,
       child: FutureBuilder<_Donnees>(
@@ -206,7 +215,7 @@ class _StockTabState extends State<StockTab> {
           if (snap.hasError) {
             return ListView(children: [
               const SizedBox(height: 80),
-              Center(child: Text(messageErreur(snap.error!))),
+              Center(child: Text(messageErreur(context, snap.error!))),
             ]);
           }
 
@@ -235,24 +244,22 @@ class _StockTabState extends State<StockTab> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Mon stock',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                  Text(l.monStock,
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                   TextButton.icon(
                     icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Suivre un produit'),
+                    label: Text(l.suivreUnProduit),
                     onPressed: () => _ajouterAuSuivi(d.catalogue, suivis),
                   ),
                 ],
               ),
               if (d.stock.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Text(
-                    'Aucun produit suivi. Tant qu\'aucun stock n\'est renseigné, '
-                    'Yalla ne peut pas détecter vos ruptures automatiquement : '
-                    'c\'est le stock qui déclenche l\'alerte en tombant à zéro.',
+                    l.stockVideMessage,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, height: 1.5),
+                    style: const TextStyle(fontSize: 13, height: 1.5),
                   ),
                 ),
               ...d.stock.map((s) {
@@ -265,9 +272,11 @@ class _StockTabState extends State<StockTab> {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
-                    leading: Icon(
-                      vide ? Icons.error_outline : Icons.inventory_2_outlined,
-                      color: vide ? Colors.red : null,
+                    leading: VignetteProduit(
+                      nom: nom,
+                      imageUrl: s['image_url'] as String?,
+                      categorie: s['categorie_nom'] as String?,
+                      taille: 44,
                     ),
                     title: Text(nom),
                     subtitle: Text([
@@ -281,18 +290,18 @@ class _StockTabState extends State<StockTab> {
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.add_box_outlined),
-                                tooltip: 'Réception de marchandise',
+                                tooltip: l.reapprovisionner,
                                 onPressed: () => _reapprovisionner(produitId, nom, q),
                               ),
                               if (dejaSignale)
-                                const Padding(
-                                  padding: EdgeInsets.only(left: 4),
-                                  child: Text('Signalé', style: TextStyle(fontSize: 12)),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Text(l.signale, style: const TextStyle(fontSize: 12)),
                                 )
                               else if (vide)
                                 TextButton(
                                   onPressed: () => _signaler(produitId, nom),
-                                  child: const Text('Signaler'),
+                                  child: Text(l.signaler),
                                 ),
                             ],
                           ),
@@ -300,11 +309,10 @@ class _StockTabState extends State<StockTab> {
                 );
               }),
               const SizedBox(height: 16),
-              const Text(
-                'Vos ventes et vos stocks ne sont visibles que de vous. '
-                'Ni votre distributeur, ni les fabricants n\'y ont accès.',
+              Text(
+                l.confidentialite,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, height: 1.4),
+                style: const TextStyle(fontSize: 12, height: 1.4),
               ),
             ],
           );

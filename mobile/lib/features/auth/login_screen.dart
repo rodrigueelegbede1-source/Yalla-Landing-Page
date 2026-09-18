@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/auth/auth_providers.dart';
+import '../../core/langue.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Connexion par numéro de téléphone.
 ///
@@ -52,13 +54,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on AuthException catch (e) {
       // On ne répète pas le message de Supabase, qui parle d'email alors que
       // l'utilisateur a saisi un numéro. Cela ne ferait que le dérouter.
+      if (!mounted) return;
+      final l = L.of(context);
       setState(() => _erreur = e.statusCode == '400'
-          ? 'Numéro ou mot de passe incorrect'
-          : 'Connexion impossible. Vérifiez votre réseau.');
+          ? l.erreurIdentifiants
+          : l.erreurReseau);
     } on FormatException catch (e) {
       setState(() => _erreur = e.message);
     } catch (_) {
-      setState(() => _erreur = 'Connexion impossible. Vérifiez votre réseau.');
+      if (!mounted) return;
+      final l = L.of(context);
+      setState(() => _erreur = l.erreurReseau);
     } finally {
       if (mounted) setState(() => _enCours = false);
     }
@@ -66,6 +72,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = L.of(context);
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -77,15 +85,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Yalla',
+                  Text(l.appNom,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                             fontWeight: FontWeight.w800,
                           )),
                   const SizedBox(height: 8),
-                  const Text('La rupture de stock, réglée en temps réel',
+                  Text(l.appAccroche,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14)),
+                      style: const TextStyle(fontSize: 14)),
                   const SizedBox(height: 40),
                   TextFormField(
                     controller: _telephone,
@@ -94,35 +102,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')),
                     ],
-                    decoration: const InputDecoration(
-                      labelText: 'Numéro de téléphone',
+                    decoration: InputDecoration(
+                      labelText: l.numeroTelephone,
                       hintText: '07 06 30 30 30',
-                      prefixIcon: Icon(Icons.phone_outlined),
-                      border: OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.phone_outlined),
+                      border: const OutlineInputBorder(),
                     ),
                     validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Saisissez votre numéro' : null,
+                        (v == null || v.trim().isEmpty) ? l.numeroTelephone : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _motDePasse,
                     obscureText: !_motDePasseVisible,
                     decoration: InputDecoration(
-                      labelText: 'Mot de passe',
+                      labelText: l.motDePasse,
                       prefixIcon: const Icon(Icons.lock_outline),
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         icon: Icon(_motDePasseVisible
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined),
-                        tooltip: _motDePasseVisible ? 'Masquer' : 'Afficher',
+                        tooltip: l.motDePasse,
                         onPressed: () =>
                             setState(() => _motDePasseVisible = !_motDePasseVisible),
                       ),
                     ),
                     onFieldSubmitted: (_) => _connecter(),
                     validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Saisissez votre mot de passe' : null,
+                        (v == null || v.isEmpty) ? l.motDePasse : null,
                   ),
                   if (_erreur != null) ...[
                     const SizedBox(height: 16),
@@ -151,15 +159,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Se connecter'),
+                        : Text(l.seConnecter),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Votre compte vous est remis par l\'agent qui a recensé '
-                    'votre boutique, ou par votre distributeur.',
+                  Text(
+                    l.indiceConnexion,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, height: 1.4),
+                    style: const TextStyle(fontSize: 12, height: 1.4),
                   ),
+                  const SizedBox(height: 8),
+                  const Center(child: BoutonLangue()),
                 ],
               ),
             ),

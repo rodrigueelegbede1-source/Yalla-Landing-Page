@@ -44,3 +44,8 @@ npm-debug.log*
 mobile/android/key.properties
 *.jks
 *.keystore
+
+# Traductions générées par `flutter gen-l10n` depuis les fichiers .arb.
+# Elles se régénèrent à chaque `flutter pub get`, les versionner ne ferait que
+# produire du bruit à chaque compilation.
+mobile/lib/l10n/app_localizations*.dart

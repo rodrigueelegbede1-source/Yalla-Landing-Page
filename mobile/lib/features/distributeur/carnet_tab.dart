@@ -119,7 +119,8 @@ class _CarnetTabState extends State<CarnetTab> {
       widget.onChangement();
       await _rafraichir();
     } catch (e) {
-      _message(messageErreur(e));
+      if (!mounted) return;
+      _message(messageErreur(context, e));
     }
   }
 
@@ -144,7 +145,7 @@ class _CarnetTabState extends State<CarnetTab> {
             return EtatVide(
               icone: Icons.cloud_off_outlined,
               titre: 'Chargement impossible',
-              message: messageErreur(snap.error!),
+              message: messageErreur(context, snap.error!),
             );
           }
 

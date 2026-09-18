@@ -1,0 +1,366 @@
+{
+  "@@locale": "ar",
+  "appNom": "يالا",
+  "appAccroche": "نفاد المخزون، يُحلّ في الوقت الفعلي",
+  "seConnecter": "تسجيل الدخول",
+  "numeroTelephone": "رقم الهاتف",
+  "motDePasse": "كلمة المرور",
+  "indiceConnexion": "يسلّمك حسابك المندوب الذي سجّل متجرك، أو الموزّع الخاص بك.",
+  "seDeconnecter": "تسجيل الخروج",
+  "numeroIncomplet": "الرقم غير مكتمل. مثال: 07 06 30 30 30",
+  "langue": "اللغة",
+  "langueFrancais": "Français",
+  "langueArabe": "العربية",
+  "annuler": "إلغاء",
+  "valider": "تأكيد",
+  "ajouter": "إضافة",
+  "reessayer": "إعادة المحاولة",
+  "reprendre": "إعادة",
+  "fermer": "إغلاق",
+  "cestNote": "تم التسجيل",
+  "chargementImpossible": "تعذّر التحميل",
+  "rechercher": "بحث",
+  "tousLesProduits": "الكل",
+  "ongletCaisse": "الصندوق",
+  "ongletStock": "المخزون",
+  "ongletCatalogue": "الكتالوج",
+  "ongletCourses": "الطلبات",
+  "ongletFlotte": "الموزّعون",
+  "ongletReseau": "الشبكة",
+  "ongletAProximite": "القريبة",
+  "ongletMesCourses": "طلباتي",
+  "panier": "السلة",
+  "panierVide": "السلة فارغة",
+  "ajouterAuPanier": "أضف إلى السلة",
+  "produitHorsCatalogue": "منتج خارج الكتالوج",
+  "nomDuProduit": "اسم المنتج",
+  "prixUnitaire": "سعر الوحدة",
+  "lUnite": "{montant} للوحدة",
+  "@lUnite": {
+    "placeholders": {
+      "montant": {}
+    }
+  },
+  "total": "المجموع",
+  "encaisser": "تحصيل",
+  "venteEnregistree": "تم تسجيل البيع",
+  "enStock": "{quantite} في المخزون",
+  "@enStock": {
+    "placeholders": {
+      "quantite": {
+        "type": "int"
+      }
+    }
+  },
+  "rupture": "نفد",
+  "monStock": "مخزوني",
+  "suivreUnProduit": "تتبّع منتج",
+  "stockVideTitre": "لا يوجد منتج متتبَّع",
+  "stockVideMessage": "أضف المنتجات التي تبيعها أكثر. عندما تُفرغ عملية بيع أحدها، سيُعرض عليك طلب التموين تلقائيًا.",
+  "signaler": "إبلاغ",
+  "signale": "تم الإبلاغ",
+  "reapprovisionner": "تموين",
+  "quantiteRecue": "الكمية المستلمة",
+  "quantiteDemandee": "الكمية المطلوبة",
+  "cartons": "{nombre, plural, =1{كرتون واحد} =2{كرتونان} few{{nombre} كراتين} other{{nombre} كرتونًا}}",
+  "@cartons": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "aConfirmerTitre": "طلبات بانتظار تأكيدك",
+  "aConfirmerCompteur": "{nombre, plural, =1{طلب واحد بانتظار التأكيد} =2{طلبان بانتظار التأكيد} few{{nombre} طلبات بانتظار التأكيد} other{{nombre} طلبًا بانتظار التأكيد}}",
+  "@aConfirmerCompteur": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "aConfirmerExplication": "رصد صندوقك نفاد هذه المنتجات. لن يراها أحد غيرك ما لم تؤكّدها.",
+  "confirmerLaRupture": "تأكيد",
+  "rejeterLaRupture": "لا، ما زال لديّ",
+  "combienDeCartons": "كم كرتونًا تحتاج؟",
+  "ruptureConfirmee": "أُرسل الطلب إلى الموزّع",
+  "ruptureRejetee": "أُلغي الطلب",
+  "detecteeIlYA": "رُصد منذ {duree}",
+  "@detecteeIlYA": {
+    "placeholders": {
+      "duree": {}
+    }
+  },
+  "catalogueTitre": "اطلب منتجًا",
+  "catalogueExplication": "اختر ما تحتاجه، حتى لو لم تكن تتتبّعه في المخزون. سيصل الطلب إلى موزّعك فورًا.",
+  "catalogueVideTitre": "لا يوجد كتالوج",
+  "catalogueVideMessage": "لا يخدم متجرك أي مصنّع بعد. تواصل مع المندوب الذي سجّلك.",
+  "dejaDemande": "مطلوب سابقًا",
+  "demander": "اطلب",
+  "demandeEnvoyee": "أُرسل الطلب",
+  "mesCourses": "طلباتي",
+  "coursesEnAttente": "{nombre, plural, =1{واحد بالانتظار} =2{اثنان بالانتظار} few{{nombre} بالانتظار} other{{nombre} بالانتظار}}",
+  "@coursesEnAttente": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "carnetVideTitre": "لا توجد طلبات بالانتظار",
+  "carnetVideMessage": "متاجرك مخدومة. ستظهر الطلبات الجديدة هنا فور الإبلاغ عنها، دون أي إجراء منك.",
+  "ouvertesDansMaCommune": "مفتوحة في بلديتي",
+  "disponibles": "{nombre, plural, =1{واحد متاح} =2{اثنان متاحان} few{{nombre} متاحة} other{{nombre} متاحًا}}",
+  "@disponibles": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "elargieExplication": "لم يأخذها الموزّع المعيّن ضمن المهلة. لا تصلك إلا على العلامات التي توزّعها. الأسبق أولًا.",
+  "etiquetteElargie": "موسّعة",
+  "etiquetteEscaladeDans": "تُفتح للآخرين خلال {duree}",
+  "@etiquetteEscaladeDans": {
+    "placeholders": {
+      "duree": {}
+    }
+  },
+  "etiquetteDelaiDepasse": "انتهت المهلة",
+  "affecter": "إسناد",
+  "affectee": "مُسندة",
+  "affecterAUnLivreur": "إسناد إلى موصِّل",
+  "courseAffectee": "تم إسناد الطلب",
+  "aucunLivreurActif": "لا يوجد موصِّل نشط في فريقك. أضف واحدًا من تبويب الموزّعون.",
+  "maFlotte": "فريقي",
+  "enLigneSur": "{enLigne} متصل من أصل {total}",
+  "@enLigneSur": {
+    "placeholders": {
+      "enLigne": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "flotteVideTitre": "لا يوجد موصِّل",
+  "flotteVideMessage": "بدون موصِّل، ترى الطلبات ولا تستطيع إسنادها لأحد. أضف أول موصِّل: ستسلّمه رقمه وكلمة مروره يدًا بيد.",
+  "ajouterUnLivreur": "إضافة موصِّل",
+  "nouveauLivreur": "موصِّل جديد",
+  "nomDuLivreur": "اسم الموصِّل",
+  "telephone": "الهاتف",
+  "etiquetteEnLigne": "متصل",
+  "etiquetteHorsLigne": "غير متصل",
+  "etiquettePositionFigee": "متصل، الموقع متوقف",
+  "etiquetteEcarte": "مستبعَد",
+  "ecartes": "المستبعَدون",
+  "ecarterDeLaFlotte": "استبعاد من الفريق",
+  "reintegrer": "إعادة الإدماج",
+  "ecarterQuestion": "استبعاد {nom}؟",
+  "@ecarterQuestion": {
+    "placeholders": {
+      "nom": {}
+    }
+  },
+  "ecarterExplication": "لن يتلقّى طلبات بعد الآن ولن يظهر على خريطتك. يُحفظ سجلّ توصيلاته، ويمكنك إعادته في أي وقت.",
+  "ecarter": "استبعاد",
+  "livraisonsTerminees": "{nombre, plural, =1{توصيلة واحدة} =2{توصيلتان} few{{nombre} توصيلات} other{{nombre} توصيلة}}",
+  "@livraisonsTerminees": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "coursesEnCours": "{nombre} قيد التنفيذ",
+  "@coursesEnCours": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "enLigneDisponible": "متصل ومتاح",
+  "horsLigneExplication": "غير متصل، لن يرى الطلب إلا عند عودته",
+  "mesMarques": "علاماتي",
+  "boutiques": "{nombre, plural, =1{متجر واحد} =2{متجران} few{{nombre} متاجر} other{{nombre} متجرًا}}",
+  "@boutiques": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "reseauVideTitre": "لم تُعلن أي متجر",
+  "reseauVideMessage": "ما لم تُعلن أي متجر، لن تصلك الطلبات إلا بعد ساعتين من التوسيع، وبمنافسة الآخرين. أعلن المتاجر التي تخدمها فعلًا.",
+  "ajouterUneBoutique": "إضافة متجر",
+  "choisirUneBoutique": "اختر متجرًا",
+  "nomOuCommune": "الاسم أو البلدية",
+  "quelleMarquePour": "أي علامة لـ {nom}؟",
+  "@quelleMarquePour": {
+    "placeholders": {
+      "nom": {}
+    }
+  },
+  "retirerDeMonReseau": "إزالة من شبكتي",
+  "retirerBoutiqueQuestion": "إزالة {nom}؟",
+  "@retirerBoutiqueQuestion": {
+    "placeholders": {
+      "nom": {}
+    }
+  },
+  "retirerBoutiqueExplication": "لن تصلك طلباته على {marque} فور الإبلاغ. لن تصلك إلا بعد التوسيع، وبمنافسة بقية موزّعي البلدية.",
+  "@retirerBoutiqueExplication": {
+    "placeholders": {
+      "marque": {}
+    }
+  },
+  "retirer": "إزالة",
+  "boutiqueAjoutee": "أُضيف المتجر إلى شبكتك. ستصلك طلباته من الثانية الأولى.",
+  "rupturesOuvertes": "{nombre, plural, =1{طلب مفتوح} =2{طلبان مفتوحان} few{{nombre} طلبات مفتوحة} other{{nombre} طلبًا مفتوحًا}}",
+  "@rupturesOuvertes": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "aucuneBoutiqueVisible": "لا ترى إلا متاجر البلديات التي تعمل فيها. لفتح بلدية جديدة، يجب أن يُسند إليك مسؤول الشبكة أول متجر.",
+  "prendre": "أخذ",
+  "coursePrise": "أخذت الطلب. تجده في طلباتي.",
+  "aProximiteVideTitre": "لا توجد طلبات قريبة",
+  "aProximiteVideMessage": "ستظهر هنا طلبات منطقتك فور إبلاغ متجر عن نفاد.",
+  "mesCoursesVideTitre": "لا توجد طلبات جارية",
+  "mesCoursesVideMessage": "خذ طلبًا من تبويب القريبة، أو انتظر أن يُسند إليك موزّعك واحدًا.",
+  "appeler": "اتصال",
+  "itineraire": "الطريق",
+  "livrer": "تسليم",
+  "abandonner": "التخلّي",
+  "montantEncaisse": "المبلغ المحصَّل",
+  "livraisonTerminee": "تمّ التسليم",
+  "courseAbandonnee": "تُرك الطلب",
+  "kilometres": "{valeur} كم",
+  "@kilometres": {
+    "placeholders": {
+      "valeur": {}
+    }
+  },
+  "depuisDuree": "منذ {duree}",
+  "@depuisDuree": {
+    "placeholders": {
+      "duree": {}
+    }
+  },
+  "horsService": "أنت خارج الخدمة. اتّصل لتتلقّى الطلبات.",
+  "positionRefusee": "بدون موقعك، لا يمكن ترتيب الطلبات حسب المسافة.",
+  "positionBloquee": "تحديد الموقع محظور على يالا. أعد تفعيله من إعدادات الهاتف.",
+  "suiviPremierPlan": "التتبّع نشط، لكن فقط والتطبيق مفتوح. إن وضعت هاتفك في جيبك، لن يراك موزّعك تتقدّم.",
+  "suiviActifDepuis": "التتبّع جارٍ، أُرسل الموقع منذ {duree}.",
+  "@suiviActifDepuis": {
+    "placeholders": {
+      "duree": {}
+    }
+  },
+  "suiviPremierePosition": "التتبّع جارٍ، بانتظار الموقع الأول.",
+  "autoriser": "السماح",
+  "reglages": "الإعدادات",
+  "activerEnFond": "التفعيل في الخلفية",
+  "recenserUneBoutique": "تسجيل متجر",
+  "mesRecensements": "تسجيلاتي",
+  "recensementVideTitre": "لم تسجّل أي متجر",
+  "recensementVideMessage": "كل متجر مسجَّل يحصل على صندوقه مجانًا ويدخل الشبكة. ابدأ بمتاجر منطقتك.",
+  "aujourdhuiEtTotal": "{jour} اليوم · {total} إجمالًا",
+  "@aujourdhuiEtTotal": {
+    "placeholders": {
+      "jour": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "nomDeLaBoutique": "اسم المتجر",
+  "typeActivite": "نوع النشاط",
+  "typeBoutique": "متجر",
+  "typeSuperette": "سوبر ماركت صغير",
+  "typeKiosque": "كشك",
+  "typeRestaurant": "مطعم أو مقهى",
+  "commune": "البلدية",
+  "repereFacultatif": "علامة مميّزة (اختياري)",
+  "leGerant": "المسؤول",
+  "leGerantExplication": "هو من سيدخل إلى الصندوق. رقمه هو معرّفه.",
+  "nomDuGerant": "اسم المسؤول",
+  "motDePasseARemettre": "كلمة المرور التي ستسلّمها",
+  "enGenererUnAutre": "توليد كلمة أخرى",
+  "inscrireLaBoutique": "تسجيل المتجر",
+  "compteCree": "أُنشئ الحساب",
+  "identifiantsExplication": "دوّن هذه البيانات وسلّمها الآن. لن تُعرض كلمة المرور مرة أخرى.",
+  "identifiant": "المعرّف",
+  "creerLeCompte": "إنشاء الحساب",
+  "creerCompteExplication": "رقمه سيكون معرّفه. ستسلّمه كلمة المرور يدًا بيد.",
+  "positionEnCours": "جارٍ تحديد الموقع",
+  "positionResterDevant": "ابقَ أمام المتجر.",
+  "positionIndisponible": "الموقع غير متاح",
+  "positionRelevee": "حُدّد الموقع بدقة {metres} م",
+  "@positionRelevee": {
+    "placeholders": {
+      "metres": {
+        "type": "int"
+      }
+    }
+  },
+  "positionImprecise": "الدقة غير كافية للتمييز بين متجرين متجاورين. انتظر قليلًا ثم أعد المحاولة.",
+  "positionObligatoire": "لم يُحدَّد الموقع بعد. وهو ضروري: به يُعرف أقرب موصِّل.",
+  "positionEteinte": "تحديد الموقع مطفأ في الهاتف. فعّله من الإعدادات ثم أعد المحاولة.",
+  "positionRefusParApp": "لا يملك يالا إذنًا لموقعك. اسمح به لتتمكّن من التسجيل.",
+  "positionEchec": "تعذّر تحديد الموقع. اخرج أمام المتجر ثم أعد المحاولة.",
+  "positionGpsLent": "إشارة GPS ضعيفة هنا. اخرج أمام المتجر ثم أعد التحديد.",
+  "nomTropCourt": "الاسم قصير جدًا",
+  "communeObligatoire": "البلدية مطلوبة",
+  "roleEnConstruction": "الواجهة قيد الإنشاء",
+  "roleEnConstructionMessage": "الدور «{role}» غير متاح بعد في التطبيق. النسخة الأولى تغطّي المتاجر والموزّعين والموصِّلين والتسجيل.",
+  "@roleEnConstructionMessage": {
+    "placeholders": {
+      "role": {}
+    }
+  },
+  "compteIncomplet": "حساب غير مكتمل",
+  "compteIncompletMessage": "حسابك موجود لكنه غير مرتبط بأي متجر أو موزّع. تواصل مع من سلّمك بياناتك.",
+  "connexionImpossible": "تعذّر الاتصال",
+  "connexionImpossibleMessage": "تعذّر الوصول إلى يالا. تحقّق من الشبكة ثم أعد تشغيل التطبيق.",
+  "erreurDroits": "لا تملك صلاحية هذا الإجراء.",
+  "erreurSession": "انتهت الجلسة. سجّل الدخول من جديد.",
+  "erreurGenerique": "فشلت العملية. أعد المحاولة.",
+  "erreurReseau": "تعذّر الاتصال. تحقّق من الشبكة.",
+  "erreurCreationCompte": "تعذّر الإنشاء. تحقّق من الشبكة ثم أعد المحاولة.",
+  "erreurServiceComptes": "خدمة إنشاء الحسابات غير متاحة.",
+  "misAJourEnDirect": "تحديث مباشر",
+  "horsDirect": "غير مباشر، اسحب القائمة للتحديث",
+  "francsCfa": "{montant} فرنك",
+  "@francsCfa": {
+    "placeholders": {
+      "montant": {}
+    }
+  },
+  "erreurIdentifiants": "الرقم أو كلمة المرور غير صحيحة",
+  "venteEncaissee": "تم تحصيل بيع بقيمة {montant}",
+  "@venteEncaissee": {
+    "placeholders": {
+      "montant": {}
+    }
+  },
+  "stockMisAJour": "حُدّث المخزون: {quantite} في الرفّ",
+  "@stockMisAJour": {
+    "placeholders": {
+      "quantite": {}
+    }
+  },
+  "ruptureTransmise": "أُرسل الطلب إلى الموزّع",
+  "tousDejaSuivis": "جميع منتجات الكتالوج متتبَّعة بالفعل",
+  "combienUnitesRecues": "كم وحدة استلمت؟",
+  "caisseVideMessage": "لا يوجد منتج متتبَّع. أضف مخزونًا من تبويب المخزون ليتمكّن يالا من رصد نفاد منتجاتك تلقائيًا.",
+  "caisseRappelAuto": "كل عملية بيع تُفرغ المخزون تُنبّه موزّعك من تلقاء نفسها. لا شيء عليك الإبلاغ عنه.",
+  "confidentialite": "مبيعاتك ومخزونك مرئيان لك وحدك. لا الموزّع ولا المصنّع يطّلع عليهما."
+}

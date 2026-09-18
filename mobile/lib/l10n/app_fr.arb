@@ -1,0 +1,366 @@
+{
+  "@@locale": "fr",
+  "appNom": "Yalla",
+  "appAccroche": "La rupture de stock, réglée en temps réel",
+  "seConnecter": "Se connecter",
+  "numeroTelephone": "Numéro de téléphone",
+  "motDePasse": "Mot de passe",
+  "indiceConnexion": "Votre compte vous est remis par l'agent qui a recensé votre boutique, ou par votre distributeur.",
+  "seDeconnecter": "Se déconnecter",
+  "numeroIncomplet": "Numéro incomplet. Exemple : 07 06 30 30 30",
+  "langue": "Langue",
+  "langueFrancais": "Français",
+  "langueArabe": "العربية",
+  "annuler": "Annuler",
+  "valider": "Valider",
+  "ajouter": "Ajouter",
+  "reessayer": "Réessayer",
+  "reprendre": "Reprendre",
+  "fermer": "Fermer",
+  "cestNote": "C'est noté",
+  "chargementImpossible": "Chargement impossible",
+  "rechercher": "Rechercher",
+  "tousLesProduits": "Tous",
+  "ongletCaisse": "Caisse",
+  "ongletStock": "Stock",
+  "ongletCatalogue": "Catalogue",
+  "ongletCourses": "Courses",
+  "ongletFlotte": "Flotte",
+  "ongletReseau": "Réseau",
+  "ongletAProximite": "À proximité",
+  "ongletMesCourses": "Mes courses",
+  "panier": "Panier",
+  "panierVide": "Le panier est vide",
+  "ajouterAuPanier": "Ajouter au panier",
+  "produitHorsCatalogue": "Produit hors catalogue",
+  "nomDuProduit": "Nom du produit",
+  "prixUnitaire": "Prix unitaire",
+  "lUnite": "{montant} l'unité",
+  "@lUnite": {
+    "placeholders": {
+      "montant": {}
+    }
+  },
+  "total": "Total",
+  "encaisser": "Encaisser",
+  "venteEnregistree": "Vente enregistrée",
+  "enStock": "{quantite} en stock",
+  "@enStock": {
+    "placeholders": {
+      "quantite": {
+        "type": "int"
+      }
+    }
+  },
+  "rupture": "Rupture",
+  "monStock": "Mon stock",
+  "suivreUnProduit": "Suivre un produit",
+  "stockVideTitre": "Aucun produit suivi",
+  "stockVideMessage": "Ajoutez les références que vous vendez le plus. Quand une vente en videra une, la rupture vous sera proposée toute seule.",
+  "signaler": "Signaler",
+  "signale": "Signalé",
+  "reapprovisionner": "Réapprovisionner",
+  "quantiteRecue": "Quantité reçue",
+  "quantiteDemandee": "Quantité demandée",
+  "cartons": "{nombre, plural, =1{1 carton} other{{nombre} cartons}}",
+  "@cartons": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "aConfirmerTitre": "Ruptures à confirmer",
+  "aConfirmerCompteur": "{nombre, plural, =1{1 rupture à confirmer} other{{nombre} ruptures à confirmer}}",
+  "@aConfirmerCompteur": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "aConfirmerExplication": "Votre caisse a vu ces produits tomber à zéro. Tant que vous n'avez pas confirmé, personne d'autre ne les voit.",
+  "confirmerLaRupture": "Confirmer",
+  "rejeterLaRupture": "Non, j'en ai encore",
+  "combienDeCartons": "Combien de cartons vous faut-il ?",
+  "ruptureConfirmee": "Demande envoyée à votre distributeur",
+  "ruptureRejetee": "Demande annulée",
+  "detecteeIlYA": "Détectée il y a {duree}",
+  "@detecteeIlYA": {
+    "placeholders": {
+      "duree": {}
+    }
+  },
+  "catalogueTitre": "Demander un produit",
+  "catalogueExplication": "Choisissez ce dont vous avez besoin, même si vous ne le suivez pas en stock. Votre distributeur le recevra tout de suite.",
+  "catalogueVideTitre": "Aucun catalogue disponible",
+  "catalogueVideMessage": "Aucun fabricant ne dessert encore votre boutique. Contactez l'agent qui vous a recensé.",
+  "dejaDemande": "Déjà demandé",
+  "demander": "Demander",
+  "demandeEnvoyee": "Demande envoyée",
+  "mesCourses": "Mes courses",
+  "coursesEnAttente": "{nombre, plural, =1{1 en attente} other{{nombre} en attente}}",
+  "@coursesEnAttente": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "carnetVideTitre": "Aucune course en attente",
+  "carnetVideMessage": "Vos boutiques sont servies. Les nouvelles ruptures apparaîtront ici dès qu'elles seront signalées, sans rien toucher.",
+  "ouvertesDansMaCommune": "Ouvertes dans ma commune",
+  "disponibles": "{nombre, plural, =1{1 disponible} other{{nombre} disponibles}}",
+  "@disponibles": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "elargieExplication": "Non prises par leur distributeur attribué dans le délai. Elles ne vous parviennent que sur les marques que vous portez. Premier arrivé, premier servi.",
+  "etiquetteElargie": "ÉLARGIE",
+  "etiquetteEscaladeDans": "OUVERTE AUX AUTRES DANS {duree}",
+  "@etiquetteEscaladeDans": {
+    "placeholders": {
+      "duree": {}
+    }
+  },
+  "etiquetteDelaiDepasse": "DÉLAI DÉPASSÉ",
+  "affecter": "Affecter",
+  "affectee": "Affectée",
+  "affecterAUnLivreur": "Affecter à un livreur",
+  "courseAffectee": "Course affectée",
+  "aucunLivreurActif": "Aucun livreur actif dans votre flotte. Ajoutez-en un dans l'onglet Flotte.",
+  "maFlotte": "Ma flotte",
+  "enLigneSur": "{enLigne} en ligne sur {total}",
+  "@enLigneSur": {
+    "placeholders": {
+      "enLigne": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "flotteVideTitre": "Aucun livreur",
+  "flotteVideMessage": "Sans livreur, vous voyez les ruptures mais ne pouvez les affecter à personne. Ajoutez votre premier livreur : vous lui remettrez son numéro et son mot de passe en main propre.",
+  "ajouterUnLivreur": "Ajouter un livreur",
+  "nouveauLivreur": "Nouveau livreur",
+  "nomDuLivreur": "Nom du livreur",
+  "telephone": "Téléphone",
+  "etiquetteEnLigne": "EN LIGNE",
+  "etiquetteHorsLigne": "HORS LIGNE",
+  "etiquettePositionFigee": "EN LIGNE, POSITION FIGÉE",
+  "etiquetteEcarte": "ÉCARTÉ",
+  "ecartes": "Écartés",
+  "ecarterDeLaFlotte": "Écarter de la flotte",
+  "reintegrer": "Réintégrer",
+  "ecarterQuestion": "Écarter {nom} ?",
+  "@ecarterQuestion": {
+    "placeholders": {
+      "nom": {}
+    }
+  },
+  "ecarterExplication": "Il ne recevra plus de course et n'apparaîtra plus sur votre carte. Son historique de livraisons est conservé, et vous pouvez le réintégrer à tout moment.",
+  "ecarter": "Écarter",
+  "livraisonsTerminees": "{nombre, plural, =1{1 livrée} other{{nombre} livrées}}",
+  "@livraisonsTerminees": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "coursesEnCours": "{nombre} en cours",
+  "@coursesEnCours": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "enLigneDisponible": "En ligne, disponible",
+  "horsLigneExplication": "Hors ligne, il ne verra la course qu'à sa reconnexion",
+  "mesMarques": "Mes marques",
+  "boutiques": "{nombre, plural, =1{1 boutique} other{{nombre} boutiques}}",
+  "@boutiques": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "reseauVideTitre": "Aucune boutique déclarée",
+  "reseauVideMessage": "Tant que vous n'avez déclaré aucune boutique, les ruptures ne vous sont adressées qu'après deux heures d'escalade, et en concurrence avec les autres. Déclarez celles que vous desservez déjà.",
+  "ajouterUneBoutique": "Ajouter une boutique",
+  "choisirUneBoutique": "Choisir une boutique",
+  "nomOuCommune": "Nom ou commune",
+  "quelleMarquePour": "Quelle marque pour {nom} ?",
+  "@quelleMarquePour": {
+    "placeholders": {
+      "nom": {}
+    }
+  },
+  "retirerDeMonReseau": "Retirer de mon réseau",
+  "retirerBoutiqueQuestion": "Retirer {nom} ?",
+  "@retirerBoutiqueQuestion": {
+    "placeholders": {
+      "nom": {}
+    }
+  },
+  "retirerBoutiqueExplication": "Vous ne recevrez plus ses ruptures sur {marque} dès le signalement. Elles ne vous parviendront qu'après escalade, et en concurrence avec les autres distributeurs de la commune.",
+  "@retirerBoutiqueExplication": {
+    "placeholders": {
+      "marque": {}
+    }
+  },
+  "retirer": "Retirer",
+  "boutiqueAjoutee": "Boutique ajoutée à votre réseau. Ses ruptures vous parviendront désormais dès la première seconde.",
+  "rupturesOuvertes": "{nombre, plural, =1{1 rupture ouverte} other{{nombre} ruptures ouvertes}}",
+  "@rupturesOuvertes": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "aucuneBoutiqueVisible": "Vous ne voyez que les boutiques des communes où vous opérez déjà. Pour ouvrir une nouvelle commune, votre première boutique doit vous être attribuée par l'administrateur du réseau.",
+  "prendre": "Prendre",
+  "coursePrise": "Course prise. Retrouvez-la dans Mes courses.",
+  "aProximiteVideTitre": "Aucune course à proximité",
+  "aProximiteVideMessage": "Les ruptures de votre secteur apparaîtront ici dès qu'une boutique en signalera une.",
+  "mesCoursesVideTitre": "Aucune course en cours",
+  "mesCoursesVideMessage": "Prenez une course dans l'onglet À proximité, ou attendez que votre distributeur vous en affecte une.",
+  "appeler": "Appeler",
+  "itineraire": "Itinéraire",
+  "livrer": "Livrer",
+  "abandonner": "Abandonner",
+  "montantEncaisse": "Montant encaissé",
+  "livraisonTerminee": "Livraison terminée",
+  "courseAbandonnee": "Course abandonnée",
+  "kilometres": "{valeur} km",
+  "@kilometres": {
+    "placeholders": {
+      "valeur": {}
+    }
+  },
+  "depuisDuree": "depuis {duree}",
+  "@depuisDuree": {
+    "placeholders": {
+      "duree": {}
+    }
+  },
+  "horsService": "Vous êtes hors service. Mettez-vous en ligne pour recevoir des courses.",
+  "positionRefusee": "Sans votre position, les courses ne peuvent pas être triées par distance.",
+  "positionBloquee": "La localisation est bloquée pour Yalla. Rétablissez-la dans les réglages du téléphone.",
+  "suiviPremierPlan": "Suivi actif, mais seulement application ouverte. Téléphone en poche, votre distributeur ne vous verra plus avancer.",
+  "suiviActifDepuis": "Suivi en cours, position transmise il y a {duree}.",
+  "@suiviActifDepuis": {
+    "placeholders": {
+      "duree": {}
+    }
+  },
+  "suiviPremierePosition": "Suivi en cours, première position en attente.",
+  "autoriser": "Autoriser",
+  "reglages": "Réglages",
+  "activerEnFond": "Activer en fond",
+  "recenserUneBoutique": "Recenser une boutique",
+  "mesRecensements": "Mes recensements",
+  "recensementVideTitre": "Aucune boutique recensée",
+  "recensementVideMessage": "Chaque boutique inscrite reçoit sa caisse gratuite et entre dans le réseau. Commencez par celles de votre secteur.",
+  "aujourdhuiEtTotal": "{jour} aujourd'hui · {total} au total",
+  "@aujourdhuiEtTotal": {
+    "placeholders": {
+      "jour": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "nomDeLaBoutique": "Nom de la boutique",
+  "typeActivite": "Type d'activité",
+  "typeBoutique": "Boutique",
+  "typeSuperette": "Supérette",
+  "typeKiosque": "Kiosque",
+  "typeRestaurant": "Restaurant ou maquis",
+  "commune": "Commune",
+  "repereFacultatif": "Repère (facultatif)",
+  "leGerant": "Le gérant",
+  "leGerantExplication": "C'est lui qui se connectera à la caisse. Son numéro lui sert d'identifiant.",
+  "nomDuGerant": "Nom du gérant",
+  "motDePasseARemettre": "Mot de passe à remettre",
+  "enGenererUnAutre": "En générer un autre",
+  "inscrireLaBoutique": "Inscrire la boutique",
+  "compteCree": "Compte créé",
+  "identifiantsExplication": "Notez ces identifiants et remettez-les maintenant. Le mot de passe ne pourra plus être affiché.",
+  "identifiant": "Identifiant",
+  "creerLeCompte": "Créer le compte",
+  "creerCompteExplication": "Son numéro lui servira d'identifiant. Vous lui remettrez le mot de passe en main propre.",
+  "positionEnCours": "Relevé de la position en cours",
+  "positionResterDevant": "Restez devant la boutique.",
+  "positionIndisponible": "Position indisponible",
+  "positionRelevee": "Position relevée à {metres} m près",
+  "@positionRelevee": {
+    "placeholders": {
+      "metres": {
+        "type": "int"
+      }
+    }
+  },
+  "positionImprecise": "Trop imprécis pour distinguer deux boutiques voisines. Attendez quelques secondes puis reprenez.",
+  "positionObligatoire": "La position n'a pas encore été relevée. Elle est indispensable : c'est elle qui décide du livreur le plus proche.",
+  "positionEteinte": "La localisation du téléphone est éteinte. Activez-la dans les réglages, puis reprenez.",
+  "positionRefusParApp": "Yalla n'a pas accès à votre position. Autorisez-la pour pouvoir recenser.",
+  "positionEchec": "Impossible de relever la position. Sortez devant la boutique, puis reprenez.",
+  "positionGpsLent": "Le GPS n'accroche pas ici. Sortez devant la boutique, puis reprenez le relevé.",
+  "nomTropCourt": "Nom trop court",
+  "communeObligatoire": "Commune obligatoire",
+  "roleEnConstruction": "Interface en construction",
+  "roleEnConstructionMessage": "Le rôle « {role} » n'est pas encore disponible dans l'application. La première version couvre les boutiques, les distributeurs, les livreurs et le recensement.",
+  "@roleEnConstructionMessage": {
+    "placeholders": {
+      "role": {}
+    }
+  },
+  "compteIncomplet": "Compte incomplet",
+  "compteIncompletMessage": "Votre compte existe mais n'est rattaché à aucune boutique, ni à aucun distributeur. Contactez la personne qui vous a remis vos identifiants.",
+  "connexionImpossible": "Connexion impossible",
+  "connexionImpossibleMessage": "Impossible de joindre Yalla. Vérifiez votre réseau, puis relancez l'application.",
+  "erreurDroits": "Vous n'avez pas les droits pour cette action.",
+  "erreurSession": "Session expirée. Reconnectez-vous.",
+  "erreurGenerique": "L'opération a échoué. Réessayez.",
+  "erreurReseau": "Connexion impossible. Vérifiez votre réseau.",
+  "erreurCreationCompte": "Création impossible. Vérifiez votre réseau, puis réessayez.",
+  "erreurServiceComptes": "Le service de création de comptes est injoignable.",
+  "misAJourEnDirect": "Mise à jour en direct",
+  "horsDirect": "Hors direct, tirez la liste pour rafraîchir",
+  "francsCfa": "{montant} F",
+  "@francsCfa": {
+    "placeholders": {
+      "montant": {}
+    }
+  },
+  "erreurIdentifiants": "Numéro ou mot de passe incorrect",
+  "venteEncaissee": "Vente de {montant} encaissée",
+  "@venteEncaissee": {
+    "placeholders": {
+      "montant": {}
+    }
+  },
+  "stockMisAJour": "Stock mis à jour : {quantite} en rayon",
+  "@stockMisAJour": {
+    "placeholders": {
+      "quantite": {}
+    }
+  },
+  "ruptureTransmise": "Demande transmise à votre distributeur",
+  "tousDejaSuivis": "Tous les produits du catalogue sont déjà suivis",
+  "combienUnitesRecues": "Combien d'unités reçues ?",
+  "caisseVideMessage": "Aucun produit suivi. Ajoutez du stock depuis l'onglet Stock pour que Yalla détecte vos ruptures automatiquement.",
+  "caisseRappelAuto": "Chaque vente qui met un stock à zéro prévient votre distributeur toute seule. Vous n'avez rien à signaler.",
+  "confidentialite": "Vos ventes et vos stocks ne sont visibles que de vous. Ni votre distributeur, ni le fabricant n'y ont accès."
+}

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/auth/auth_providers.dart';
+import 'core/langue.dart';
 import 'core/supabase.dart';
+import 'l10n/app_localizations.dart';
 import 'features/agent_recenseur/recensement_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/distributeur/distributeur_home_screen.dart';
@@ -15,18 +18,35 @@ Future<void> main() async {
   runApp(const ProviderScope(child: YallaApp()));
 }
 
-class YallaApp extends StatelessWidget {
+class YallaApp extends ConsumerWidget {
   const YallaApp({super.key});
 
   // Charte de la maquette : vert profond et jaune signalétique.
   static const _vert = Color(0xFF146B3A);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       title: 'Yalla',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(colorSchemeSeed: _vert, useMaterial3: true),
+
+      // Français et arabe. La locale nulle laisse Flutter suivre le téléphone,
+      // ce qui est le bon défaut tant que l'utilisateur n'a rien choisi.
+      //
+      // L'arabe bascule toute l'interface en droite-à-gauche, sans rien à faire
+      // ici : Flutter lit le sens dans la locale. C'est dans les écrans que la
+      // règle se tient, en n'utilisant que des marges logiques (`start` /
+      // `end`) et jamais `left` ni `right`.
+      locale: ref.watch(langueProvider),
+      supportedLocales: ChoixLangue.supportees,
+      localizationsDelegates: const [
+        L.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+
       home: const _EcranRacine(),
     );
   }
@@ -51,25 +71,23 @@ class _EcranRacine extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionProvider);
+    final l = L.of(context);
 
     return session.when(
       loading: () => const _EcranAttente(),
-      error: (e, _) => const _EcranMessage(
+      error: (e, _) => _EcranMessage(
         icone: Icons.cloud_off_outlined,
-        titre: 'Connexion impossible',
-        message: 'Impossible de joindre Yalla. Vérifiez votre réseau, '
-            'puis relancez l\'application.',
+        titre: l.connexionImpossible,
+        message: l.connexionImpossibleMessage,
       ),
       data: (s) {
         if (!s.estConnecte) return const LoginScreen();
 
         if (s.rattachementIncomplet) {
-          return const _EcranMessage(
+          return _EcranMessage(
             icone: Icons.person_off_outlined,
-            titre: 'Compte incomplet',
-            message: 'Votre compte existe mais n\'est rattaché à aucune boutique, '
-                'ni à aucun distributeur. Contactez la personne qui vous a remis '
-                'vos identifiants.',
+            titre: l.compteIncomplet,
+            message: l.compteIncompletMessage,
             deconnexion: true,
           );
         }
@@ -86,10 +104,8 @@ class _EcranRacine extends ConsumerWidget {
           default:
             return _EcranMessage(
               icone: Icons.construction_outlined,
-              titre: 'Interface en construction',
-              message: 'Le rôle « ${s.role} » n\'est pas encore disponible dans '
-                  'l\'application. La première version couvre les boutiques, '
-                  'les distributeurs, les livreurs et le recensement.',
+              titre: l.roleEnConstruction,
+              message: l.roleEnConstructionMessage(s.role ?? ''),
               deconnexion: true,
             );
         }
@@ -138,11 +154,13 @@ class _EcranMessage extends ConsumerWidget {
                 Text(message,
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 14, height: 1.5)),
+                const SizedBox(height: 24),
+                const BoutonLangue(),
                 if (deconnexion) ...[
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.logout),
-                    label: const Text('Se déconnecter'),
+                    label: Text(L.of(context).seDeconnecter),
                     onPressed: () => ref.read(authProvider).deconnecter(),
                   ),
                 ],

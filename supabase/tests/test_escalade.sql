@@ -56,9 +56,31 @@ BEGIN
 
   RAISE NOTICE '  ok  routage automatique : la rupture de caisse est adressée au bon distributeur';
 
-  -- ── 2. Avant escalade, seul le distributeur attribué y a accès ────────────
+  -- ── 1 bis. Tant qu'elle n'est pas confirmée, PERSONNE ne la voit ──────────
+  --
+  -- Règle posée le 18/09/2026, et elle inverse le mécanisme d'origine : une
+  -- rupture détectée par la caisse est routée mais reste invisible du
+  -- distributeur jusqu'à l'accord du boutiquier. Le destinataire est donc
+  -- résolu à l'insertion, comme avant, mais l'accès ne s'ouvre qu'ensuite.
+  ASSERT (SELECT confirmee_le FROM ruptures WHERE id = v_rupture_id) IS NULL,
+    'Une rupture de caisse ne doit pas naître confirmée';
+
   SELECT count(*) INTO v_nb FROM v_acces_rupture_distributeur WHERE rupture_id = v_rupture_id;
-  ASSERT v_nb = 1, format('Avant escalade : 1 accès attendu, %s trouvé(s)', v_nb);
+  ASSERT v_nb = 0,
+    format('Rupture non confirmée : 0 accès attendu, %s trouvé(s)', v_nb);
+  RAISE NOTICE '  ok  confirmation : une rupture de caisse n''est visible de personne avant accord';
+
+  -- Le boutiquier confirme. C'est à partir d'ici que la course existe.
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('user_role', 'point_de_vente',
+                      'id_metier', (SELECT point_de_vente_id FROM ruptures WHERE id = v_rupture_id)
+    )::TEXT, true);
+  PERFORM confirmer_rupture(v_rupture_id);
+  PERFORM set_config('request.jwt.claims', NULL, true);
+
+  -- ── 2. Une fois confirmée, seul le distributeur attribué y a accès ────────
+  SELECT count(*) INTO v_nb FROM v_acces_rupture_distributeur WHERE rupture_id = v_rupture_id;
+  ASSERT v_nb = 1, format('Après confirmation : 1 accès attendu, %s trouvé(s)', v_nb);
 
   SELECT cercle INTO v_cercle FROM v_acces_rupture_distributeur WHERE rupture_id = v_rupture_id;
   ASSERT v_cercle = 'attribue', format('Cercle attendu attribue, trouvé %s', v_cercle);
@@ -73,7 +95,11 @@ BEGIN
   RAISE NOTICE '  ok  patience : aucune escalade avant les deux heures';
 
   -- ── 4. Passé le délai, la rupture s'ouvre au cercle élargi ───────────────
-  UPDATE ruptures SET date_signalement = now() - INTERVAL '3 hours' WHERE id = v_rupture_id;
+  -- L'escalade se compte désormais depuis la confirmation, pas depuis la
+  -- détection : on recule donc les deux, sinon le compte à rebours ne bouge pas.
+  UPDATE ruptures SET date_signalement = now() - INTERVAL '3 hours',
+                      confirmee_le     = now() - INTERVAL '3 hours'
+   WHERE id = v_rupture_id;
 
   SELECT count(*) INTO v_escaladees
   FROM escalader_ruptures_en_attente() WHERE action = 'escaladee';
@@ -147,7 +173,8 @@ BEGIN
   -- On repart d'une rupture libre et très ancienne.
   UPDATE ruptures
   SET statut = 'signalee', livreur_id = NULL, date_prise_en_charge = NULL,
-      date_signalement = now() - INTERVAL '30 hours'
+      date_signalement = now() - INTERVAL '30 hours',
+      confirmee_le     = now() - INTERVAL '30 hours'
   WHERE id = v_rupture_id;
 
   SELECT count(*) INTO v_perimees

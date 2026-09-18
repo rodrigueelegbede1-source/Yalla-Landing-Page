@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/format.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/supabase.dart';
 
 /// Les courses en cours du livreur, et leur clôture.
@@ -89,9 +90,11 @@ class _LivraisonTabState extends State<LivraisonTab> {
         'p_livraison_id': course['livraison_id'],
         'p_montant': encaisse,
       });
-      _message('Livraison terminée. ${montant(encaisse)} encaissés.');
+      if (!mounted) return;
+      _message('${L.of(context).livraisonTerminee} · ${montant(context, encaisse)}');
     } catch (e) {
-      _message(messageErreur(e));
+      if (!mounted) return;
+      _message(messageErreur(context, e));
     }
     await _rafraichir();
     widget.onChangement();
@@ -123,7 +126,8 @@ class _LivraisonTabState extends State<LivraisonTab> {
           params: {'p_livraison_id': course['livraison_id']});
       _message('Course remise en circulation');
     } catch (e) {
-      _message(messageErreur(e));
+      if (!mounted) return;
+      _message(messageErreur(context, e));
     }
     await _rafraichir();
     widget.onChangement();
@@ -188,7 +192,7 @@ class _LivraisonTabState extends State<LivraisonTab> {
           if (snap.hasError) {
             return ListView(children: [
               const SizedBox(height: 80),
-              Center(child: Text(messageErreur(snap.error!))),
+              Center(child: Text(messageErreur(context, snap.error!))),
             ]);
           }
 

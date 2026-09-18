@@ -110,7 +110,7 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
       setState(() => _enLigne = !valeur);
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(messageErreur(e))));
+        ..showSnackBar(SnackBar(content: Text(messageErreur(context, e))));
     }
   }
 

@@ -109,7 +109,7 @@ class _FlotteTabState extends State<FlotteTab> {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(messageErreur(e))));
+        ..showSnackBar(SnackBar(content: Text(messageErreur(context, e))));
     }
   }
 
@@ -133,7 +133,7 @@ class _FlotteTabState extends State<FlotteTab> {
               return EtatVide(
                 icone: Icons.cloud_off_outlined,
                 titre: 'Chargement impossible',
-                message: messageErreur(snap.error!),
+                message: messageErreur(context, snap.error!),
               );
             }
 

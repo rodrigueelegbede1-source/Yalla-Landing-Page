@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/format.dart';
+import '../../core/vignette_produit.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/supabase.dart';
 
 /// La caisse enregistreuse.
@@ -73,26 +75,29 @@ class _CaisseTabState extends State<CaisseTab> {
     final controleur = TextEditingController();
     return showDialog<num>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) {
+        final l = L.of(context);
+        return AlertDialog(
         title: Text(nom),
         content: TextField(
           controller: controleur,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Prix unitaire',
+          decoration: InputDecoration(
+            labelText: l.prixUnitaire,
             suffixText: 'F',
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l.annuler)),
           FilledButton(
             onPressed: () => Navigator.pop(context, num.tryParse(controleur.text)),
-            child: const Text('Ajouter'),
+            child: Text(l.ajouter),
           ),
         ],
-      ),
+      );
+      },
     );
   }
 
@@ -102,36 +107,39 @@ class _CaisseTabState extends State<CaisseTab> {
 
     final ok = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Produit hors catalogue'),
+      builder: (context) {
+        final l = L.of(context);
+        return AlertDialog(
+        title: Text(l.produitHorsCatalogue),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nomCtrl,
               autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Nom du produit',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l.nomDuProduit,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: prixCtrl,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Prix unitaire',
+              decoration: InputDecoration(
+                labelText: l.prixUnitaire,
                 suffixText: 'F',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Ajouter')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.annuler)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l.ajouter)),
         ],
-      ),
+      );
+      },
     );
 
     if (ok != true || !mounted) return;
@@ -149,6 +157,7 @@ class _CaisseTabState extends State<CaisseTab> {
   }
 
   Future<void> _encaisser() async {
+    final l = L.of(context);
     if (_panier.isEmpty) return;
     setState(() => _encaissement = true);
 
@@ -169,9 +178,10 @@ class _CaisseTabState extends State<CaisseTab> {
       setState(() => _panier.clear());
       _catalogue = _chargerCatalogue();
       widget.onVenteEnregistree();
-      _message('Vente de ${montant(total)} encaissée');
+      _message(l.venteEncaissee(montant(context, total)));
     } catch (e) {
-      _message(messageErreur(e));
+      if (!mounted) return;
+      _message(messageErreur(context, e));
     } finally {
       if (mounted) setState(() => _encaissement = false);
     }
@@ -186,6 +196,8 @@ class _CaisseTabState extends State<CaisseTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l = L.of(context);
+
     return Column(
       children: [
         Expanded(
@@ -196,7 +208,7 @@ class _CaisseTabState extends State<CaisseTab> {
                 return const Center(child: CircularProgressIndicator());
               }
               if (snap.hasError) {
-                return Center(child: Text(messageErreur(snap.error!)));
+                return Center(child: Text(messageErreur(context, snap.error!)));
               }
 
               final produits = snap.data ?? const [];
@@ -204,8 +216,8 @@ class _CaisseTabState extends State<CaisseTab> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   if (_panier.isNotEmpty) ...[
-                    const Text('Panier',
-                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                    Text(l.panier,
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                     const SizedBox(height: 8),
                     ..._panier.asMap().entries.map((e) => _LigneCard(
                           ligne: e.value,
@@ -220,25 +232,26 @@ class _CaisseTabState extends State<CaisseTab> {
                         )),
                     const Divider(height: 32),
                   ],
-                  const Text('Ajouter au panier',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                  Text(l.ajouterAuPanier,
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                   const SizedBox(height: 8),
                   if (produits.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Text(
-                        'Aucun produit suivi. Ajoutez du stock depuis l\'onglet Stock '
-                        'pour que Yalla détecte vos ruptures automatiquement.',
-                        style: TextStyle(fontSize: 13, height: 1.4),
+                        l.caisseVideMessage,
+                        style: const TextStyle(fontSize: 13, height: 1.4),
                       ),
                     ),
                   ...produits.map((p) {
                     final q = (p['quantite'] as num?)?.toInt() ?? 0;
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: Icon(
-                        q > 0 ? Icons.add_shopping_cart : Icons.remove_shopping_cart_outlined,
-                        color: q > 0 ? null : Colors.red,
+                      leading: VignetteProduit(
+                        nom: p['produit_nom'] as String? ?? '',
+                        imageUrl: p['image_url'] as String?,
+                        categorie: p['categorie_nom'] as String?,
+                        taille: 42,
                       ),
                       title: Text(p['produit_nom'] as String? ?? ''),
                       subtitle: Text(q > 0 ? '$q en stock' : 'Rupture'),
@@ -249,15 +262,14 @@ class _CaisseTabState extends State<CaisseTab> {
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.add),
-                    label: const Text('Produit hors catalogue'),
+                    label: Text(l.produitHorsCatalogue),
                     onPressed: _ajouterHorsCatalogue,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Chaque vente qui met un stock à zéro prévient votre '
-                    'distributeur toute seule. Vous n\'avez rien à signaler.',
+                  Text(
+                    l.caisseRappelAuto,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, height: 1.4),
+                    style: const TextStyle(fontSize: 12, height: 1.4),
                   ),
                 ],
               );
@@ -275,8 +287,8 @@ class _CaisseTabState extends State<CaisseTab> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Total', style: TextStyle(fontSize: 12)),
-                        Text(montant(_total),
+                        Text(l.total, style: const TextStyle(fontSize: 12)),
+                        Text(montant(context, _total),
                             style: const TextStyle(
                                 fontSize: 24, fontWeight: FontWeight.w800)),
                       ],
@@ -291,7 +303,7 @@ class _CaisseTabState extends State<CaisseTab> {
                         ? const SizedBox(
                             height: 20, width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Text('Encaisser'),
+                        : Text(l.encaisser),
                   ),
                 ],
               ),
@@ -326,7 +338,7 @@ class _LigneCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(ligne.nom, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  Text('${montant(ligne.prixUnitaire)} l\'unité',
+                  Text('${montant(context, ligne.prixUnitaire)} l\'unité',
                       style: const TextStyle(fontSize: 12)),
                 ],
               ),
@@ -336,7 +348,7 @@ class _LigneCard extends StatelessWidget {
             IconButton(icon: const Icon(Icons.add_circle_outline), onPressed: onPlus),
             SizedBox(
               width: 80,
-              child: Text(montant(ligne.quantite * ligne.prixUnitaire),
+              child: Text(montant(context, ligne.quantite * ligne.prixUnitaire),
                   textAlign: TextAlign.end,
                   style: const TextStyle(fontWeight: FontWeight.w600)),
             ),

@@ -105,7 +105,7 @@ class _AgentRecenseurHomeScreenState
               return EtatVide(
                 icone: Icons.cloud_off_outlined,
                 titre: 'Chargement impossible',
-                message: messageErreur(snap.error!),
+                message: messageErreur(context, snap.error!),
               );
             }
 
