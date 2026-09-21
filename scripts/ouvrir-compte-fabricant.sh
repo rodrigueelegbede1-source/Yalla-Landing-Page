@@ -43,14 +43,23 @@ command -v psql >/dev/null 2>&1 || { echo "  psql introuvable dans le PATH"; exi
 export PGPASSWORD="$MDP_BASE"
 CONNEXION="postgresql://postgres.$REF@aws-1-eu-west-3.pooler.supabase.com:5432/postgres"
 
-# Sans l, sans 1, sans O, sans 0 : ce mot de passe se dicte au téléphone.
+# TOUT EN MAJUSCULES, ET C'EST LE POINT ESSENTIEL. Ce mot de passe se dicte au
+# téléphone ou sur le pas d'une porte. Or une majuscule et une minuscule de la
+# même lettre se prononcent exactement pareil : dicter « d » sans préciser la
+# casse fait taper l'une pour l'autre une fois sur deux, et la connexion est
+# refusée sans que personne ne comprenne pourquoi. C'est arrivé sur le compte de
+# l'agent recenseur, qui n'a pas pu se connecter le jour du premier test.
+#
+# Ni I ni O ni 0 ni 1 non plus, qui se confondent à la lecture. L'alphabet est le
+# même ici, dans les autres scripts, dans la page d'administration et dans
+# l'application : cinq implémentations qui doivent rendre la même forme.
 #
 # La lecture passe par une substitution de processus plutôt que par un tube :
 # sous `pipefail`, `tr … | head -c 8` ferme le tube et fait échouer `tr` sur un
 # SIGPIPE, ce qui tuait le script sans message.
 motdepasse() {
-  LC_ALL=C tr -dc 'ABCDEFGHJKMNPQRTUVWXYabcdefghijkmnpqrstuvwxy23456789' \
-    < <(head -c 256 /dev/urandom) | cut -c1-10
+  LC_ALL=C tr -dc 'ABCDEFGHJKMNPQRSTUVWXYZ23456789' \
+    < <(head -c 256 /dev/urandom) | cut -c1-8
 }
 
 echo
