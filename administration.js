@@ -88,10 +88,20 @@ let etat = {
   boutiques: [],
   marques: [],
   activite: [],
+  acteurs: {},
+  livreurs: [],
+  communes: [],
+  rupturesRecentes: [],
+  attribution: [],
+  semaines: [],
+  parFabricant: [],
+  produitsTendus: [],
+  diffusions: [],
 };
 
 let railActif = 'boutiques';
 let filtreRail = '';
+let filtreCommune = '';
 let selection = null;          // { type, id }
 let demandeEnCours = null;
 let distributeurEnCours = null;
@@ -107,6 +117,21 @@ function echapper(texte) {
 function nombre(valeur) {
   if (valeur === null || valeur === undefined) return '—';
   return String(valeur).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
+/* Le franc CFA n'a pas de décimale, et les montants du réseau se comptent en
+   centaines de milliers. « 1,4 M » se lit d'un coup d'œil, « 1 412 500 » se
+   déchiffre. Le montant exact reste disponible au survol. */
+function montant(valeur) {
+  const v = Number(valeur ?? 0);
+  if (!Number.isFinite(v)) return '—';
+  if (v >= 1000000) return `${(v / 1000000).toFixed(1).replace('.', ',')} M`;
+  if (v >= 10000) return `${Math.round(v / 1000)} k`;
+  return nombre(Math.round(v));
+}
+
+function montantExact(valeur) {
+  return `${nombre(Math.round(Number(valeur ?? 0)))} F CFA`;
 }
 
 /* Ancienneté en clair. Une demande déposée il y a trois jours et une déposée
@@ -172,7 +197,9 @@ async function interroger(chemin, options = {}) {
 const VOLETS = {
   tableau: 'voletTableau',
   reseau: 'voletReseau',
-  demandes: 'voletDemandes',
+  acteurs: 'voletActeurs',
+  diffusion: 'voletDiffusion',
+  statistiques: 'voletStatistiques',
   anomalies: 'voletAnomalies',
 };
 
@@ -600,6 +627,25 @@ function entreesRail() {
     return [...groupes.entries()].filter(([, l]) => l.length);
   }
 
+  if (railActif === 'livreurs') {
+    const gardees = etat.livreurs.filter(
+      (l) => garde(l.nom) || garde(l.distributeur) || garde(l.commune_approchee));
+    const groupes = new Map();
+    for (const l of gardees) {
+      const cle = l.distributeur || 'Sans flotte';
+      if (!groupes.has(cle)) groupes.set(cle, []);
+      const e = etatLivreur(l);
+      groupes.get(cle).push({
+        id: l.livreur_id,
+        titre: l.nom,
+        detail: `${e.texte}${l.commune_approchee ? ` · ${l.commune_approchee}` : ''}`,
+        marge: Number(l.courses_en_cours ?? 0) > 0 ? `${l.courses_en_cours} ⏳` : '',
+        etat: e.cle === 'course' ? 'ok' : e.cle,
+      });
+    }
+    return [...groupes.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  }
+
   const gardees = etat.marques.filter((m) => garde(m.fabricant_nom));
   return [['Marques du réseau', gardees.map((m) => {
     const boutiques = etat.boutiques.filter(
@@ -730,20 +776,33 @@ function tracerCarte() {
   const echelle = document.getElementById('canevasEchelle');
   const sous = document.getElementById('canevasSous');
 
-  const actives = etat.boutiques.filter((b) => b.statut === 'actif');
-  const p = projeter(actives);
+  const actives = etat.boutiques.filter(
+    (b) => b.statut === 'actif' && (!filtreCommune || b.commune === filtreCommune));
+
+  // Les livreurs entrent dans le cadrage avec les boutiques : une carte dont
+  // le cadre ignore un livreur le pousse hors de l'image sans rien dire.
+  const livreursSitues = etat.livreurs.filter((l) =>
+    l.actif === true
+    && Number.isFinite(Number(l.latitude)) && Number.isFinite(Number(l.longitude))
+    && (!filtreCommune || l.commune_approchee === filtreCommune));
+
+  const p = projeter([...actives, ...livreursSitues]);
 
   if (!p) {
-    boite.innerHTML =
-      '<div class="canevas-vide">Aucune boutique recensée avec sa position. '
-      + 'Le recensement se fait sur le terrain, depuis l’application : l’agent '
-      + 'relève le point sur le pas de la porte, à moins de vingt-cinq mètres.</div>';
+    boite.innerHTML = `<div class="canevas-vide">${filtreCommune
+      ? `Aucune boutique située à ${echapper(filtreCommune)}.`
+      : 'Aucune boutique recensée avec sa position. Le recensement se fait sur '
+        + 'le terrain, depuis l’application : l’agent relève le point sur le pas '
+        + 'de la porte, à moins de vingt-cinq mètres.'}</div>`;
     echelle.hidden = true;
     return;
   }
 
-  const n = p.points.length;
-  sous.textContent = `${n} boutique${n > 1 ? 's' : ''} située${n > 1 ? 's' : ''}. `
+  const n = actives.filter((b) =>
+    Number.isFinite(Number(b.latitude)) && Number.isFinite(Number(b.longitude))).length;
+  sous.textContent = `${n} boutique${n > 1 ? 's' : ''} située${n > 1 ? 's' : ''}`
+    + (livreursSitues.length ? `, ${livreursSitues.length} livreur(s) localisé(s)` : '')
+    + (filtreCommune ? ` à ${filtreCommune}` : '') + '. '
     + 'Position relevée par l’agent recenseur, sur le pas de la porte.';
 
   // Une trame de fond, pour que l'œil ait une référence de distance. Elle n'a
@@ -756,7 +815,8 @@ function tracerCarte() {
       + `<line x1="0" y1="${y.toFixed(0)}" x2="${p.L}" y2="${y.toFixed(0)}" stroke="rgba(255,255,255,.05)"/>`;
   }).join('');
 
-  const marqueurs = p.points.map((b) => {
+  const marqueurs = actives.filter((b) =>
+    Number.isFinite(Number(b.latitude)) && Number.isFinite(Number(b.longitude))).map((b) => {
     const x = p.x(Number(b.longitude));
     const y = p.y(Number(b.latitude));
     const choisi = selection && selection.type === 'boutiques'
@@ -770,9 +830,45 @@ function tracerCarte() {
     </g>`;
   }).join('');
 
+  // Les livreurs se dessinent APRÈS les boutiques, donc au-dessus : ce sont
+  // eux qui bougent, et c'est eux qu'on cherche du regard.
+  const mobiles = livreursSitues.map((l) => {
+    const x = p.x(Number(l.longitude));
+    const y = p.y(Number(l.latitude));
+    const e = etatLivreur(l);
+    const choisi = selection && selection.type === 'livreurs' && selection.id === l.livreur_id;
+    const c = 7;
+    return `<g class="lv${choisi ? ' est-choisi' : ''}" data-etat="${e.cle}"
+              data-id="${echapper(l.livreur_id)}" role="button" tabindex="0">
+      <title>${echapper(l.nom)} — ${echapper(e.texte)}</title>
+      <circle class="halo" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="14"/>
+      <path class="corps" d="M ${x.toFixed(1)} ${(y - c).toFixed(1)}
+        L ${(x + c).toFixed(1)} ${y.toFixed(1)} L ${x.toFixed(1)} ${(y + c).toFixed(1)}
+        L ${(x - c).toFixed(1)} ${y.toFixed(1)} Z"/>
+      <text x="${(x + 12).toFixed(1)}" y="${(y - 8).toFixed(1)}">${echapper(l.nom)}</text>
+    </g>`;
+  }).join('');
+
   boite.innerHTML =
     `<svg viewBox="0 0 ${p.L} ${p.H}" preserveAspectRatio="xMidYMid meet" role="img"
-          aria-label="Carte des boutiques du réseau">${trame}${marqueurs}</svg>`;
+          aria-label="Carte des boutiques et des livreurs du réseau">${trame}${marqueurs}${mobiles}</svg>`;
+
+  for (const g of boite.querySelectorAll('.lv')) {
+    const choisir = () => {
+      railActif = 'livreurs';
+      for (const o of document.querySelectorAll('.rail-onglet')) {
+        o.classList.toggle('est-actif', o.dataset.rail === 'livreurs');
+      }
+      selection = { type: 'livreurs', id: g.dataset.id };
+      tracerRail();
+      tracerCarte();
+      tracerTiroir();
+    };
+    g.addEventListener('click', choisir);
+    g.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choisir(); }
+    });
+  }
 
   for (const g of boite.querySelectorAll('.pt')) {
     const choisir = () => {
@@ -899,6 +995,41 @@ function tracerTiroir() {
 
     document.getElementById('actionAttribuerDist')
       .addEventListener('click', () => ouvrirAttribution(null, null, d.distributeur_id, d.nom));
+    return;
+  }
+
+  if (selection.type === 'livreurs') {
+    const l = etat.livreurs.find((x) => x.livreur_id === selection.id);
+    if (!l) { selection = null; return tracerTiroir(); }
+
+    const e = etatLivreur(l);
+    const age = Number(l.position_age_secondes ?? NaN);
+    boite.innerHTML = `
+      <div class="tiroir-tete">
+        <div>
+          <h3>${echapper(l.nom)}</h3>
+          <p>${echapper(l.distributeur ?? 'Sans flotte')}${
+            l.marque ? ` · ${echapper(l.marque)}` : ''}${
+            l.telephone ? ` · <a href="tel:+${echapper(l.telephone)}">${
+              echapper(telephoneLisible(l.telephone))}</a>` : ''}</p>
+        </div>
+        <div class="tiroir-actions">
+          <span class="etat etat--${e.cle === 'ok' || e.cle === 'course' ? 'ok' : 'dort'}">${e.texte}</span>
+        </div>
+      </div>
+      <div class="tiroir-faits">
+        <div><small>Courses en cours</small><strong>${nombre(l.courses_en_cours ?? 0)}</strong></div>
+        <div><small>Livraisons terminées</small><strong>${nombre(l.livraisons_terminees ?? 0)}</strong></div>
+        <div><small>Commune approchée</small><span>${echapper(l.commune_approchee ?? '—')}</span></div>
+        <div><small>Dernière position</small><strong${
+          !Number.isFinite(age) || age > 300 ? ' data-ton="alerte"' : ''
+        }>${Number.isFinite(age) ? duree(age) : 'jamais'}</strong></div>
+      </div>
+      ${!Number.isFinite(age) || age > 300 ? `<p class="note" style="margin:0">
+        Aucune position fraîche. <b>Sur Tecno, Infinix et itel, le système
+        referme l'application dès l'écran éteint</b>, et le suivi s'arrête sans
+        prévenir. Le réglage à faire est sur le téléphone du livreur, dans les
+        économiseurs de batterie, et il ne peut pas être posé à distance.</p>` : ''}`;
     return;
   }
 
@@ -1293,6 +1424,652 @@ document.getElementById('confirmerAttribution').addEventListener('click', async 
   }
 });
 
+/* ══ Le bandeau du tableau de bord ════════════════════════ */
+
+function tracerBandeau() {
+  const r = etat.reseau;
+  const jours = etat.activite;
+  const aujourdhui = jours.length ? jours[jours.length - 1] : null;
+  const hier = jours.length > 1 ? jours[jours.length - 2] : null;
+
+  // Le montant du jour comparé à celui d'hier. La comparaison est affichée
+  // seulement quand hier valait quelque chose : « +infini par rapport à zéro »
+  // n'apprend rien.
+  const duJour = Number(aujourdhui?.montant ?? 0);
+  const deHier = Number(hier?.montant ?? 0);
+  const ecart = deHier > 0 ? Math.round(((duJour - deHier) / deHier) * 100) : null;
+
+  const volume = document.getElementById('chiffreVolume');
+  volume.textContent = montant(duJour);
+  volume.title = montantExact(duJour);
+  document.getElementById('detailVolume').innerHTML =
+    `<span>${nombre(aujourdhui?.livraisons ?? 0)} livraison(s)</span>`
+    + (ecart === null
+      ? '<span style="opacity:.7">pas de comparaison, hier était à zéro</span>'
+      : `<span class="evolution" data-sens="${ecart > 0 ? 'hausse' : ecart < 0 ? 'baisse' : 'stable'}">${
+        ecart > 0 ? '+' : ''}${ecart} %</span><span style="opacity:.7">vs hier</span>`);
+
+  document.getElementById('chiffrePoints').textContent = nombre(r.boutiques_actives);
+  document.getElementById('detailPoints').innerHTML =
+    `<span>${nombre(r.boutiques_total)} recensée(s)</span>`
+    + `<span>${nombre(r.distributeurs)} distributeur(s)</span>`;
+
+  document.getElementById('chiffreRuptures').textContent = nombre(r.ruptures_ouvertes);
+  const sansPreneur = etat.rupturesRecentes.filter(
+    (x) => x.statut === 'signalee' && !x.distributeur).length;
+  document.getElementById('detailRuptures').innerHTML =
+    `<span><b>${nombre(sansPreneur)}</b> sans destinataire</span>`
+    + `<span>${nombre(r.ruptures_a_confirmer)} à confirmer</span>`;
+
+  const enCourse = etat.livreurs.filter((l) => Number(l.courses_en_cours ?? 0) > 0).length;
+  document.getElementById('chiffreLivreurs').textContent = nombre(enCourse);
+  document.getElementById('detailLivreurs').innerHTML =
+    `<span>sur ${nombre(r.livreurs_actifs)} actif(s)</span>`
+    + `<span>${nombre(r.livreurs_en_ligne)} en ligne</span>`;
+}
+
+/* ── Les ruptures récentes ────────────────────────────────── */
+
+function tracerRupturesRecentes() {
+  const table = document.getElementById('tableRupturesRecentes');
+
+  if (!etat.rupturesRecentes.length) {
+    table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
+      + 'Aucune rupture en cours. Toutes les boutiques du réseau sont servies.</td></tr></tbody>';
+    return;
+  }
+
+  const ordonnees = [...etat.rupturesRecentes]
+    .sort((a, b) => Number(b.attente_secondes ?? 0) - Number(a.attente_secondes ?? 0))
+    .slice(0, 12);
+
+  table.innerHTML = `
+    <thead><tr>
+      <th>Produit</th><th>Point de vente</th><th>Commune</th>
+      <th>Distributeur</th><th class="num">Attente</th><th>État</th>
+    </tr></thead>
+    <tbody>${ordonnees.map((r) => {
+      const attente = Number(r.attente_secondes ?? 0);
+      const pris = r.statut === 'prise_en_charge';
+      // Deux heures : c'est le seuil d'escalade. Au-delà, la course est
+      // ouverte aux distributeurs voisins, et le retard devient visible de
+      // tout le monde.
+      const tendu = !pris && attente > 7200;
+      return `<tr>
+        <td>${echapper(r.produit)}<small>${echapper(r.marque ?? '')}${
+          r.quantite_demandee ? ` · ${r.quantite_demandee} carton(s)` : ''}</small></td>
+        <td>${echapper(r.point_de_vente)}</td>
+        <td>${echapper(r.commune ?? '')}</td>
+        <td>${r.distributeur
+          ? echapper(r.distributeur)
+          : '<span class="etat etat--alerte">Aucun</span>'}</td>
+        <td class="num"${tendu ? ' style="color:#9B3218;font-weight:600"' : ''}>${duree(attente)}</td>
+        <td>${pris
+          ? '<span class="etat etat--ok">Prise en charge</span>'
+          : r.confirmee_le
+            ? '<span class="etat etat--alerte">En attente</span>'
+            : '<span class="etat etat--dort">À confirmer</span>'}</td>
+      </tr>`;
+    }).join('')}</tbody>`;
+}
+
+/* Durée courte, dans la forme utilisée partout ailleurs dans le produit. */
+function duree(secondes) {
+  const s = Math.max(0, Math.round(Number(secondes ?? 0)));
+  if (s >= 86400) return `${Math.floor(s / 86400)} j`;
+  if (s >= 3600) {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return m === 0 ? `${h} h` : `${h} h ${m}`;
+  }
+  if (s >= 60) return `${Math.floor(s / 60)} min`;
+  return `${s} s`;
+}
+
+/* ══ Carte : livreurs et communes ═════════════════════════ */
+
+/* L'état d'un livreur, dans l'ordre où il compte pour qui pilote.
+   `en_ligne` ne suffit pas : un téléphone endormi par Android laisse le
+   drapeau allumé sans plus rien remonter, et le distributeur affecte alors
+   une course à quelqu'un qui ne la verra jamais. */
+function etatLivreur(l) {
+  if (l.actif !== true) return { cle: 'dort', texte: 'Écarté' };
+  if (Number(l.courses_en_cours ?? 0) > 0) return { cle: 'course', texte: 'En course' };
+  if (l.en_ligne !== true) return { cle: 'dort', texte: 'Hors ligne' };
+  const age = Number(l.position_age_secondes ?? Infinity);
+  if (!Number.isFinite(age) || age > 300) return { cle: 'dort', texte: 'Position figée' };
+  return { cle: 'ok', texte: 'Disponible' };
+}
+
+function tracerTableLivreurs() {
+  const table = document.getElementById('tableLivreurs');
+
+  if (!etat.livreurs.length) {
+    table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
+      + 'Aucun livreur enrôlé. C\'est au distributeur de le faire, depuis '
+      + 'l\'application, onglet Flotte.</td></tr></tbody>';
+    return;
+  }
+
+  table.innerHTML = `
+    <thead><tr>
+      <th>Livreur</th><th>Distributeur</th><th>Commune</th><th>État</th>
+    </tr></thead>
+    <tbody>${etat.livreurs.map((l) => {
+      const e = etatLivreur(l);
+      const classe = e.cle === 'ok' || e.cle === 'course' ? 'ok' : 'dort';
+      return `<tr>
+        <td>${echapper(l.nom)}<small>${echapper(telephoneLisible(l.telephone))}</small></td>
+        <td>${echapper(l.distributeur ?? '—')}<small>${echapper(l.marque ?? 'Indépendant')}</small></td>
+        <td>${echapper(l.commune_approchee ?? '—')}</td>
+        <td><span class="etat etat--${classe}">${e.texte}</span></td>
+      </tr>`;
+    }).join('')}</tbody>`;
+}
+
+function tracerTableCommunes() {
+  const table = document.getElementById('tableCommunes');
+
+  if (!etat.communes.length) {
+    table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
+      + 'Aucune commune couverte.</td></tr></tbody>';
+    return;
+  }
+
+  const ordonnees = [...etat.communes].sort((a, b) => Number(b.points) - Number(a.points));
+
+  table.innerHTML = `
+    <thead><tr>
+      <th>Commune</th><th class="num">Points</th>
+      <th class="num">Orphelines</th><th class="num">Ruptures</th>
+    </tr></thead>
+    <tbody>${ordonnees.map((c) => {
+      const orphelines = Number(c.points_sans_distributeur ?? 0);
+      return `<tr>
+        <td>${echapper(c.commune ?? '—')}</td>
+        <td class="num">${nombre(c.points)}</td>
+        <td class="num"${orphelines > 0 ? ' style="color:#9B3218;font-weight:600"' : ''}>${nombre(orphelines)}</td>
+        <td class="num">${nombre(c.ruptures)}</td>
+      </tr>`;
+    }).join('')}</tbody>`;
+}
+
+function remplirCommunes() {
+  const communes = [...new Set(etat.boutiques.map((b) => b.commune).filter(Boolean))].sort();
+  const options = communes.map((c) =>
+    `<option value="${echapper(c)}">${echapper(c)}</option>`).join('');
+
+  const filtre = document.getElementById('filtreCommune');
+  const choix = filtre.value;
+  filtre.innerHTML = `<option value="">Toutes communes</option>${options}`;
+  filtre.value = communes.includes(choix) ? choix : '';
+
+  const diffusion = document.getElementById('diffusionCommune');
+  const choixDiffusion = diffusion.value;
+  diffusion.innerHTML = `<option value="">Partout</option>${options}`;
+  diffusion.value = communes.includes(choixDiffusion) ? choixDiffusion : '';
+}
+
+document.getElementById('filtreCommune').addEventListener('change', (e) => {
+  filtreCommune = e.target.value;
+  selection = null;
+  tracerCarte();
+  tracerTiroir();
+});
+
+/* ══ Acteurs ══════════════════════════════════════════════ */
+
+function tracerActeurs() {
+  const a = etat.acteurs;
+  const cartes = [
+    ['Points de vente', a.points_de_vente, a.points_retires, 'retiré(s)'],
+    ['Fabricants', a.fabricants, a.fabricants_suspendus, 'suspendu(s)'],
+    ['Distributeurs', a.distributeurs, a.distributeurs_suspendus, 'suspendu(s)'],
+    ['Livreurs', a.livreurs, a.livreurs_ecartes, 'écarté(s)'],
+    ['Agents recenseurs', a.agents_recenseurs, 0, ''],
+  ];
+
+  document.getElementById('grilleActeurs').innerHTML = cartes.map(
+    ([nom, actifs, inactifs, mot]) => `<article class="carte c3">
+      <header><h3>${echapper(nom)}</h3></header>
+      <div class="chiffre">${nombre(actifs ?? 0)}</div>
+      <div class="chiffre-suite">${Number(inactifs ?? 0) > 0
+        ? `<span><b>${nombre(inactifs)}</b> ${echapper(mot)}</span>`
+        : '<span style="opacity:.6">aucun retrait</span>'}</div>
+    </article>`).join('');
+}
+
+function tracerAttribution() {
+  const table = document.getElementById('tableAttribution');
+
+  if (!etat.attribution.length) {
+    table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
+      + 'Aucune marque enregistrée.</td></tr></tbody>';
+    return;
+  }
+
+  table.innerHTML = `
+    <thead><tr>
+      <th>Marque</th><th class="num">Points attribués</th>
+      <th class="num">Distributeurs</th><th>Périmètre</th>
+    </tr></thead>
+    <tbody>${etat.attribution.map((a) => {
+      const points = Number(a.points_attribues ?? 0);
+      return `<tr>
+        <td>${echapper(a.fabricant_nom)}</td>
+        <td class="num"${points === 0 ? ' style="color:#9B3218;font-weight:600"' : ''}>${nombre(points)}</td>
+        <td class="num">${nombre(a.distributeurs ?? 0)}</td>
+        <td style="white-space:normal">${a.perimetre
+          ? echapper(a.perimetre)
+          : '<span class="etat etat--alerte">Aucune boutique</span>'}</td>
+      </tr>`;
+    }).join('')}</tbody>`;
+}
+
+/* Le retrait d'un acteur. Un seul tableau pour quatre natures d'objets, parce
+   que le geste est le même : « celui-là ne travaille plus ». */
+function tracerTableActeurs() {
+  const table = document.getElementById('tableActeurs');
+
+  const lignes = [
+    ...etat.boutiques.map((b) => ({
+      type: 'point_de_vente', id: b.point_de_vente_id, nom: b.nom,
+      detail: `${b.commune ?? ''} · boutique`, actif: b.statut === 'actif',
+    })),
+    ...etat.distributeurs.map((d) => ({
+      type: 'distributeur', id: d.distributeur_id, nom: d.nom,
+      detail: d.fabricant_rattache ? `Affilié · ${d.fabricant_rattache}` : 'Distributeur indépendant',
+      actif: d.statut === 'actif',
+    })),
+    ...etat.livreurs.map((l) => ({
+      type: 'livreur', id: l.livreur_id, nom: l.nom,
+      detail: `Livreur · ${l.distributeur ?? 'sans flotte'}`, actif: l.actif === true,
+    })),
+  ];
+
+  if (!lignes.length) {
+    table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
+      + 'Le réseau est vide.</td></tr></tbody>';
+    return;
+  }
+
+  // Les retirés en tête : ce sont eux qu'on vient chercher dans ce tableau,
+  // pour décider s'ils reviennent.
+  lignes.sort((a, b) => (a.actif === b.actif ? a.nom.localeCompare(b.nom) : a.actif ? 1 : -1));
+
+  table.innerHTML = `
+    <thead><tr><th>Acteur</th><th>Nature</th><th>État</th><th></th></tr></thead>
+    <tbody>${lignes.map((l) => `<tr>
+      <td>${echapper(l.nom)}<small>${echapper(l.detail)}</small></td>
+      <td>${echapper({ point_de_vente: 'Point de vente', distributeur: 'Distributeur',
+        livreur: 'Livreur' }[l.type])}</td>
+      <td>${l.actif
+        ? '<span class="etat etat--ok">En service</span>'
+        : '<span class="etat etat--dort">Retiré</span>'}</td>
+      <td style="text-align:end">
+        <button type="button" class="bouton ${l.actif ? 'bouton--danger' : 'bouton--creux'}"
+                data-acteur="${echapper(l.type)}" data-id="${echapper(l.id)}"
+                data-nom="${echapper(l.nom)}" data-actif="${l.actif}">${
+          l.actif ? 'Retirer' : 'Réactiver'}</button>
+      </td>
+    </tr>`).join('')}</tbody>`;
+
+  for (const bouton of table.querySelectorAll('[data-acteur]')) {
+    bouton.addEventListener('click', () => basculerActeur(bouton.dataset));
+  }
+}
+
+async function basculerActeur({ acteur, id, nom, actif }) {
+  const retirer = actif === 'true';
+
+  if (retirer && !confirm(
+    `Retirer ${nom} du réseau ?\n\n`
+    + 'Rien n\'est effacé : son historique reste, et vous pouvez le réactiver '
+    + 'à tout moment. Il cesse simplement d\'apparaître dans le réseau actif.',
+  )) return;
+
+  try {
+    const r = await interroger('rpc/changer_statut_acteur', {
+      method: 'POST',
+      body: JSON.stringify({ p_type: acteur, p_id: id, p_actif: !retirer }),
+    });
+    informer(`${r.nom} ${retirer ? 'est retiré du réseau' : 'est de nouveau en service'}.`,
+      'succes');
+    await rafraichir();
+  } catch (erreur) {
+    if (erreur.message === 'session') return;
+    informer(erreur.message, 'erreur');
+  }
+}
+
+/* ══ Diffusion ════════════════════════════════════════════ */
+
+const TYPES_DIFFUSION = {
+  notification: 'Notification',
+  splash_publicitaire: 'Splash',
+  sondage: 'Sondage',
+};
+
+const CIBLES = {
+  reseau_complet: 'Réseau complet',
+  points_de_vente: 'Points de vente',
+  distributeurs: 'Distributeurs',
+  fabricants: 'Fabricants',
+  livreurs: 'Livreurs',
+};
+
+document.getElementById('diffusionType').addEventListener('change', (e) => {
+  document.getElementById('champOptions').hidden = e.target.value !== 'sondage';
+});
+
+/* La portée s'annonce AVANT l'envoi, pas après. Une diffusion ne se rattrape
+   pas : savoir qu'on s'adresse à quatre cents boutiques change ce qu'on écrit,
+   et parfois la décision d'envoyer. */
+function estimerPortee() {
+  const cible = document.getElementById('diffusionCible').value;
+  const commune = document.getElementById('diffusionCommune').value;
+
+  const boutiques = etat.boutiques.filter(
+    (b) => b.statut === 'actif' && (!commune || b.commune === commune));
+  const compte = {
+    points_de_vente: boutiques.length,
+    fabricants: etat.marques.length,
+    distributeurs: etat.distributeurs.filter((d) => d.statut === 'actif').length,
+    livreurs: etat.livreurs.filter((l) => l.actif === true).length,
+  };
+  const portee = cible === 'reseau_complet'
+    ? Object.values(compte).reduce((s, n) => s + n, 0)
+    : compte[cible] ?? 0;
+
+  document.getElementById('porteeEstimee').textContent = portee === 0
+    ? 'Aucun destinataire ne correspond.'
+    : `${portee} destinataire(s)${commune ? ` à ${commune}` : ''}.`;
+}
+
+for (const id of ['diffusionCible', 'diffusionCommune']) {
+  document.getElementById(id).addEventListener('change', estimerPortee);
+}
+
+document.getElementById('boutonDiffuser').addEventListener('click', async () => {
+  const bouton = document.getElementById('boutonDiffuser');
+  const retour = document.getElementById('messageDiffusion');
+
+  const type = document.getElementById('diffusionType').value;
+  const cible = document.getElementById('diffusionCible').value;
+  const commune = document.getElementById('diffusionCommune').value || null;
+  const titre = document.getElementById('diffusionTitre').value.trim();
+  const message = document.getElementById('diffusionMessage').value.trim();
+  const options = document.getElementById('diffusionOptions').value
+    .split('\n').map((s) => s.trim()).filter(Boolean);
+
+  const dire = (texte, ton) => {
+    retour.textContent = texte;
+    retour.dataset.ton = ton;
+    retour.hidden = false;
+  };
+
+  if (titre.length < 3) return dire('Donnez un objet à cette diffusion.', 'erreur');
+  if (message.length < 3) return dire('Le message est vide.', 'erreur');
+  if (type === 'sondage' && options.length < 2) {
+    return dire('Un sondage demande au moins deux réponses possibles, une par ligne.', 'erreur');
+  }
+
+  const portee = document.getElementById('porteeEstimee').textContent;
+  if (!confirm(`Diffuser « ${titre} » ?\n\n${portee}\n\n`
+    + 'Une diffusion ne se rattrape pas.')) return;
+
+  bouton.disabled = true;
+  bouton.textContent = 'Envoi…';
+
+  try {
+    const r = await interroger('rpc/diffuser_notification', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_type: type,
+        p_titre: titre,
+        p_message: message,
+        p_cible: cible,
+        p_commune: commune,
+        p_options: type === 'sondage' ? options : null,
+      }),
+    });
+
+    document.getElementById('diffusionTitre').value = '';
+    document.getElementById('diffusionMessage').value = '';
+    document.getElementById('diffusionOptions').value = '';
+    retour.hidden = true;
+    informer(`Diffusion envoyée à ${r.portee} destinataire(s).`, 'succes');
+    await rafraichir();
+  } catch (erreur) {
+    if (erreur.message === 'session') return;
+    dire(erreur.message, 'erreur');
+  } finally {
+    bouton.disabled = false;
+    bouton.textContent = 'Diffuser';
+  }
+});
+
+function tracerDiffusions() {
+  const table = document.getElementById('tableDiffusions');
+
+  if (!etat.diffusions.length) {
+    table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
+      + 'Aucune diffusion émise.</td></tr></tbody>';
+    return;
+  }
+
+  table.innerHTML = `
+    <thead><tr>
+      <th>Objet</th><th>Type</th><th>Cible</th>
+      <th class="num">Portée</th><th class="num">Réponses</th><th>Envoyée</th>
+    </tr></thead>
+    <tbody>${etat.diffusions.map((d) => {
+      const sondage = d.type === 'sondage';
+      const portee = Number(d.portee ?? 0);
+      const reponses = Number(d.reponses ?? 0);
+      const taux = sondage && portee > 0 ? Math.round((reponses / portee) * 100) : null;
+      const envoi = new Date(d.date_envoi);
+      return `<tr>
+        <td>${echapper(d.titre)}<small style="white-space:normal">${echapper(d.message)}</small></td>
+        <td>${echapper(TYPES_DIFFUSION[d.type] ?? d.type)}</td>
+        <td>${echapper(CIBLES[d.cible] ?? d.cible)}${
+          d.commune ? `<small>${echapper(d.commune)}</small>` : ''}</td>
+        <td class="num">${nombre(portee)}</td>
+        <td class="num">${sondage
+          ? `${nombre(reponses)}${taux === null ? '' : ` <span style="opacity:.6">(${taux} %)</span>`}`
+          : '<span style="opacity:.45" title="Aucun accusé de lecture n’existe dans le schéma">non suivi</span>'}</td>
+        <td><small>${envoi.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+          ${envoi.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</small></td>
+      </tr>`;
+    }).join('')}</tbody>`;
+}
+
+/* ══ Statistiques ═════════════════════════════════════════ */
+
+function tracerSemaines() {
+  const boite = document.getElementById('grapheSemaines');
+  const pied = document.getElementById('piedSemaines');
+  const semaines = etat.semaines;
+
+  if (!semaines.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:20px 0">Pas encore de données.</div>';
+    pied.textContent = '';
+    return;
+  }
+
+  const L = 900;
+  const H = 230;
+  const margeG = 56;
+  const margeD = 14;
+  const margeH = 16;
+  const margeB = 36;
+  const larg = L - margeG - margeD;
+  const haut = H - margeH - margeB;
+
+  const maxi = Math.max(1, ...semaines.map((s) => Number(s.montant)));
+  const plafond = Math.max(1000, Math.ceil(maxi / 1000) * 1000);
+  const pas = larg / semaines.length;
+  const y = (v) => margeH + haut - (v / plafond) * haut;
+
+  const grilles = [0, plafond / 2, plafond].map((v) =>
+    `<line x1="${margeG}" y1="${y(v).toFixed(1)}" x2="${L - margeD}" y2="${y(v).toFixed(1)}" class="graphe-grille"/>`
+    + `<text x="${margeG - 8}" y="${(y(v) + 3.5).toFixed(1)}" text-anchor="end" class="graphe-axe">${montant(v)}</text>`).join('');
+
+  const barres = semaines.map((s, i) => {
+    const v = Number(s.montant);
+    const x = margeG + i * pas + pas * 0.2;
+    const l = pas * 0.6;
+    return `<rect x="${x.toFixed(1)}" y="${y(v).toFixed(1)}" width="${l.toFixed(1)}"
+      height="${Math.max(0, (v / plafond) * haut).toFixed(1)}" rx="2.5" fill="${VERT_SOMBRE}">
+      <title>${montantExact(v)} · ${s.livraisons} livraison(s)</title></rect>`;
+  }).join('');
+
+  const etiquettes = semaines.map((s, i) => {
+    if (i % 2 !== 0 && i !== semaines.length - 1) return '';
+    const d = new Date(`${s.semaine}T00:00:00`);
+    return `<text x="${(margeG + i * pas + pas / 2).toFixed(1)}" y="${H - 14}"
+      text-anchor="middle" class="graphe-axe">${String(d.getDate()).padStart(2, '0')}/${
+      String(d.getMonth() + 1).padStart(2, '0')}</text>`;
+  }).join('');
+
+  boite.innerHTML = `<svg viewBox="0 0 ${L} ${H}" role="img"
+    aria-label="Volume livré par semaine sur douze semaines">${grilles}${barres}${etiquettes}</svg>`;
+
+  const total = semaines.reduce((s, x) => s + Number(x.montant), 0);
+  const livraisons = semaines.reduce((s, x) => s + Number(x.livraisons), 0);
+  pied.textContent = total === 0
+    ? 'Aucune livraison terminée sur la période. Le volume se remplit au fur et à mesure du terrain.'
+    : `${montantExact(total)} sur douze semaines, en ${nombre(livraisons)} livraison(s).`;
+}
+
+function tracerParFabricant() {
+  const table = document.getElementById('tableParFabricant');
+
+  if (!etat.parFabricant.length) {
+    table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
+      + 'Aucune marque enregistrée.</td></tr></tbody>';
+    return;
+  }
+
+  const ordonnees = [...etat.parFabricant]
+    .sort((a, b) => Number(b.chiffre_affaires ?? 0) - Number(a.chiffre_affaires ?? 0));
+
+  table.innerHTML = `
+    <thead><tr>
+      <th>Marque</th><th class="num">Volume livré</th><th class="num">Livraisons</th>
+      <th class="num">Taux de service</th><th class="num">Évolution</th>
+    </tr></thead>
+    <tbody>${ordonnees.map((f) => {
+      const recent = Number(f.montant_30j ?? 0);
+      const avant = Number(f.montant_30j_precedents ?? 0);
+      // Sans période de référence, il n'y a pas d'évolution à afficher. Un
+      // « +100 % » parti de zéro est un chiffre qui ne veut rien dire.
+      const ecart = avant > 0 ? Math.round(((recent - avant) / avant) * 100) : null;
+      const taux = f.taux_de_service_pct;
+      return `<tr>
+        <td>${echapper(f.fabricant_nom)}</td>
+        <td class="num" title="${montantExact(f.chiffre_affaires)}">${montant(f.chiffre_affaires)}</td>
+        <td class="num">${nombre(f.nombre_livraisons ?? 0)}</td>
+        <td class="num">${taux === null || taux === undefined ? '—' : `${taux} %`}</td>
+        <td class="num">${ecart === null
+          ? '<span style="opacity:.4" title="Aucune activité sur la période précédente">—</span>'
+          : `<span class="evolution" data-sens="${ecart > 0 ? 'hausse' : ecart < 0 ? 'baisse' : 'stable'}">${
+            ecart > 0 ? '+' : ''}${ecart} %</span>`}</td>
+      </tr>`;
+    }).join('')}</tbody>`;
+}
+
+function tracerProduitsTendus() {
+  const table = document.getElementById('tableProduitsTendus');
+
+  if (!etat.produitsTendus.length) {
+    table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
+      + 'Aucune rupture signalée à ce jour.</td></tr></tbody>';
+    return;
+  }
+
+  const ordonnes = [...etat.produitsTendus]
+    .sort((a, b) => Number(b.signalements) - Number(a.signalements))
+    .slice(0, 10);
+  const maxi = Math.max(1, ...ordonnes.map((p) => Number(p.signalements)));
+
+  table.innerHTML = `
+    <thead><tr>
+      <th>Produit</th><th class="num">Signalements</th><th class="num">Boutiques</th>
+    </tr></thead>
+    <tbody>${ordonnes.map((p) => {
+      const n = Number(p.signalements);
+      const intensite = 0.14 + (n / maxi) * 0.56;
+      return `<tr>
+        <td>${echapper(p.produit)}<small>${echapper(p.marque)}${
+          p.reference ? ` · ${echapper(p.reference)}` : ''}</small></td>
+        <td class="num"><span class="cellule-chaude"
+          style="background:rgba(255,92,57,${intensite.toFixed(2)})">${nombre(n)}</span></td>
+        <td class="num">${nombre(p.boutiques_touchees)}</td>
+      </tr>`;
+    }).join('')}</tbody>`;
+}
+
+/* ── Exports ──────────────────────────────────────────────
+   CSV plutôt qu'un vrai fichier Excel : le cahier demande un export
+   exploitable dans un tableur, et un .xlsx exigerait une bibliothèque de
+   plusieurs centaines de kilo-octets pour le même résultat. Le point-virgule
+   est le séparateur qu'attend Excel en configuration française, et le BOM lui
+   fait lire l'UTF-8 correctement, faute de quoi tous les accents se cassent. */
+function telechargerCsv(nom, entetes, lignes) {
+  const echapperChamp = (v) => {
+    const s = String(v ?? '');
+    return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const contenu = '﻿'
+    + [entetes, ...lignes].map((l) => l.map(echapperChamp).join(';')).join('\r\n');
+
+  const lien = document.createElement('a');
+  lien.href = URL.createObjectURL(new Blob([contenu], { type: 'text/csv;charset=utf-8' }));
+  lien.download = `${nom}-${new Date().toISOString().slice(0, 10)}.csv`;
+  lien.click();
+  URL.revokeObjectURL(lien.href);
+}
+
+document.getElementById('exportCsv').addEventListener('click', () => {
+  // Un seul fichier plutôt que trois : il s'ouvre une fois, et les trois
+  // tableaux s'y lisent à la suite, séparés par leur titre.
+  const lignes = [];
+
+  lignes.push(['VOLUME LIVRÉ PAR SEMAINE']);
+  lignes.push(['Semaine', 'Montant F CFA', 'Livraisons', 'Ruptures signalées']);
+  for (const s of etat.semaines) {
+    lignes.push([s.semaine, Math.round(Number(s.montant)), s.livraisons, s.ruptures]);
+  }
+
+  lignes.push([]);
+  lignes.push(['PAR MARQUE']);
+  lignes.push(['Marque', 'Volume livré F CFA', 'Livraisons', 'Taux de service %',
+    '30 derniers jours', '30 jours précédents']);
+  for (const f of etat.parFabricant) {
+    lignes.push([f.fabricant_nom, Math.round(Number(f.chiffre_affaires ?? 0)),
+      f.nombre_livraisons ?? 0, f.taux_de_service_pct ?? '',
+      Math.round(Number(f.montant_30j ?? 0)), Math.round(Number(f.montant_30j_precedents ?? 0))]);
+  }
+
+  lignes.push([]);
+  lignes.push(['PRODUITS LES PLUS EN RUPTURE']);
+  lignes.push(['Produit', 'Référence', 'Marque', 'Signalements', 'Boutiques touchées',
+    'Servies', 'Non servies']);
+  for (const p of etat.produitsTendus) {
+    lignes.push([p.produit, p.reference ?? '', p.marque, p.signalements,
+      p.boutiques_touchees, p.servies, p.non_servies]);
+  }
+
+  telechargerCsv('yalla-statistiques', ['Statistiques Yalla', new Date().toLocaleString('fr-FR')], lignes);
+});
+
+/* Le PDF passe par l'impression du navigateur, et une feuille de style dédiée
+   retire la coque d'exploitation. Embarquer un générateur de PDF coûterait
+   plusieurs centaines de kilo-octets et obligerait à ouvrir `script-src` vers
+   un hébergeur extérieur, pour un résultat que le navigateur produit déjà. */
+document.getElementById('exportPdf').addEventListener('click', () => window.print());
+
 /* ══ Chargement ═══════════════════════════════════════════ */
 
 function tracerBadges() {
@@ -1310,33 +2087,52 @@ function tracerBadges() {
   bAnomalies.dataset.urgent = anomalies > 0 ? 'oui' : 'non';
 }
 
+/* Les quatorze lectures partent ensemble. En série, la page mettrait une
+   dizaine de secondes à s'afficher sur une connexion d'Abidjan ; en parallèle,
+   elle met le temps de la plus lente. */
+const LECTURES = {
+  reseau: 'v_supervision_reseau?select=*',
+  demandes: 'v_demandes_acces?select=*&order=created_at.desc',
+  anomalies: 'v_anomalies_reseau?select=*&order=type_anomalie,depuis',
+  distributeurs: 'v_supervision_distributeurs?select=*&order=nom',
+  boutiques: 'v_supervision_boutiques?select=*&order=commune,nom',
+  // La table plutôt que la vue de tableau de bord du fabricant : on n'a besoin
+  // que des noms pour remplir des sélecteurs, et cette vue-là est désormais
+  // filtrée sur la ligne de l'appelant.
+  marques: 'fabricants?select=fabricant_id:id,fabricant_nom:nom&statut=eq.actif&order=nom',
+  activite: 'v_supervision_activite?select=*&order=jour',
+  acteurs: 'v_supervision_acteurs?select=*',
+  livreurs: 'v_supervision_livreurs?select=*&order=nom',
+  communes: 'v_supervision_communes?select=*',
+  rupturesRecentes: 'v_supervision_ruptures_recentes?select=*',
+  attribution: 'v_supervision_attribution?select=*&order=fabricant_nom',
+  semaines: 'v_supervision_semaines?select=*&order=semaine',
+  parFabricant: 'v_supervision_par_fabricant?select=*',
+  produitsTendus: 'v_supervision_produits_tendus?select=*',
+  diffusions: 'v_diffusions?select=*&order=date_envoi.desc&limit=25',
+};
+
 async function rafraichir() {
   try {
-    const [reseau, demandes, anomalies, distributeurs, boutiques, marques, activite] =
-      await Promise.all([
-        interroger('v_supervision_reseau?select=*'),
-        interroger('v_demandes_acces?select=*&order=created_at.desc'),
-        interroger('v_anomalies_reseau?select=*&order=type_anomalie,depuis'),
-        interroger('v_supervision_distributeurs?select=*&order=nom'),
-        interroger('v_supervision_boutiques?select=*&order=commune,nom'),
-        // La table plutôt que la vue de tableau de bord du fabricant : on n'a
-        // besoin que des noms pour remplir des sélecteurs, et cette vue-là est
-        // désormais filtrée sur la ligne de l'appelant.
-        interroger('fabricants?select=fabricant_id:id,fabricant_nom:nom&statut=eq.actif&order=nom'),
-        interroger('v_supervision_activite?select=*&order=jour'),
-      ]);
+    const cles = Object.keys(LECTURES);
+    const reponses = await Promise.all(cles.map((c) => interroger(LECTURES[c])));
+
+    const frais = {};
+    cles.forEach((c, i) => { frais[c] = reponses[i]; });
 
     etat = {
-      reseau: reseau[0] ?? {},
-      demandes,
-      anomalies,
-      distributeurs,
-      boutiques,
-      marques,
-      activite,
+      ...frais,
+      // Ces deux vues ne rendent qu'une ligne : on la déplie ici plutôt que
+      // d'écrire `etat.reseau[0]` à vingt endroits.
+      reseau: frais.reseau[0] ?? {},
+      acteurs: frais.acteurs[0] ?? {},
     };
 
     tracerBadges();
+    remplirCommunes();
+    estimerPortee();
+
+    tracerBandeau();
     tracerJauge(etat.reseau.taux_de_service_pct);
     tracerAnneau();
     tracerCouverture();
@@ -1344,10 +2140,25 @@ async function rafraichir() {
     tracerChiffres();
     tracerCommunes();
     tracerCharge();
+    tracerRupturesRecentes();
+
     tracerRail();
     tracerCarte();
     tracerTiroir();
+    tracerTableLivreurs();
+    tracerTableCommunes();
+
+    tracerActeurs();
     tracerDemandes();
+    tracerAttribution();
+    tracerTableActeurs();
+
+    tracerDiffusions();
+
+    tracerSemaines();
+    tracerParFabricant();
+    tracerProduitsTendus();
+
     tracerAnomalies();
 
     const heure = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });

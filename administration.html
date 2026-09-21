@@ -30,10 +30,12 @@
 
   <nav class="console-nav" aria-label="Sections">
     <button type="button" class="console-onglet est-actif" data-volet="tableau">Tableau de bord</button>
-    <button type="button" class="console-onglet" data-volet="reseau">Réseau</button>
-    <button type="button" class="console-onglet" data-volet="demandes">
-      Demandes <span id="compteurDemandes" hidden>0</span>
+    <button type="button" class="console-onglet" data-volet="reseau">Carte du réseau</button>
+    <button type="button" class="console-onglet" data-volet="acteurs">
+      Acteurs <span id="compteurDemandes" hidden>0</span>
     </button>
+    <button type="button" class="console-onglet" data-volet="diffusion">Diffusion</button>
+    <button type="button" class="console-onglet" data-volet="statistiques">Statistiques</button>
     <button type="button" class="console-onglet" data-volet="anomalies">
       Anomalies <span id="compteurAnomalies" hidden>0</span>
     </button>
@@ -55,6 +57,32 @@
 
   <!-- ══ Volet 1 — Tableau de bord ════════════════════════ -->
   <section class="console-volet" id="voletTableau" aria-label="Tableau de bord">
+
+    <!-- Les quatre chiffres du cahier des charges, en bandeau. Celui du
+         chiffre d'affaires est celui des LIVRAISONS, jamais celui des caisses :
+         voir la note en bas de cet écran. -->
+    <div class="grille">
+      <article class="carte c3">
+        <header><h3>Volume livré aujourd'hui</h3></header>
+        <div class="chiffre" id="chiffreVolume">—</div>
+        <div class="chiffre-suite" id="detailVolume"></div>
+      </article>
+      <article class="carte c3">
+        <header><h3>Points de vente actifs</h3></header>
+        <div class="chiffre" id="chiffrePoints">—</div>
+        <div class="chiffre-suite" id="detailPoints"></div>
+      </article>
+      <article class="carte c3">
+        <header><h3>Ruptures en cours</h3></header>
+        <div class="chiffre" id="chiffreRuptures">—</div>
+        <div class="chiffre-suite" id="detailRuptures"></div>
+      </article>
+      <article class="carte c3">
+        <header><h3>Livreurs en course</h3></header>
+        <div class="chiffre" id="chiffreLivreurs">—</div>
+        <div class="chiffre-suite" id="detailLivreurs"></div>
+      </article>
+    </div>
 
     <div class="grille">
 
@@ -127,16 +155,32 @@
         </div>
       </article>
 
+      <!-- Le délai court depuis la confirmation du boutiquier, pas depuis la
+           naissance du signalement : une rupture détectée mais non confirmée
+           n'attend personne. -->
+      <article class="carte c12">
+        <header>
+          <h3>Ruptures récentes</h3>
+          <small>Les plus anciennes d'abord. Le délai compte depuis la confirmation du boutiquier, moment où la course devient réellement en attente.</small>
+        </header>
+        <div class="table-boite">
+          <table class="table" id="tableRupturesRecentes"></table>
+        </div>
+      </article>
+
     </div>
 
     <p class="note">
-      <b>Vous ne voyez ni les ventes, ni le chiffre d'affaires d'une boutique,
-      et ce n'est pas un oubli.</b> La promesse faite au boutiquier est que sa
-      caisse n'appartient qu'à lui ; une promesse qui souffre une exception pour
-      celui qui exploite le produit n'en est plus une. C'est elle qui lui fait
-      accepter la caisse gratuite, donc elle qui fait remonter les ruptures de
-      tout le réseau. Les politiques de la base la refusent à ce compte comme à
-      tous les autres, et un test le vérifie à chaque déploiement.
+      <b>Le chiffre d'affaires que vous voyez est celui des livraisons, pas
+      celui des caisses.</b> Il mesure ce que Yalla fait circuler, l'argent
+      remis au livreur contre un réapprovisionnement, et c'est bien l'activité
+      que vous pilotez. Ce que la boutique encaisse à son comptoir ne vous est
+      pas montré, et ce n'est pas un oubli : la promesse faite au boutiquier est
+      que sa caisse n'appartient qu'à lui, et une promesse qui souffre une
+      exception pour celui qui exploite le produit n'en est plus une. C'est elle
+      qui lui fait accepter la caisse gratuite, donc elle qui fait remonter les
+      ruptures de tout le réseau. Les politiques de la base la refusent à ce
+      compte comme à tous les autres, et un test le vérifie à chaque déploiement.
     </p>
   </section>
 
@@ -147,7 +191,8 @@
       <aside class="rail">
         <div class="rail-onglets" role="tablist">
           <button type="button" class="rail-onglet est-actif" data-rail="boutiques">Boutiques</button>
-          <button type="button" class="rail-onglet" data-rail="distributeurs">Distributeurs</button>
+          <button type="button" class="rail-onglet" data-rail="distributeurs">Distrib.</button>
+          <button type="button" class="rail-onglet" data-rail="livreurs">Livreurs</button>
           <button type="button" class="rail-onglet" data-rail="marques">Marques</button>
         </div>
         <div class="rail-recherche">
@@ -163,26 +208,56 @@
             <b>Le réseau sur le terrain</b>
             <small id="canevasSous">Position relevée par l'agent recenseur, sur le pas de la porte.</small>
           </div>
+          <div class="canevas-filtre">
+            <label for="filtreCommune">Commune</label>
+            <select id="filtreCommune"><option value="">Toutes communes</option></select>
+          </div>
           <div id="canevasCarte"></div>
           <div class="canevas-legende">
             <span><i style="background:#3ED598"></i> Desservie</span>
             <span><i style="background:#FF5C39"></i> Sans distributeur</span>
             <span><i style="background:rgba(255,255,255,.4)"></i> Sans stock suivi</span>
+            <span><i style="background:#FFE500"></i> Livreur</span>
           </div>
           <div class="canevas-echelle" id="canevasEchelle" hidden></div>
         </div>
 
         <div class="tiroir" id="tiroir"></div>
+
+        <div class="grille">
+          <article class="carte c6">
+            <header>
+              <h3>Livreurs, état réel</h3>
+              <small>Un téléphone endormi par Android laisse le drapeau « en ligne » allumé sans plus rien remonter. C'est l'âge de la dernière position qui fait foi.</small>
+            </header>
+            <div class="table-boite">
+              <table class="table" id="tableLivreurs"></table>
+            </div>
+          </article>
+
+          <article class="carte c6">
+            <header>
+              <h3>Répartition par commune</h3>
+              <small>Points recensés, boutiques que personne ne dessert, ruptures ouvertes.</small>
+            </header>
+            <div class="table-boite">
+              <table class="table" id="tableCommunes"></table>
+            </div>
+          </article>
+        </div>
       </div>
 
     </div>
   </section>
 
-  <!-- ══ Volet 3 — Demandes ═══════════════════════════════ -->
-  <section class="console-volet" id="voletDemandes" aria-label="Demandes d'accès" hidden>
+  <!-- ══ Volet 3 — Acteurs du réseau ══════════════════════ -->
+  <section class="console-volet" id="voletActeurs" aria-label="Acteurs du réseau" hidden>
+
+    <div class="grille" id="grilleActeurs"></div>
+
     <article class="carte c12" style="grid-column:auto">
       <header>
-        <h3>Demandes d'accès</h3>
+        <h3>Demandes à confirmer</h3>
         <small>
           Fabricants et distributeurs qui ont demandé à rejoindre le réseau
           depuis le site. Valider crée le compte et vous remet ses identifiants
@@ -192,6 +267,167 @@
       </header>
       <div id="zoneDemandes"></div>
     </article>
+
+    <article class="carte c12" style="grid-column:auto">
+      <header>
+        <h3>Attribution de réseau</h3>
+        <small>Par marque : combien de boutiques la portent, et sur quelles communes.</small>
+      </header>
+      <div class="table-boite">
+        <table class="table" id="tableAttribution"></table>
+      </div>
+    </article>
+
+    <article class="carte c12" style="grid-column:auto">
+      <header>
+        <h3>Retrait et réactivation</h3>
+        <small>
+          Un acteur retiré cesse d'apparaître dans le réseau sans que rien ne
+          soit effacé. Son historique reste, et la réactivation le remet en
+          service tel qu'il était.
+        </small>
+      </header>
+      <div class="table-boite">
+        <table class="table" id="tableActeurs"></table>
+      </div>
+    </article>
+  </section>
+
+  <!-- ══ Volet 4 — Diffusion ══════════════════════════════ -->
+  <section class="console-volet" id="voletDiffusion" aria-label="Diffusion" hidden>
+    <div class="grille">
+
+      <article class="carte c5">
+        <header>
+          <h3>Nouvelle diffusion</h3>
+          <small>
+            Une diffusion ne se rattrape pas. Relisez avant d'envoyer : elle
+            part à tous les comptes concernés au moment de l'envoi.
+          </small>
+        </header>
+
+        <div class="champ">
+          <label for="diffusionType">Type</label>
+          <select id="diffusionType">
+            <option value="notification">Notification</option>
+            <option value="splash_publicitaire">Splash publicitaire</option>
+            <option value="sondage">Enquête ou sondage</option>
+          </select>
+        </div>
+
+        <div class="champ">
+          <label for="diffusionCible">Destinataires</label>
+          <select id="diffusionCible">
+            <option value="reseau_complet">Réseau complet</option>
+            <option value="points_de_vente">Points de vente</option>
+            <option value="distributeurs">Distributeurs</option>
+            <option value="fabricants">Fabricants</option>
+            <option value="livreurs">Livreurs</option>
+          </select>
+        </div>
+
+        <div class="champ">
+          <label for="diffusionCommune">Restreindre à une commune <span class="facultatif">facultatif</span></label>
+          <select id="diffusionCommune"><option value="">Partout</option></select>
+          <small>Se combine avec les destinataires : « les livreurs de Yopougon » est possible.</small>
+        </div>
+
+        <div class="champ">
+          <label for="diffusionTitre">Objet</label>
+          <input type="text" id="diffusionTitre" maxlength="120" placeholder="Maintenance samedi">
+        </div>
+
+        <div class="champ">
+          <label for="diffusionMessage">Message</label>
+          <textarea id="diffusionMessage" rows="4"
+                    placeholder="Nouvelle gamme disponible au catalogue à partir de lundi."></textarea>
+        </div>
+
+        <div class="champ" id="champOptions" hidden>
+          <label for="diffusionOptions">Réponses possibles</label>
+          <textarea id="diffusionOptions" rows="3" placeholder="Oui&#10;Non&#10;Sans opinion"></textarea>
+          <small>Une par ligne, deux au minimum.</small>
+        </div>
+
+        <p class="console-message" id="messageDiffusion" role="status" hidden></p>
+
+        <div class="tiroir-actions">
+          <button type="button" class="bouton" id="boutonDiffuser">Diffuser</button>
+          <span id="porteeEstimee" style="align-self:center;font-size:12.5px;color:rgba(8,22,14,.55)"></span>
+        </div>
+      </article>
+
+      <article class="carte c7">
+        <header>
+          <h3>Diffusions récentes</h3>
+          <small>
+            La portée est recalculée à chaque lecture : elle dit combien de
+            comptes cette consigne concerne aujourd'hui.
+          </small>
+        </header>
+        <div class="table-boite">
+          <table class="table" id="tableDiffusions"></table>
+        </div>
+        <footer>
+          La lecture d'une notification n'est pas suivie : aucun accusé de
+          réception n'existe dans le schéma et l'application n'en remonte
+          aucun. Un pourcentage affiché ici serait inventé. Pour un sondage, le
+          taux de réponse, lui, est mesuré.
+        </footer>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ══ Volet 5 — Statistiques ═══════════════════════════ -->
+  <section class="console-volet" id="voletStatistiques" aria-label="Statistiques" hidden>
+
+    <div class="tiroir-actions" style="justify-content:flex-end">
+      <button type="button" class="bouton bouton--creux" id="exportCsv">Exporter en CSV</button>
+      <button type="button" class="bouton bouton--creux" id="exportPdf">Imprimer ou PDF</button>
+    </div>
+
+    <div class="grille">
+      <article class="carte c12">
+        <header>
+          <h3>Volume livré sur douze semaines</h3>
+          <small>
+            Montant remis aux livreurs contre réapprovisionnement, et nombre de
+            livraisons. Regroupé par semaine : personne ne décide quoi que ce
+            soit sur la base d'un mardi.
+          </small>
+        </header>
+        <div class="graphe" id="grapheSemaines"></div>
+        <footer id="piedSemaines">—</footer>
+      </article>
+
+      <article class="carte c7">
+        <header>
+          <h3>Par marque</h3>
+          <small>
+            L'évolution compare les trente derniers jours aux trente précédents.
+            Une comparaison à la veille n'a pas de sens sur un réseau de
+            proximité, où un jour férié renverse tout.
+          </small>
+        </header>
+        <div class="table-boite">
+          <table class="table" id="tableParFabricant"></table>
+        </div>
+      </article>
+
+      <article class="carte c5">
+        <header>
+          <h3>Produits les plus en rupture</h3>
+          <small>
+            L'information qu'aucun relevé de ventes ne donne à un fabricant :
+            une vente qui n'a pas lieu ne laisse aucune trace chez lui.
+          </small>
+        </header>
+        <div class="table-boite">
+          <table class="table" id="tableProduitsTendus"></table>
+        </div>
+      </article>
+    </div>
   </section>
 
   <!-- ══ Volet 4 — Anomalies ══════════════════════════════ -->
