@@ -3,139 +3,219 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Supervision — Yalla</title>
-<meta name="theme-color" content="#0A3D24">
+<title>Supervision du réseau — Yalla</title>
+<meta name="theme-color" content="#062718">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="acces.css">
+<link rel="stylesheet" href="supervision.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23146B3A'/><path d='M28 30h10l14 30' stroke='%23FFE500' stroke-width='11' fill='none' stroke-linecap='round'/><rect x='52' y='24' width='24' height='24' rx='3' fill='%23FFE500' transform='rotate(-18 64 36)'/><circle cx='50' cy='72' r='8' fill='%23FFE500'/></svg>">
 </head>
-<body class="page-acces">
+<body class="page-console">
 
-<a class="skip-link" href="#main">Aller au contenu</a>
+<a class="skip-link" href="#corps">Aller au contenu</a>
 
-<header class="acces-nav">
-  <a class="logo" href="index.html" aria-label="Yalla, accueil">
-    <span class="logo__mark" aria-hidden="true">
-      <svg viewBox="0 0 40 40" fill="none">
-        <path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/>
-        <rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/>
-        <circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/>
-      </svg>
-    </span>
-    <span class="logo__word">YALLA</span>
+<!-- ══ La barre ═══════════════════════════════════════════ -->
+<header class="console-barre">
+  <a class="console-marque" href="index.html" aria-label="Yalla, accueil">
+    <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/>
+      <rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/>
+      <circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/>
+    </svg>
+    <b>YALLA</b>
   </a>
-  <div class="bord-outils">
-    <span class="bord-pouls" id="pouls" title="Dernière mise à jour">—</span>
-    <button type="button" class="acces-retour" id="boutonDeconnexion">Se déconnecter</button>
+
+  <nav class="console-nav" aria-label="Sections">
+    <button type="button" class="console-onglet est-actif" data-volet="tableau">Tableau de bord</button>
+    <button type="button" class="console-onglet" data-volet="reseau">Réseau</button>
+    <button type="button" class="console-onglet" data-volet="demandes">
+      Demandes <span id="compteurDemandes" hidden>0</span>
+    </button>
+    <button type="button" class="console-onglet" data-volet="anomalies">
+      Anomalies <span id="compteurAnomalies" hidden>0</span>
+    </button>
+  </nav>
+
+  <div class="console-droite">
+    <span class="console-pouls" id="pouls" title="Heure de la dernière lecture">—</span>
+    <span class="console-qui">
+      <span class="console-pastille-qui" id="initiales" aria-hidden="true">—</span>
+      <span id="nomAdmin">Administrateur</span>
+    </span>
+    <button type="button" class="console-sortie" id="boutonDeconnexion">Quitter</button>
   </div>
 </header>
 
-<main id="main" class="acces-main" style="grid-template-columns:minmax(0,1fr)">
-  <div>
+<main id="corps" class="console-corps">
 
-    <div class="bord-entete">
-      <div>
-        <h1>Supervision du réseau</h1>
-        <p id="sousTitre">Chargement…</p>
-      </div>
+  <p class="console-message" id="message" role="status" hidden></p>
+
+  <!-- ══ Volet 1 — Tableau de bord ════════════════════════ -->
+  <section class="console-volet" id="voletTableau" aria-label="Tableau de bord">
+
+    <div class="grille">
+
+      <!-- La jauge. Le taux de service est l'indicateur vendu au fabricant :
+           il a droit à la plus grande carte et à la première place. -->
+      <article class="carte c4">
+        <header>
+          <h3>Taux de service</h3>
+          <small>Part des ruptures effectivement servies, toutes marques confondues.</small>
+        </header>
+        <div class="jauge" id="jaugeService"></div>
+        <footer id="piedService">—</footer>
+      </article>
+
+      <article class="carte c4">
+        <header>
+          <h3>Ruptures en cours</h3>
+          <small>Où en sont les signalements qui n'ont pas encore été servis.</small>
+        </header>
+        <div class="anneau" id="anneauRuptures"></div>
+        <footer id="piedRuptures">—</footer>
+      </article>
+
+      <article class="carte c4">
+        <header>
+          <h3>Couverture du réseau</h3>
+          <small>Boutiques actives qu'un distributeur dessert réellement.</small>
+        </header>
+        <div class="objectif" id="objectifCouverture"></div>
+        <footer id="piedCouverture">—</footer>
+      </article>
+
+      <!-- Le rythme. Une courbe de signalements sans la courbe des
+           résolutions ne dit rien : c'est l'écart entre les deux qui
+           raconte si le réseau tient la charge. -->
+      <article class="carte c8">
+        <header>
+          <h3>Rythme du réseau, quatorze jours</h3>
+          <small>Ruptures signalées et ruptures résolues, jour par jour. Les jours creux valent zéro et sont dessinés.</small>
+        </header>
+        <div class="graphe" id="grapheActivite"></div>
+        <footer id="piedActivite">—</footer>
+      </article>
+
+      <article class="carte c4">
+        <header>
+          <h3>Le réseau en chiffres</h3>
+          <small>Ce qui existe aujourd'hui, à l'instant de la dernière lecture.</small>
+        </header>
+        <div class="table-boite">
+          <table class="table" id="tableChiffres"></table>
+        </div>
+      </article>
+
+      <article class="carte c7">
+        <header>
+          <h3>Boutiques par commune</h3>
+          <small>Desservies contre orphelines. Une commune toute rouge est une commune sans distributeur.</small>
+        </header>
+        <div class="graphe" id="grapheCommunes"></div>
+      </article>
+
+      <article class="carte c5">
+        <header>
+          <h3>Charge des distributeurs</h3>
+          <small>La chaleur marque les courses en attente : plus la cellule est vive, plus il en a sur les bras.</small>
+        </header>
+        <div class="table-boite">
+          <table class="table" id="tableCharge"></table>
+        </div>
+      </article>
+
     </div>
 
-    <p class="acces-message" id="messageBord" role="status" hidden></p>
-
-    <div class="bord-chiffres" id="chiffres" hidden>
-      <div class="bord-chiffre bord-chiffre--fort">
-        <b id="chiffreTaux">—</b>
-        <span>Taux de service</span>
-        <em id="detailTaux">Part des ruptures servies sur l'ensemble du réseau.</em>
-      </div>
-      <div class="bord-chiffre">
-        <b id="chiffreBoutiques">—</b>
-        <span>Boutiques actives</span>
-        <em id="detailBoutiques">—</em>
-      </div>
-      <div class="bord-chiffre">
-        <b id="chiffreCourses">—</b>
-        <span>Ruptures ouvertes</span>
-        <em id="detailCourses">—</em>
-      </div>
-      <div class="bord-chiffre">
-        <b id="chiffreFlotte">—</b>
-        <span>Livreurs en ligne</span>
-        <em id="detailFlotte">—</em>
-      </div>
-    </div>
-
-    <!-- ── Les demandes ───────────────────────────────────────────── -->
-    <section class="bord-section">
-      <h2>Demandes d'accès</h2>
-      <p>
-        Fabricants et distributeurs qui ont demandé à rejoindre le réseau
-        depuis le site. Valider crée leur compte et vous remet leurs
-        identifiants : c'est vous qui les leur transmettez, rien ne part par
-        e-mail.
-      </p>
-      <div id="zoneDemandes">
-        <div class="bord-vide">Chargement…</div>
-      </div>
-    </section>
-
-    <!-- ── Les anomalies ──────────────────────────────────────────── -->
-    <section class="bord-section">
-      <h2>Ce qui ne tourne pas rond</h2>
-      <p>
-        Les pannes dont personne ne se plaint : une boutique que nul ne dessert,
-        un distributeur sans livreur, un stock jamais saisi. Elles dégradent le
-        service sans que rien ne le signale.
-      </p>
-      <div id="zoneAnomalies">
-        <div class="bord-vide">Chargement…</div>
-      </div>
-    </section>
-
-    <!-- ── Les distributeurs ──────────────────────────────────────── -->
-    <section class="bord-section">
-      <h2>Distributeurs</h2>
-      <p>
-        Un distributeur qui démarre ne voit aucune boutique dans son écran : sa
-        première doit lui être attribuée ici, sans quoi il ne peut jamais
-        commencer.
-      </p>
-      <div id="zoneDistributeurs">
-        <div class="bord-vide">Chargement…</div>
-      </div>
-    </section>
-
-    <!-- ── Les boutiques ──────────────────────────────────────────── -->
-    <section class="bord-section">
-      <h2>Boutiques</h2>
-      <p>
-        Le réseau physique, tel que les agents recenseurs l'ont construit.
-      </p>
-      <div id="zoneBoutiques">
-        <div class="bord-vide">Chargement…</div>
-      </div>
-    </section>
-
-    <p class="acces-aide" style="max-width:74ch">
-      Vous ne voyez ni les ventes, ni le chiffre d'affaires d'une boutique, et
-      ce n'est pas un oubli. La promesse faite au boutiquier est que sa caisse
-      n'appartient qu'à lui ; une promesse qui souffre une exception pour
-      l'exploitant n'en est plus une. C'est elle qui lui fait accepter la caisse
-      gratuite, donc elle qui fait remonter les ruptures de tout le réseau.
+    <p class="note">
+      <b>Vous ne voyez ni les ventes, ni le chiffre d'affaires d'une boutique,
+      et ce n'est pas un oubli.</b> La promesse faite au boutiquier est que sa
+      caisse n'appartient qu'à lui ; une promesse qui souffre une exception pour
+      celui qui exploite le produit n'en est plus une. C'est elle qui lui fait
+      accepter la caisse gratuite, donc elle qui fait remonter les ruptures de
+      tout le réseau. Les politiques de la base la refusent à ce compte comme à
+      tous les autres, et un test le vérifie à chaque déploiement.
     </p>
+  </section>
 
-  </div>
+  <!-- ══ Volet 2 — Réseau ═════════════════════════════════ -->
+  <section class="console-volet" id="voletReseau" aria-label="Réseau" hidden>
+    <div class="console">
+
+      <aside class="rail">
+        <div class="rail-onglets" role="tablist">
+          <button type="button" class="rail-onglet est-actif" data-rail="boutiques">Boutiques</button>
+          <button type="button" class="rail-onglet" data-rail="distributeurs">Distributeurs</button>
+          <button type="button" class="rail-onglet" data-rail="marques">Marques</button>
+        </div>
+        <div class="rail-recherche">
+          <input type="search" id="rechercheRail" placeholder="Rechercher…"
+                 aria-label="Rechercher dans la liste">
+        </div>
+        <div class="rail-liste" id="railListe"></div>
+      </aside>
+
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+        <div class="canevas">
+          <div class="canevas-titre">
+            <b>Le réseau sur le terrain</b>
+            <small id="canevasSous">Position relevée par l'agent recenseur, sur le pas de la porte.</small>
+          </div>
+          <div id="canevasCarte"></div>
+          <div class="canevas-legende">
+            <span><i style="background:#3ED598"></i> Desservie</span>
+            <span><i style="background:#FF5C39"></i> Sans distributeur</span>
+            <span><i style="background:rgba(255,255,255,.4)"></i> Sans stock suivi</span>
+          </div>
+          <div class="canevas-echelle" id="canevasEchelle" hidden></div>
+        </div>
+
+        <div class="tiroir" id="tiroir"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ Volet 3 — Demandes ═══════════════════════════════ -->
+  <section class="console-volet" id="voletDemandes" aria-label="Demandes d'accès" hidden>
+    <article class="carte c12" style="grid-column:auto">
+      <header>
+        <h3>Demandes d'accès</h3>
+        <small>
+          Fabricants et distributeurs qui ont demandé à rejoindre le réseau
+          depuis le site. Valider crée le compte et vous remet ses identifiants
+          à l'écran, une seule fois : c'est vous qui les transmettez, rien ne
+          part par e-mail.
+        </small>
+      </header>
+      <div id="zoneDemandes"></div>
+    </article>
+  </section>
+
+  <!-- ══ Volet 4 — Anomalies ══════════════════════════════ -->
+  <section class="console-volet" id="voletAnomalies" aria-label="Anomalies" hidden>
+    <article class="carte c12" style="grid-column:auto">
+      <header>
+        <h3>Ce qui ne tourne pas rond</h3>
+        <small>
+          Les pannes dont personne ne se plaint : une boutique que nul ne
+          dessert, un distributeur sans livreur, un stock jamais saisi. Elles
+          dégradent le service sans que rien ne le signale.
+        </small>
+      </header>
+      <div id="zoneAnomalies" style="display:flex;flex-direction:column;gap:26px"></div>
+    </article>
+  </section>
+
 </main>
 
-<!-- ── Valider une demande ──────────────────────────────────────── -->
-<dialog id="dialogueValidation" class="bord-dialogue">
+<!-- ══ Valider une demande ════════════════════════════════ -->
+<dialog id="fenetreValidation" class="fenetre">
   <form method="dialog">
     <h2>Valider la demande</h2>
-    <p id="sousTitreValidation" class="bord-dialogue-sous"></p>
+    <p id="sousTitreValidation"></p>
 
     <div class="champ" id="champMarque" hidden>
       <label for="marqueRattachee">Marque de rattachement</label>
@@ -144,28 +224,28 @@
     </div>
 
     <div class="champ">
-      <label for="motDePasseGenere">Mot de passe à remettre</label>
-      <div class="champ-mdp">
+      <label for="motDePasseGenere">Mot de passe à dicter</label>
+      <div class="champ-duo">
         <input type="text" id="motDePasseGenere" readonly>
-        <button type="button" class="champ-oeil" id="regenererMdp">Autre</button>
+        <button type="button" class="bouton bouton--creux" id="regenererMdp">Autre</button>
       </div>
-      <small>Lisible à voix haute : ni l, ni 1, ni O, ni 0.</small>
+      <small>Sans l, sans 1, sans O, sans 0 : il se dicte au téléphone.</small>
     </div>
 
-    <p class="acces-message" id="messageValidation" role="status" hidden></p>
+    <p class="console-message" id="messageValidation" role="status" hidden></p>
 
-    <div class="bord-dialogue-pied">
-      <button type="button" class="acces-retour" id="annulerValidation">Annuler</button>
-      <button type="button" class="bord-action" id="confirmerValidation">Créer le compte</button>
+    <div class="fenetre-pied">
+      <button type="button" class="bouton bouton--creux" id="annulerValidation">Annuler</button>
+      <button type="button" class="bouton" id="confirmerValidation">Créer le compte</button>
     </div>
   </form>
 </dialog>
 
-<!-- ── Attribuer une boutique ───────────────────────────────────── -->
-<dialog id="dialogueAttribution" class="bord-dialogue">
+<!-- ══ Attribuer une boutique ═════════════════════════════ -->
+<dialog id="fenetreAttribution" class="fenetre">
   <form method="dialog">
     <h2>Attribuer une boutique</h2>
-    <p id="sousTitreAttribution" class="bord-dialogue-sous"></p>
+    <p id="sousTitreAttribution"></p>
 
     <div class="champ">
       <label for="boutiqueChoisie">Boutique</label>
@@ -180,28 +260,25 @@
     <div class="champ">
       <label for="marqueChoisie">Pour la marque</label>
       <select id="marqueChoisie"></select>
-      <small>C'est le triplet boutique, marque et distributeur qui décide où
-        part une rupture.</small>
+      <small>C'est le triplet boutique, marque et distributeur qui décide où part une rupture.</small>
     </div>
 
-    <p class="acces-message" id="messageAttribution" role="status" hidden></p>
+    <p class="console-message" id="messageAttribution" role="status" hidden></p>
 
-    <div class="bord-dialogue-pied">
-      <button type="button" class="acces-retour" id="annulerAttribution">Annuler</button>
-      <button type="button" class="bord-action" id="confirmerAttribution">Attribuer</button>
+    <div class="fenetre-pied">
+      <button type="button" class="bouton bouton--creux" id="annulerAttribution">Annuler</button>
+      <button type="button" class="bouton" id="confirmerAttribution">Attribuer</button>
     </div>
   </form>
 </dialog>
 
-<!-- ── Identifiants créés ───────────────────────────────────────── -->
-<dialog id="dialogueIdentifiants" class="bord-dialogue">
+<!-- ══ Identifiants créés ═════════════════════════════════ -->
+<dialog id="fenetreIdentifiants" class="fenetre">
   <form method="dialog">
     <h2>Compte créé</h2>
-    <p class="bord-dialogue-sous">
-      Notez ces identifiants et transmettez-les maintenant. Le mot de passe ne
-      pourra plus être affiché.
-    </p>
-    <div class="bord-identifiants">
+    <p>Notez ces identifiants et transmettez-les maintenant. Le mot de passe ne
+      pourra plus jamais être affiché.</p>
+    <div class="identifiants">
       <div>
         <small>Identifiant</small>
         <strong id="identifiantCree">—</strong>
@@ -211,8 +288,8 @@
         <strong id="motDePasseCree">—</strong>
       </div>
     </div>
-    <div class="bord-dialogue-pied">
-      <button type="submit" value="ok" class="bord-action">C'est noté</button>
+    <div class="fenetre-pied">
+      <button type="submit" value="ok" class="bouton">C'est noté</button>
     </div>
   </form>
 </dialog>

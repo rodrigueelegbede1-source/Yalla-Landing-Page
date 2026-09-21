@@ -1,0 +1,1072 @@
+/* ═══════════════════════════════════════════════════════════
+   YALLA — Console de supervision
+
+   FUSION DE DEUX MODÈLES, ET CE QUE CHACUN APPORTE.
+
+   De la console de flotte : la coque. Barre sombre pleine
+   largeur avec le bloc de marque à gauche, rail de gauche
+   cherchable et onglé, canevas dominant à droite, tiroir de
+   détail en bas. C'est une disposition d'exploitation : on
+   cherche une entité, on la regarde, on agit sur elle.
+
+   Du tableau de bord analytique : la grille de cartes. Jauge,
+   anneau, barre d'objectif, histogramme, table à cellules
+   chauffées. C'est une disposition de lecture : on balaye, on
+   repère l'anomalie, on creuse.
+
+   Les deux ne se juxtaposent pas, elles se relaient. La grille
+   analytique répond à « comment va le réseau », la console
+   répond à « que dois-je faire maintenant ». Un administrateur
+   ouvre la page pour la première question et la referme sur la
+   seconde.
+
+   CE QUI RESTE DE YALLA, ET QUI N'EST PAS NÉGOCIABLE : le vert
+   profond et le jaune signalétique du logo, Sora pour les
+   titres, IBM Plex Mono pour les chiffres. Les deux modèles
+   d'origine sont l'un bleu ardoise, l'autre blanc clinique.
+   Aucun des deux ne dicte la couleur ici.
+
+   POURQUOI CE FICHIER EST SOMBRE EN HAUT ET CLAIR EN BAS. La
+   coque d'exploitation est sombre parce qu'elle encadre sans
+   se faire lire ; les cartes de données sont claires parce
+   qu'on y lit des chiffres. C'est le seul endroit du produit
+   qui mélange les deux, et c'est assumé.
+   ═══════════════════════════════════════════════════════════ */
+
+.page-console{
+  background:var(--cream);
+  color:var(--ink);
+  font-family:var(--ff-body);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ══ La barre ══════════════════════════════════════════════ */
+
+.console-barre{
+  display:flex;
+  align-items:stretch;
+  background:var(--green-950);
+  color:var(--white);
+  position:sticky;
+  top:0;
+  z-index:40;
+}
+
+/* Le bloc de marque est plein, pas transparent : c'est lui qui ancre
+   la barre à gauche et donne l'échelle du reste. */
+.console-marque{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  background:var(--green-700);
+  color:var(--white);
+  padding:0 22px;
+  text-decoration:none;
+  flex-shrink:0;
+}
+.console-marque svg{ width:26px; height:26px; color:var(--yellow); }
+.console-marque b{
+  font-family:var(--ff-display);
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:.14em;
+}
+
+.console-nav{
+  display:flex;
+  align-items:stretch;
+  gap:2px;
+  padding-inline:10px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.console-nav::-webkit-scrollbar{ display:none; }
+
+.console-onglet{
+  appearance:none;
+  border:0;
+  background:transparent;
+  color:rgba(255,255,255,.62);
+  font-family:var(--ff-display);
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  padding:22px 16px 20px;
+  cursor:pointer;
+  white-space:nowrap;
+  border-bottom:3px solid transparent;
+  transition:color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.console-onglet:hover{ color:var(--white); }
+.console-onglet.est-actif{
+  color:var(--white);
+  border-bottom-color:var(--yellow);
+}
+.console-onglet:focus-visible{ outline:2px solid var(--yellow); outline-offset:-4px; }
+
+/* Le compteur cousu à l'onglet, pas posé à côté : c'est le nombre de
+   choses à traiter dans CET onglet, et il doit se lire comme tel. */
+.console-onglet span{
+  display:inline-block;
+  margin-inline-start:7px;
+  min-width:19px;
+  padding:1px 6px;
+  border-radius:999px;
+  background:rgba(255,255,255,.16);
+  font-family:var(--ff-mono);
+  font-size:11px;
+  letter-spacing:0;
+  vertical-align:1px;
+}
+.console-onglet span[data-urgent="oui"]{ background:var(--alert); color:var(--white); }
+
+.console-droite{
+  margin-inline-start:auto;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding-inline:20px;
+  flex-shrink:0;
+}
+
+/* L'heure de la dernière lecture, pas un voyant « en direct ». Une page
+   qui affiche « connecté » alors qu'elle n'a rien reçu depuis dix minutes
+   ment ; une heure, non. */
+.console-pouls{
+  font-family:var(--ff-mono);
+  font-size:11px;
+  color:rgba(255,255,255,.5);
+  padding:5px 11px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  white-space:nowrap;
+}
+.console-pouls[data-etat="perdu"]{ background:var(--alert); color:var(--white); }
+
+.console-qui{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:13px;
+  color:rgba(255,255,255,.75);
+  white-space:nowrap;
+}
+.console-pastille-qui{
+  width:29px;
+  height:29px;
+  border-radius:999px;
+  background:var(--yellow);
+  color:var(--green-950);
+  display:grid;
+  place-items:center;
+  font-family:var(--ff-display);
+  font-size:12px;
+  font-weight:700;
+}
+.console-sortie{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.22);
+  background:transparent;
+  color:rgba(255,255,255,.75);
+  font-family:var(--ff-body);
+  font-size:12.5px;
+  font-weight:500;
+  padding:7px 13px;
+  border-radius:999px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.console-sortie:hover{ background:rgba(255,255,255,.1); color:var(--white); }
+
+/* ══ Corps ═════════════════════════════════════════════════ */
+
+.console-corps{
+  flex:1;
+  width:100%;
+  max-width:1680px;
+  margin:0 auto;
+  padding-inline:clamp(14px,2.4vw,26px);
+  padding-block:22px 40px;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+.console-message{
+  margin:0;
+  padding:13px 16px;
+  border-radius:var(--r-sm);
+  font-size:14px;
+  line-height:1.5;
+  border:1px solid transparent;
+}
+.console-message[data-ton="erreur"]{
+  background:rgba(255,92,57,.1);
+  border-color:rgba(255,92,57,.34);
+  color:#8C2A12;
+}
+.console-message[data-ton="succes"]{
+  background:rgba(20,107,58,.08);
+  border-color:rgba(20,107,58,.3);
+  color:var(--green-800);
+}
+
+.console-volet[hidden]{ display:none; }
+.console-volet{ display:flex; flex-direction:column; gap:20px; }
+
+/* ══ Grille de cartes ══════════════════════════════════════ */
+
+.grille{
+  display:grid;
+  grid-template-columns:repeat(12,minmax(0,1fr));
+  gap:14px;
+}
+
+.carte{
+  background:var(--white);
+  border:1px solid rgba(8,22,14,.09);
+  border-radius:var(--r-md);
+  padding:18px 20px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  min-width:0;
+}
+
+/* Une carte n'est pas un bloc décoré : elle porte un titre, un objet et
+   une légende, toujours dans cet ordre et toujours au même endroit. */
+.carte > header{ display:flex; flex-direction:column; gap:2px; }
+.carte h3{
+  font-family:var(--ff-display);
+  font-size:13.5px;
+  font-weight:600;
+  margin:0;
+  color:var(--green-900);
+}
+.carte header small{
+  font-size:11.5px;
+  line-height:1.45;
+  color:rgba(8,22,14,.5);
+}
+.carte footer{
+  margin-top:auto;
+  font-size:12px;
+  line-height:1.5;
+  color:rgba(8,22,14,.55);
+}
+
+.c3{ grid-column:span 3; }
+.c4{ grid-column:span 4; }
+.c5{ grid-column:span 5; }
+.c6{ grid-column:span 6; }
+.c7{ grid-column:span 7; }
+.c8{ grid-column:span 8; }
+.c12{ grid-column:span 12; }
+
+/* ── Le chiffre nu ────────────────────────────────────────── */
+
+.chiffre{
+  font-family:var(--ff-mono);
+  font-size:clamp(30px,3.4vw,42px);
+  font-weight:600;
+  line-height:1;
+  color:var(--green-800);
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;
+}
+.chiffre-suite{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px 18px;
+  font-size:12.5px;
+  color:rgba(8,22,14,.6);
+}
+.chiffre-suite b{
+  font-family:var(--ff-mono);
+  font-weight:600;
+  color:var(--ink);
+}
+
+/* ── Jauge ────────────────────────────────────────────────── */
+
+.jauge{ display:grid; place-items:center; gap:0; }
+.jauge svg{ width:100%; max-width:230px; height:auto; }
+.jauge-valeur{
+  font-family:var(--ff-mono);
+  font-size:30px;
+  font-weight:600;
+  fill:var(--green-800);
+}
+.jauge-unite{ font-family:var(--ff-body); font-size:11px; fill:rgba(8,22,14,.5); }
+.jauge-borne{ font-family:var(--ff-mono); font-size:9.5px; fill:rgba(8,22,14,.42); }
+
+/* ── Anneau ───────────────────────────────────────────────── */
+
+.anneau{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+.anneau svg{ width:132px; height:132px; flex-shrink:0; }
+.anneau-total{
+  font-family:var(--ff-mono);
+  font-size:25px;
+  font-weight:600;
+  fill:var(--ink);
+}
+.anneau-legende{
+  font-family:var(--ff-body);
+  font-size:10px;
+  fill:rgba(8,22,14,.5);
+  letter-spacing:.07em;
+}
+.legende{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-width:0;
+  flex:1;
+}
+.legende div{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  font-size:12.5px;
+  color:rgba(8,22,14,.72);
+}
+.legende i{
+  width:9px;
+  height:9px;
+  border-radius:2px;
+  flex-shrink:0;
+  align-self:center;
+}
+.legende b{
+  margin-inline-start:auto;
+  font-family:var(--ff-mono);
+  font-weight:600;
+  color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+
+/* ── Barre d'objectif ─────────────────────────────────────── */
+
+.objectif{ display:flex; flex-direction:column; gap:9px; }
+.objectif-piste{
+  position:relative;
+  height:38px;
+  background:var(--cream-2);
+  border-radius:6px;
+  overflow:hidden;
+}
+.objectif-remplissage{
+  position:absolute;
+  inset-block:0;
+  inset-inline-start:0;
+  background:linear-gradient(90deg,var(--green-600),var(--green-500));
+  border-radius:6px 0 0 6px;
+  transition:width .5s var(--ease);
+}
+/* Le repère de l'objectif traverse la piste, remplie ou non : c'est un
+   seuil, il ne doit pas disparaître quand on l'atteint. */
+.objectif-seuil{
+  position:absolute;
+  inset-block:-2px;
+  width:2px;
+  background:var(--green-950);
+}
+.objectif-seuil::after{
+  content:attr(data-libelle);
+  position:absolute;
+  top:-17px;
+  inset-inline-start:50%;
+  transform:translateX(-50%);
+  font-family:var(--ff-mono);
+  font-size:9.5px;
+  color:var(--green-950);
+  white-space:nowrap;
+}
+.objectif-bornes{
+  display:flex;
+  justify-content:space-between;
+  font-family:var(--ff-mono);
+  font-size:10.5px;
+  color:rgba(8,22,14,.5);
+}
+
+/* ── Histogrammes et courbes ──────────────────────────────── */
+
+.graphe{ width:100%; }
+.graphe svg{ width:100%; height:auto; display:block; overflow:visible; }
+.graphe-axe{ font-family:var(--ff-mono); font-size:9.5px; fill:rgba(8,22,14,.45); }
+.graphe-etiquette{ font-family:var(--ff-body); font-size:10px; fill:rgba(8,22,14,.6); }
+.graphe-grille{ stroke:rgba(8,22,14,.08); stroke-width:1; }
+.graphe-valeur{
+  font-family:var(--ff-mono);
+  font-size:9.5px;
+  fill:rgba(8,22,14,.62);
+  font-weight:600;
+}
+
+/* ── Table chauffée ───────────────────────────────────────── */
+
+.table-boite{ overflow-x:auto; }
+.table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+  min-width:520px;
+}
+.table th,
+.table td{
+  text-align:start;
+  padding:9px 12px;
+  border-bottom:1px solid rgba(8,22,14,.07);
+  white-space:nowrap;
+}
+.table th{
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  color:rgba(8,22,14,.5);
+  font-weight:600;
+  background:var(--cream-2);
+  position:sticky;
+  top:0;
+}
+.table tbody tr:last-child td{ border-bottom:0; }
+.table tbody tr:hover{ background:rgba(20,107,58,.035); }
+.table .num{
+  font-family:var(--ff-mono);
+  font-variant-numeric:tabular-nums;
+  text-align:end;
+}
+.table td small{ display:block; font-size:11.5px; color:rgba(8,22,14,.5); }
+
+/* La chaleur encode une quantité, elle ne décore pas : une cellule vide
+   reste blanche, et seule la valeur non nulle se teinte. */
+.cellule-chaude{ border-radius:4px; padding:2px 7px; display:inline-block; min-width:34px; text-align:end; }
+
+/* ── Pastilles d'état ─────────────────────────────────────── */
+
+.etat{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 10px 3px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.02em;
+  white-space:nowrap;
+}
+.etat::before{
+  content:'';
+  width:6px;
+  height:6px;
+  border-radius:999px;
+  background:currentColor;
+  flex-shrink:0;
+}
+.etat--ok{ background:rgba(20,107,58,.1); color:var(--green-700); }
+.etat--alerte{ background:rgba(255,92,57,.13); color:#9B3218; }
+.etat--dort{ background:var(--cream-2); color:rgba(8,22,14,.5); }
+
+/* ══ Console : rail + canevas ══════════════════════════════ */
+
+.console{
+  display:grid;
+  grid-template-columns:318px minmax(0,1fr);
+  gap:14px;
+  align-items:start;
+}
+
+.rail{
+  background:var(--white);
+  border:1px solid rgba(8,22,14,.09);
+  border-radius:var(--r-md);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  position:sticky;
+  top:82px;
+  max-height:calc(100vh - 104px);
+}
+
+.rail-onglets{
+  display:flex;
+  border-bottom:1px solid rgba(8,22,14,.09);
+  background:var(--cream-2);
+}
+.rail-onglet{
+  flex:1;
+  appearance:none;
+  border:0;
+  background:transparent;
+  font-family:var(--ff-body);
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:rgba(8,22,14,.55);
+  padding:12px 6px 10px;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+}
+.rail-onglet:hover{ color:var(--ink); }
+.rail-onglet.est-actif{
+  background:var(--white);
+  color:var(--green-800);
+  border-bottom-color:var(--green-700);
+}
+.rail-onglet:focus-visible{ outline:2px solid var(--green-700); outline-offset:-3px; }
+
+.rail-recherche{ padding:12px 13px; border-bottom:1px solid rgba(8,22,14,.07); }
+.rail-recherche input{
+  width:100%;
+  font-family:var(--ff-body);
+  font-size:13.5px;
+  color:var(--ink);
+  background:var(--cream);
+  border:1.5px solid transparent;
+  border-radius:var(--r-sm);
+  padding:9px 12px;
+}
+.rail-recherche input:focus{
+  outline:none;
+  background:var(--white);
+  border-color:var(--green-700);
+}
+
+.rail-liste{ overflow-y:auto; padding:6px; flex:1; }
+
+.rail-groupe{
+  font-family:var(--ff-display);
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  color:rgba(8,22,14,.42);
+  padding:12px 10px 6px;
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+}
+
+.rail-entree{
+  width:100%;
+  appearance:none;
+  border:0;
+  background:transparent;
+  text-align:start;
+  font-family:var(--ff-body);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 10px;
+  border-radius:var(--r-sm);
+  cursor:pointer;
+  transition:background var(--t-fast) var(--ease);
+}
+.rail-entree:hover{ background:var(--cream); }
+.rail-entree.est-choisi{ background:rgba(20,107,58,.1); }
+.rail-entree:focus-visible{ outline:2px solid var(--green-700); outline-offset:-2px; }
+.rail-entree i{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  flex-shrink:0;
+  background:var(--ok);
+}
+.rail-entree i[data-etat="alerte"]{ background:var(--alert); }
+.rail-entree i[data-etat="dort"]{ background:rgba(8,22,14,.22); }
+.rail-entree span{ min-width:0; flex:1; }
+.rail-entree strong{
+  display:block;
+  font-size:13.5px;
+  font-weight:500;
+  color:var(--ink);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.rail-entree em{
+  display:block;
+  font-style:normal;
+  font-size:11.5px;
+  color:rgba(8,22,14,.5);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.rail-entree b{
+  font-family:var(--ff-mono);
+  font-size:11px;
+  color:rgba(8,22,14,.45);
+  flex-shrink:0;
+}
+
+.rail-vide{
+  padding:26px 18px;
+  text-align:center;
+  font-size:13px;
+  line-height:1.55;
+  color:rgba(8,22,14,.5);
+}
+
+/* ══ Le canevas géographique ═══════════════════════════════ */
+
+.canevas{
+  background:var(--green-950);
+  border-radius:var(--r-md);
+  overflow:hidden;
+  position:relative;
+  min-height:430px;
+  display:flex;
+  flex-direction:column;
+}
+.canevas svg{ width:100%; flex:1; display:block; }
+
+.canevas-titre{
+  position:absolute;
+  top:14px;
+  inset-inline-start:16px;
+  z-index:2;
+  color:var(--white);
+  pointer-events:none;
+}
+.canevas-titre b{
+  display:block;
+  font-family:var(--ff-display);
+  font-size:13.5px;
+  font-weight:600;
+}
+.canevas-titre small{
+  display:block;
+  margin-top:2px;
+  font-size:11.5px;
+  color:rgba(255,255,255,.55);
+  max-width:38ch;
+  line-height:1.45;
+}
+
+.canevas-legende{
+  position:absolute;
+  bottom:14px;
+  inset-inline-start:16px;
+  z-index:2;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 16px;
+  font-size:11.5px;
+  color:rgba(255,255,255,.7);
+  pointer-events:none;
+}
+.canevas-legende span{ display:inline-flex; align-items:center; gap:6px; }
+.canevas-legende i{ width:9px; height:9px; border-radius:999px; }
+
+.canevas-echelle{
+  position:absolute;
+  bottom:14px;
+  inset-inline-end:16px;
+  z-index:2;
+  font-family:var(--ff-mono);
+  font-size:10.5px;
+  color:rgba(255,255,255,.55);
+  text-align:end;
+  pointer-events:none;
+}
+.canevas-echelle hr{
+  border:0;
+  border-top:2px solid rgba(255,255,255,.5);
+  border-inline:2px solid rgba(255,255,255,.5);
+  height:5px;
+  margin:3px 0 0;
+}
+
+.canevas-vide{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-content:center;
+  text-align:center;
+  padding:30px;
+  color:rgba(255,255,255,.62);
+  font-size:13.5px;
+  line-height:1.6;
+  max-width:44ch;
+  margin:0 auto;
+}
+
+/* Le point d'une boutique. Le halo ne s'affiche que sur celle qui est
+   choisie dans le rail : c'est le lien entre les deux moitiés de l'écran. */
+.pt{ cursor:pointer; }
+.pt circle.corps{ fill:var(--ok); stroke:var(--green-950); stroke-width:2; transition:r .2s var(--ease); }
+.pt[data-etat="alerte"] circle.corps{ fill:var(--alert); }
+.pt[data-etat="dort"] circle.corps{ fill:rgba(255,255,255,.4); }
+.pt circle.halo{ fill:none; stroke:var(--yellow); stroke-width:2; opacity:0; transition:opacity .2s var(--ease); }
+.pt.est-choisi circle.halo{ opacity:1; }
+.pt:hover circle.corps{ r:9; }
+.pt text{
+  font-family:var(--ff-body);
+  font-size:10.5px;
+  fill:rgba(255,255,255,.78);
+  pointer-events:none;
+}
+.pt.est-choisi text{ fill:var(--yellow); font-weight:600; }
+
+/* ══ Le tiroir de détail ═══════════════════════════════════ */
+
+.tiroir{
+  background:var(--white);
+  border:1px solid rgba(8,22,14,.09);
+  border-radius:var(--r-md);
+  padding:18px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.tiroir-tete{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.tiroir-tete h3{
+  font-family:var(--ff-display);
+  font-size:17px;
+  font-weight:600;
+  margin:0;
+  color:var(--green-900);
+}
+.tiroir-tete p{
+  margin:3px 0 0;
+  font-size:13px;
+  color:rgba(8,22,14,.6);
+}
+.tiroir-tete a{ color:var(--green-700); font-family:var(--ff-mono); }
+
+.tiroir-faits{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+  gap:1px;
+  background:rgba(8,22,14,.09);
+  border:1px solid rgba(8,22,14,.09);
+  border-radius:var(--r-sm);
+  overflow:hidden;
+}
+.tiroir-faits > div{ background:var(--cream); padding:11px 13px; }
+.tiroir-faits small{
+  display:block;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:rgba(8,22,14,.5);
+}
+.tiroir-faits strong{
+  display:block;
+  margin-top:4px;
+  font-family:var(--ff-mono);
+  font-size:16px;
+  font-weight:600;
+  color:var(--green-800);
+}
+.tiroir-faits strong[data-ton="alerte"]{ color:var(--alert); }
+.tiroir-faits span{
+  display:block;
+  margin-top:4px;
+  font-size:13px;
+  color:var(--ink);
+  overflow-wrap:anywhere;
+}
+
+.tiroir-actions{ display:flex; flex-wrap:wrap; gap:8px; }
+
+/* ══ Boutons ═══════════════════════════════════════════════ */
+
+.bouton{
+  appearance:none;
+  font-family:var(--ff-body);
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--white);
+  background:var(--green-700);
+  border:1px solid var(--green-700);
+  border-radius:999px;
+  padding:8px 17px;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background var(--t-fast) var(--ease);
+}
+.bouton:hover{ background:var(--green-800); border-color:var(--green-800); }
+.bouton:focus-visible{ outline:2px solid var(--green-900); outline-offset:2px; }
+.bouton[disabled]{ opacity:.55; cursor:progress; }
+
+.bouton--creux{
+  background:transparent;
+  color:var(--green-700);
+  border-color:rgba(20,107,58,.38);
+}
+.bouton--creux:hover{ background:rgba(20,107,58,.08); border-color:var(--green-700); }
+
+.bouton--danger{
+  background:transparent;
+  color:#9B3218;
+  border-color:rgba(255,92,57,.4);
+}
+.bouton--danger:hover{ background:rgba(255,92,57,.1); border-color:var(--alert); }
+
+/* ══ Demandes d'accès ══════════════════════════════════════ */
+
+.demandes{ display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:14px; }
+
+.demande{
+  background:var(--white);
+  border:1px solid rgba(8,22,14,.09);
+  border-inline-start:3px solid var(--green-700);
+  border-radius:var(--r-md);
+  padding:17px 19px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.demande-tete{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:9px;
+}
+.demande-tete strong{
+  display:block;
+  font-family:var(--ff-display);
+  font-size:15.5px;
+  font-weight:600;
+  color:var(--green-900);
+}
+.demande-tete em{
+  display:block;
+  margin-top:3px;
+  font-style:normal;
+  font-size:13px;
+  color:rgba(8,22,14,.6);
+}
+.demande-tete a{ color:var(--green-700); font-family:var(--ff-mono); }
+
+.demande-details{
+  margin:0;
+  padding:0;
+  list-style:none;
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px 16px;
+}
+.demande-details li{ font-size:12.5px; line-height:1.5; color:rgba(8,22,14,.66); }
+.demande-details b{ font-weight:600; color:rgba(8,22,14,.8); }
+
+/* Le mot laissé par le demandeur. C'est souvent lui qui dit s'il faut
+   valider ou rappeler : il se lit, il ne se devine pas. */
+.demande-mot{
+  margin:0;
+  padding:10px 13px;
+  background:var(--cream-2);
+  border-radius:var(--r-sm);
+  font-size:13px;
+  line-height:1.55;
+  color:rgba(8,22,14,.72);
+}
+.demande-pied{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:9px;
+  margin-top:auto;
+}
+.demande-pied small{ font-size:12px; color:rgba(8,22,14,.5); }
+.demande-actions{ display:flex; gap:7px; }
+
+/* ══ Anomalies ═════════════════════════════════════════════ */
+
+.famille{ display:flex; flex-direction:column; gap:10px; }
+.famille-tete{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:10px;
+}
+.famille-tete h3{
+  font-family:var(--ff-display);
+  font-size:14.5px;
+  font-weight:600;
+  margin:0;
+  color:var(--green-900);
+}
+.famille-tete b{
+  font-family:var(--ff-mono);
+  font-size:11.5px;
+  padding:2px 9px;
+  border-radius:999px;
+  background:rgba(255,92,57,.13);
+  color:#9B3218;
+}
+/* La conséquence de la panne, pas son intitulé. « Boutique sans
+   distributeur » ne dit rien à qui ignore le mécanisme d'escalade ; « ses
+   ruptures n'apparaîtront qu'après deux heures » le dit. */
+.famille-tete p{
+  margin:0;
+  flex-basis:100%;
+  font-size:12.5px;
+  line-height:1.55;
+  color:rgba(8,22,14,.6);
+  max-width:74ch;
+}
+
+.vide{
+  background:var(--white);
+  border:1px dashed rgba(8,22,14,.18);
+  border-radius:var(--r-md);
+  padding:30px 24px;
+  text-align:center;
+  font-size:13.5px;
+  line-height:1.6;
+  color:rgba(8,22,14,.58);
+}
+.vide b{ display:block; font-family:var(--ff-display); font-size:15px; color:var(--green-800); margin-bottom:5px; }
+
+/* ══ Note de bas de console ════════════════════════════════ */
+
+.note{
+  border-inline-start:3px solid var(--green-700);
+  padding:2px 0 2px 15px;
+  margin:6px 0 0;
+  font-size:12.5px;
+  line-height:1.65;
+  color:rgba(8,22,14,.58);
+  max-width:80ch;
+}
+.note b{ color:var(--green-800); font-weight:600; }
+
+/* ══ Fenêtres ══════════════════════════════════════════════ */
+
+.fenetre{
+  border:0;
+  border-radius:var(--r-lg);
+  padding:0;
+  max-width:450px;
+  width:calc(100% - 28px);
+  background:var(--white);
+  color:var(--ink);
+  box-shadow:0 34px 76px -32px rgba(6,39,24,.6);
+}
+.fenetre::backdrop{ background:rgba(6,39,24,.55); }
+.fenetre form{ padding:24px; display:flex; flex-direction:column; gap:16px; }
+.fenetre h2{
+  font-family:var(--ff-display);
+  font-size:19px;
+  font-weight:600;
+  margin:0;
+  color:var(--green-900);
+}
+.fenetre h2 + p{
+  margin:-10px 0 0;
+  font-size:13.5px;
+  line-height:1.55;
+  color:rgba(8,22,14,.62);
+}
+.fenetre-pied{ display:flex; justify-content:flex-end; gap:8px; }
+
+.champ{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+.champ label{ font-size:12.5px; font-weight:600; color:rgba(8,22,14,.8); }
+.champ small{ font-size:11.5px; line-height:1.45; color:rgba(8,22,14,.55); }
+.champ input,
+.champ select{
+  font-family:var(--ff-body);
+  font-size:15px;
+  color:var(--ink);
+  background:var(--white);
+  border:1.5px solid rgba(8,22,14,.16);
+  border-radius:var(--r-sm);
+  padding:11px 13px;
+  width:100%;
+}
+.champ select{
+  appearance:none;
+  cursor:pointer;
+  padding-inline-end:36px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%2308160E' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 13px center;
+  background-size:12px;
+}
+.champ input:focus,
+.champ select:focus{
+  outline:none;
+  border-color:var(--green-700);
+  box-shadow:0 0 0 3px rgba(20,107,58,.14);
+}
+.champ select:disabled{ background-color:var(--cream-2); color:rgba(8,22,14,.7); cursor:default; }
+.champ-duo{ display:flex; gap:8px; align-items:stretch; }
+.champ-duo input{ font-family:var(--ff-mono); letter-spacing:.08em; }
+
+/* Les identifiants remis en main propre. Gros, monospacés, lisibles à
+   voix haute depuis l'autre bout d'une pièce. */
+.identifiants{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(148px,1fr));
+  gap:1px;
+  background:rgba(8,22,14,.1);
+  border:1px solid rgba(8,22,14,.1);
+  border-radius:var(--r-md);
+  overflow:hidden;
+}
+.identifiants > div{ background:var(--cream-2); padding:15px 17px; }
+.identifiants small{
+  display:block;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  color:rgba(8,22,14,.55);
+}
+.identifiants strong{
+  display:block;
+  margin-top:5px;
+  font-family:var(--ff-mono);
+  font-size:19px;
+  font-weight:600;
+  letter-spacing:.06em;
+  color:var(--green-800);
+  overflow-wrap:anywhere;
+}
+
+/* ══ Adaptations ═══════════════════════════════════════════ */
+
+@media (max-width:1240px){
+  .c3{ grid-column:span 6; }
+  .c4{ grid-column:span 6; }
+  .c5{ grid-column:span 12; }
+  .c7{ grid-column:span 12; }
+  .c8{ grid-column:span 12; }
+}
+
+@media (max-width:1040px){
+  .console{ grid-template-columns:minmax(0,1fr); }
+  .rail{ position:static; max-height:none; }
+  .rail-liste{ max-height:340px; }
+}
+
+@media (max-width:720px){
+  .c3,.c4,.c6{ grid-column:span 12; }
+  .console-corps{ padding-inline:16px; }
+  .console-marque{ padding-inline:16px; }
+  .console-droite{ padding-inline:14px; gap:10px; }
+  .console-qui span{ display:none; }
+  .canevas{ min-height:330px; }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .objectif-remplissage,
+  .rail-entree,
+  .pt circle,
+  .console-onglet{ transition:none; }
+}
