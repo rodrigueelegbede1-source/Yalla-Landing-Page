@@ -1,0 +1,36 @@
+# Ce que Vercel ne doit pas téléverser.
+#
+# POURQUOI CE FICHIER EXISTE. `vercel.json` déclare `outputDirectory: landing`,
+# ce qui dit à Vercel QUOI SERVIR, pas quoi envoyer. Sans la liste ci-dessous,
+# le client téléverse d'abord la totalité du dépôt : 1,7 Go, essentiellement
+# `mobile/build/`, ses APK et ses artefacts Gradle. Le déploiement échouait
+# alors sur « File size limit exceeded (100 MB) », après plusieurs minutes de
+# transfert, sans dire quel fichier était en cause.
+#
+# ON EXCLUT EXPLICITEMENT, ON NE RÉADMET PAS. Une première version partait de
+# `*` puis réadmettait `!landing/**`. Vercel a exclu le dossier lui-même, et le
+# site entier est tombé en 404, page d'accueil comprise. Les négations après un
+# `*` global ne se comportent pas comme dans un `.gitignore` : mieux vaut nommer
+# ce qu'on écarte que tenter de tout rattraper.
+
+# L'application mobile : sources, dépendances, et surtout ses artefacts de
+# compilation, qui pèsent à eux seuls plus d'un gigaoctet.
+mobile/
+
+# La base de données, ses migrations et ses tests.
+supabase/
+
+# Outillage et documents, qui n'ont rien à faire sur un site public.
+scripts/
+docs/
+maquettes/
+catalogues/
+backend/
+
+node_modules/
+.dart_tool/
+.git/
+
+# Le serveur de développement local, inutile sur Vercel qui sert les fichiers
+# statiques lui-même.
+landing/server.js

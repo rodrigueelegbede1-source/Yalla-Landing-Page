@@ -52,3 +52,6 @@ mobile/lib/l10n/app_localizations*.dart
 
 # Configuration publique du site, générée depuis le .env au déploiement.
 landing/config.js
+
+.vercel
+.env*
