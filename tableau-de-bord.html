@@ -3,106 +3,221 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tableau de bord — Yalla</title>
-<meta name="theme-color" content="#0A3D24">
+<title>Espace fabricant — Yalla</title>
+<meta name="theme-color" content="#062718">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="acces.css">
+<link rel="stylesheet" href="supervision.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23146B3A'/><path d='M28 30h10l14 30' stroke='%23FFE500' stroke-width='11' fill='none' stroke-linecap='round'/><rect x='52' y='24' width='24' height='24' rx='3' fill='%23FFE500' transform='rotate(-18 64 36)'/><circle cx='50' cy='72' r='8' fill='%23FFE500'/></svg>">
 </head>
-<body class="page-acces">
+<body class="page-console">
 
-<a class="skip-link" href="#main">Aller au contenu</a>
+<a class="skip-link" href="#corps">Aller au contenu</a>
 
-<header class="acces-nav">
-  <a class="logo" href="index.html" aria-label="Yalla, accueil">
-    <span class="logo__mark" aria-hidden="true">
-      <svg viewBox="0 0 40 40" fill="none">
-        <path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/>
-        <rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/>
-        <circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/>
-      </svg>
-    </span>
-    <span class="logo__word">YALLA</span>
+<header class="console-barre">
+  <a class="console-marque" href="index.html" aria-label="Yalla, accueil">
+    <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/>
+      <rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/>
+      <circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/>
+    </svg>
+    <b>YALLA</b>
   </a>
-  <button type="button" class="acces-retour" id="boutonDeconnexion">Se déconnecter</button>
+
+  <nav class="console-nav" aria-label="Sections">
+    <button type="button" class="console-onglet est-actif" data-volet="tableau">Mon réseau</button>
+    <button type="button" class="console-onglet" data-volet="ruptures">
+      Ruptures <span id="compteurRuptures" hidden>0</span>
+    </button>
+    <button type="button" class="console-onglet" data-volet="catalogue">Mon catalogue</button>
+  </nav>
+
+  <div class="console-droite">
+    <span class="console-pouls" id="pouls" title="Heure de la dernière lecture">—</span>
+    <span class="console-qui">
+      <span class="console-pastille-qui" id="initiales" aria-hidden="true">—</span>
+      <span id="nomFabricant">Fabricant</span>
+    </span>
+    <button type="button" class="console-sortie" id="boutonDeconnexion">Quitter</button>
+  </div>
 </header>
 
-<main id="main" class="acces-main" style="grid-template-columns:minmax(0,1fr)">
-  <div>
+<main id="corps" class="console-corps">
 
-    <div class="bord-entete">
-      <div>
-        <h1 id="titreFabricant">Tableau de bord</h1>
-        <p id="sousTitreFabricant">Chargement des données…</p>
-      </div>
+  <p class="console-message" id="message" role="status" hidden></p>
+
+  <!-- ══ Mon réseau ═══════════════════════════════════════ -->
+  <section class="console-volet" id="voletTableau" aria-label="Mon réseau">
+    <div class="grille">
+
+      <article class="carte c4">
+        <header>
+          <h3>Taux de service</h3>
+          <small>Part de vos ruptures effectivement servies. C'est l'indicateur que Yalla vous vend.</small>
+        </header>
+        <div class="jauge" id="jaugeService"></div>
+        <footer id="piedService">—</footer>
+      </article>
+
+      <article class="carte c4">
+        <header>
+          <h3>Volume livré</h3>
+          <small>Ce que les livraisons Yalla ont fait circuler sur votre catalogue.</small>
+        </header>
+        <div class="chiffre" id="chiffreVolume">—</div>
+        <div class="chiffre-suite" id="detailVolume"></div>
+        <footer>
+          Ce montant est celui des réapprovisionnements, pas des ventes en
+          boutique. Ce qu'un commerçant encaisse à son comptoir n'appartient
+          qu'à lui, et ne vous est jamais montré.
+        </footer>
+      </article>
+
+      <article class="carte c4">
+        <header>
+          <h3>Emprise sur le réseau</h3>
+          <small>Où vos produits sont réellement suivis.</small>
+        </header>
+        <div class="table-boite">
+          <table class="table" id="tableEmprise"></table>
+        </div>
+      </article>
+
+      <article class="carte c7">
+        <header>
+          <h3>Vos ruptures par commune</h3>
+          <small>Là où vos produits manquent le plus souvent, donc là où vous perdez des ventes sans le savoir.</small>
+        </header>
+        <div class="graphe" id="grapheCommunes"></div>
+      </article>
+
+      <article class="carte c5">
+        <header>
+          <h3>Vos références les plus tendues</h3>
+          <small>Une vente qui n'a pas lieu ne laisse aucune trace dans vos relevés. Celles-ci, si.</small>
+        </header>
+        <div class="table-boite">
+          <table class="table" id="tableTendus"></table>
+        </div>
+      </article>
+
     </div>
 
-    <p class="acces-message" id="messageBord" role="status" hidden></p>
-
-    <!-- ── Les trois chiffres qui décident ────────────────────────── -->
-    <div class="bord-chiffres" id="chiffres" hidden>
-      <div class="bord-chiffre bord-chiffre--fort">
-        <b id="chiffreTaux">—</b>
-        <span>Taux de service</span>
-        <em>Part de vos ruptures effectivement servies, sur celles qui sont
-          closes. C'est l'indicateur du réseau.</em>
-      </div>
-      <div class="bord-chiffre">
-        <b id="chiffreDelai">—</b>
-        <span>Délai de prise en charge</span>
-        <em>Entre le signalement et l'affectation à un livreur, en moyenne.</em>
-      </div>
-      <div class="bord-chiffre">
-        <b id="chiffreOuvertes">—</b>
-        <span>Ruptures ouvertes</span>
-        <em>En attente d'un livreur en ce moment.</em>
-      </div>
-      <div class="bord-chiffre">
-        <b id="chiffreReseau">—</b>
-        <span>Boutiques couvertes</span>
-        <em id="detailReseau">—</em>
-      </div>
-    </div>
-
-    <!-- ── Les ruptures en cours ──────────────────────────────────── -->
-    <section class="bord-section">
-      <h2>Vos ruptures en cours</h2>
-      <p>
-        Les produits de votre catalogue actuellement manquants dans une boutique
-        du réseau. Vous les voyez en lecture : c'est le distributeur qui affecte
-        un livreur.
-      </p>
-      <div id="zoneRuptures">
-        <div class="bord-vide">Chargement…</div>
-      </div>
-    </section>
-
-    <!-- ── La couverture ──────────────────────────────────────────── -->
-    <section class="bord-section">
-      <h2>Où vos produits sont suivis</h2>
-      <p>
-        Chaque boutique où l'un de vos produits est suivi en stock, et le
-        distributeur qui la dessert pour votre marque.
-      </p>
-      <div id="zoneReseau">
-        <div class="bord-vide">Chargement…</div>
-      </div>
-    </section>
-
-    <p class="acces-aide" style="max-width:70ch">
-      Vous ne voyez ni les ventes ni les stocks d'une boutique, et vous ne les
-      verrez jamais. C'est la promesse qui fait accepter la caisse gratuite au
-      boutiquier, donc celle qui fait remonter vos ruptures. L'écart entre ce
-      que rapporte votre réseau et ce que rapporte votre marque dit en revanche
-      quelle part de votre distribution vous échappe.
+    <p class="note">
+      <b>Vous ne voyez que les ruptures portant sur votre catalogue.</b> Celles
+      d'un concurrent ne vous sont jamais transmises, et les vôtres ne lui sont
+      jamais montrées. Ce cloisonnement vit dans les politiques de la base, pas
+      dans cette page : il s'applique aussi à quiconque interrogerait l'API
+      directement.
     </p>
+  </section>
 
-  </div>
+  <!-- ══ Ruptures ═════════════════════════════════════════ -->
+  <section class="console-volet" id="voletRuptures" aria-label="Ruptures" hidden>
+    <div class="grille">
+      <article class="carte c12">
+        <header>
+          <h3>Ruptures sur votre catalogue</h3>
+          <small>
+            Le délai court depuis la confirmation par le commerçant, moment où
+            la course devient réellement en attente.
+          </small>
+        </header>
+
+        <div class="tiroir-actions">
+          <div class="champ" style="max-width:220px">
+            <label for="filtreCommune">Commune</label>
+            <select id="filtreCommune"><option value="">Toutes communes</option></select>
+          </div>
+          <div class="champ" style="max-width:220px">
+            <label for="filtreEtat">État</label>
+            <select id="filtreEtat">
+              <option value="ouvertes">En cours</option>
+              <option value="toutes">Toutes</option>
+              <option value="resolue">Servies</option>
+              <option value="non_servie">Non servies</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="zoneRuptures"></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ══ Catalogue ════════════════════════════════════════ -->
+  <section class="console-volet" id="voletCatalogue" aria-label="Mon catalogue" hidden>
+    <div class="grille">
+      <article class="carte c12">
+        <header>
+          <h3>Mon catalogue</h3>
+          <small>
+            Les références que le réseau connaît de vous. Un commerçant ne peut
+            signaler que ce qui figure ici.
+          </small>
+        </header>
+
+        <div class="tiroir-actions">
+          <button type="button" class="bouton" id="boutonAjouter">Ajouter une référence</button>
+          <span id="resumeCatalogue" style="align-self:center;font-size:12.5px;color:rgba(8,22,14,.55)"></span>
+        </div>
+
+        <div class="table-boite">
+          <table class="table" id="tableCatalogue"></table>
+        </div>
+
+        <footer>
+          Retirer une référence la fait disparaître des écrans sans rien
+          effacer : son historique de ruptures reste, et vous pouvez la remettre
+          en service. C'est pour cela qu'il n'y a pas de suppression.
+        </footer>
+      </article>
+    </div>
+  </section>
+
 </main>
+
+<!-- ══ Ajouter ou modifier une référence ══════════════════ -->
+<dialog id="fenetreProduit" class="fenetre">
+  <form method="dialog">
+    <h2 id="titreProduit">Ajouter une référence</h2>
+    <p id="sousTitreProduit"></p>
+
+    <div class="champ">
+      <label for="produitNom">Nom du produit</label>
+      <input type="text" id="produitNom" maxlength="120" placeholder="Huile de palme 1L">
+      <small>Tel que le commerçant le reconnaîtra en rayon.</small>
+    </div>
+
+    <div class="champ">
+      <label for="produitCategorie">Catégorie</label>
+      <input type="text" id="produitCategorie" maxlength="60" placeholder="Épicerie"
+             list="listeCategories">
+      <datalist id="listeCategories"></datalist>
+      <small>Elle se crée si elle n'existe pas encore.</small>
+    </div>
+
+    <div class="champ" id="champReference">
+      <label for="produitReference">Référence carton <span class="facultatif">facultatif</span></label>
+      <input type="text" id="produitReference" maxlength="40" placeholder="Laissez vide pour la générer">
+      <small>
+        Elle sert au distributeur à retrouver le produit sur un bon de
+        livraison. Laissée vide, elle est fabriquée depuis votre marque et le
+        nom du produit. Elle ne pourra plus être modifiée ensuite.
+      </small>
+    </div>
+
+    <p class="console-message" id="messageProduit" role="status" hidden></p>
+
+    <div class="fenetre-pied">
+      <button type="button" class="bouton bouton--creux" id="annulerProduit">Annuler</button>
+      <button type="button" class="bouton" id="confirmerProduit">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
 
 <script src="config.js"></script>
 <script src="tableau-de-bord.js"></script>

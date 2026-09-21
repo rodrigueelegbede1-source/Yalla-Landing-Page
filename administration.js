@@ -153,11 +153,18 @@ function telephoneLisible(brut) {
   return national.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
 }
 
-/* Mot de passe dicté de vive voix, jamais lu sur un écran par celui qui le
-   tape. On retire donc tout ce qui s'entend pareil ou se lit de travers : ni l
-   ni 1, ni O ni 0, ni I. Huit caractères, comme partout ailleurs. */
+/* Mot de passe dicté de vive voix, jamais lu sur un écran par celui qui le tape.
+
+   TOUT EN MAJUSCULES, et c'est le point essentiel. Une majuscule et une
+   minuscule de la même lettre se prononcent exactement pareil : dicter « d »
+   sans préciser la casse fait taper l'une pour l'autre une fois sur deux, et la
+   connexion est refusée sans que personne ne comprenne pourquoi. C'est arrivé
+   sur le compte de l'agent recenseur, le jour du premier test de terrain.
+
+   Ni I ni O ni 0 ni 1 non plus, qui se confondent à la lecture. Huit
+   caractères, le même alphabet que les scripts et que l'application. */
 function motDePasseLisible() {
-  const alphabet = 'ABCDEFGHJKMNPQRTUVWXYabcdefghijkmnpqrstuvwxy23456789';
+  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   const tirage = new Uint32Array(8);
   crypto.getRandomValues(tirage);
   return [...tirage].map((n) => alphabet[n % alphabet.length]).join('');
