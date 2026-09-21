@@ -213,6 +213,78 @@ BEGIN
   RESET ROLE;
   RAISE NOTICE '  ok  confidentialité : un boutiquier ne voit pas les réponses des autres';
 
+  -- ── 9. LA DIFFUSION ARRIVE BIEN À DESTINATION ────────────────────────────
+  --
+  -- La première version de la diffusion n'avait aucune politique de réception :
+  -- le message partait, était stocké, sa portée était comptée, et personne ne
+  -- le voyait jamais. Aucune erreur ne se produisait, donc rien ne le
+  -- signalait. Ces cas-là empêchent que cela se reproduise.
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('user_role', 'administrateur',
+                      'utilisateur_id', v_admin)::TEXT, true);
+
+  PERFORM diffuser_notification('notification', 'Pour les boutiques',
+    'Message destiné aux points de vente.', 'points_de_vente');
+  PERFORM diffuser_notification('notification', 'Pour les livreurs',
+    'Message destiné aux livreurs.', 'livreurs');
+
+  -- SET LOCAL ROLE N'EST PAS FACULTATIF ICI. Le propriétaire de la base
+  -- contourne RLS : sans ce changement de rôle, la vue rendrait TOUTES les
+  -- diffusions et le test passerait au vert en ne vérifiant rien. C'est
+  -- exactement ce qui s'est produit à la première écriture de ce cas.
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('user_role', 'point_de_vente', 'id_metier', v_pdv2)::TEXT, true);
+
+  SELECT count(*) INTO v_nb
+    FROM v_mes_diffusions WHERE titre = 'Pour les boutiques';
+  ASSERT v_nb = 1, 'Un boutiquier ne reçoit pas ce qui lui est adressé';
+
+  SELECT count(*) INTO v_nb
+    FROM v_mes_diffusions WHERE titre = 'Pour les livreurs';
+  ASSERT v_nb = 0, 'Un boutiquier reçoit un message adressé aux livreurs';
+  RESET ROLE;
+  RAISE NOTICE '  ok  réception : chacun ne reçoit que ce qui lui est adressé';
+
+  -- Une diffusion restreinte à une autre commune ne doit pas l'atteindre.
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('user_role', 'administrateur',
+                      'utilisateur_id', v_admin)::TEXT, true);
+  PERFORM diffuser_notification('notification', 'Commune etrangere',
+    'Message pour une autre commune.', 'points_de_vente', 'Commune inexistante');
+
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('user_role', 'point_de_vente', 'id_metier', v_pdv2)::TEXT, true);
+  SELECT count(*) INTO v_nb
+    FROM v_mes_diffusions WHERE titre = 'Commune etrangere';
+  ASSERT v_nb = 0, 'Une diffusion communale touche une boutique d''une autre commune';
+  RESET ROLE;
+  RAISE NOTICE '  ok  réception : la restriction de commune est respectée';
+
+  -- ── 10. Répondre à un sondage ────────────────────────────────────────────
+  -- La réponse se corrige : sur un téléphone, la première ligne touchée n'est
+  -- pas toujours celle qu'on visait.
+  v_resultat := repondre_sondage(v_diffusion,
+    (SELECT id FROM sondage_options WHERE notification_id = v_diffusion ORDER BY libelle LIMIT 1));
+  ASSERT (v_resultat->>'enregistree')::BOOLEAN, 'La réponse au sondage devrait être enregistrée';
+
+  PERFORM repondre_sondage(v_diffusion,
+    (SELECT id FROM sondage_options WHERE notification_id = v_diffusion ORDER BY libelle DESC LIMIT 1));
+  SELECT count(*) INTO v_nb
+    FROM sondage_reponses WHERE notification_id = v_diffusion AND point_de_vente_id = v_pdv2;
+  ASSERT v_nb = 1, 'Répondre deux fois devrait remplacer, pas ajouter';
+  RAISE NOTICE '  ok  sondage : une boutique répond une fois, et peut se corriger';
+
+  -- Une réponse volée à un autre sondage est refusée. Les deux identifiants
+  -- sont valides séparément : aucune clé étrangère ne s'y opposerait.
+  BEGIN
+    PERFORM repondre_sondage(v_diffusion, gen_random_uuid());
+    RAISE EXCEPTION 'Une option étrangère au sondage a été acceptée';
+  EXCEPTION WHEN check_violation THEN
+    RAISE NOTICE '  ok  sondage : une réponse d''un autre sondage est refusée';
+  END;
+
   RAISE NOTICE '';
   RAISE NOTICE 'Administration : tous les cas passent.';
 END;

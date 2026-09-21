@@ -362,5 +362,20 @@
   "combienUnitesRecues": "كم وحدة استلمت؟",
   "caisseVideMessage": "لا يوجد منتج متتبَّع. أضف مخزونًا من تبويب المخزون ليتمكّن يالا من رصد نفاد منتجاتك تلقائيًا.",
   "caisseRappelAuto": "كل عملية بيع تُفرغ المخزون تُنبّه موزّعك من تلقاء نفسها. لا شيء عليك الإبلاغ عنه.",
-  "confidentialite": "مبيعاتك ومخزونك مرئيان لك وحدك. لا الموزّع ولا المصنّع يطّلع عليهما."
+  "confidentialite": "مبيعاتك ومخزونك مرئيان لك وحدك. لا الموزّع ولا المصنّع يطّلع عليهما.",
+  "ongletMessages": "الرسائل",
+  "messagesTitre": "رسائل الشبكة",
+  "messagesVideTitre": "لا توجد رسائل",
+  "messagesVideTexte": "تظهر هنا تعليمات الخدمة وإعلانات المصنّعين والاستطلاعات.",
+  "sondageEnAttente": "اختر إجابة. رأيك يصل إلى الشبكة، لا إلى موزّعك.",
+  "sondageModifiable": "تم تسجيل إجابتك. المس إجابة أخرى لتصحيحها.",
+  "reponseEnregistree": "شكرًا، تم تسجيل إجابتك",
+  "messagesCompteur": "{nombre, plural, =1{رسالة واحدة} other{{nombre} رسائل}}",
+  "@messagesCompteur": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  }
 }

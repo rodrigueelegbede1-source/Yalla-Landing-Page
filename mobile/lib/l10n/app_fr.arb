@@ -362,5 +362,20 @@
   "combienUnitesRecues": "Combien d'unités reçues ?",
   "caisseVideMessage": "Aucun produit suivi. Ajoutez du stock depuis l'onglet Stock pour que Yalla détecte vos ruptures automatiquement.",
   "caisseRappelAuto": "Chaque vente qui met un stock à zéro prévient votre distributeur toute seule. Vous n'avez rien à signaler.",
-  "confidentialite": "Vos ventes et vos stocks ne sont visibles que de vous. Ni votre distributeur, ni le fabricant n'y ont accès."
+  "confidentialite": "Vos ventes et vos stocks ne sont visibles que de vous. Ni votre distributeur, ni le fabricant n'y ont accès.",
+  "ongletMessages": "Messages",
+  "messagesTitre": "Messages du réseau",
+  "messagesVideTitre": "Aucun message",
+  "messagesVideTexte": "Les consignes de service, les annonces des fabricants et les enquêtes apparaissent ici.",
+  "sondageEnAttente": "Touchez une réponse. Votre avis remonte au réseau, pas à votre distributeur.",
+  "sondageModifiable": "Réponse enregistrée. Touchez-en une autre pour la corriger.",
+  "reponseEnregistree": "Merci, votre réponse est enregistrée",
+  "messagesCompteur": "{nombre, plural, =1{1 message} other{{nombre} messages}}",
+  "@messagesCompteur": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  }
 }

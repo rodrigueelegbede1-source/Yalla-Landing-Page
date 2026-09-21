@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/auth/auth_providers.dart';
 import '../../core/langue.dart';
@@ -10,6 +11,7 @@ import '../../l10n/app_localizations.dart';
 import 'caisse_tab.dart';
 import 'catalogue_tab.dart';
 import 'confirmation_tab.dart';
+import 'messages_tab.dart';
 import 'stock_tab.dart';
 
 /// Interface du point de vente : la caisse, le stock, le catalogue et les
@@ -49,10 +51,52 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
   int _aConfirmer = 0;
   int _revisionVue = 0;
 
+  /// Messages non lus SUR CE TÉLÉPHONE.
+  ///
+  /// Rien ne trace la lecture côté base, et le tableau de bord de
+  /// l'administrateur écrit « non suivi » plutôt qu'un pourcentage inventé. Ce
+  /// compteur est donc une commodité locale, pas une mesure : il compare la
+  /// date du dernier message à celle de la dernière ouverture de l'onglet,
+  /// gardée dans les préférences de l'appareil. Réinstaller l'application le
+  /// remet à zéro, et c'est sans conséquence.
+  int _messagesNonLus = 0;
+  static const _cleDerniereLecture = 'yalla.messages.derniere_lecture';
+
   @override
   void initState() {
     super.initState();
     _compterAConfirmer();
+    _compterMessages();
+  }
+
+  Future<void> _compterMessages() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final depuis = prefs.getString(_cleDerniereLecture);
+
+      var requete = supabase.from('v_mes_diffusions').select('diffusion_id');
+      if (depuis != null) requete = requete.gt('date_envoi', depuis);
+
+      final lignes = await requete.count();
+      if (mounted) setState(() => _messagesNonLus = lignes.count);
+    } catch (_) {
+      // Sans ce compteur, l'onglet n'affiche simplement pas de pastille. Ce
+      // n'est pas une raison d'empêcher le boutiquier d'encaisser.
+    }
+  }
+
+  /// Ouvrir l'onglet vaut lecture. On enregistre l'instant plutôt que la date
+  /// du dernier message : si un message arrive pendant qu'il lit, il ne sera
+  /// pas passé pour lu.
+  Future<void> _marquerMessagesLus() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          _cleDerniereLecture, DateTime.now().toUtc().toIso8601String());
+      if (mounted) setState(() => _messagesNonLus = 0);
+    } catch (_) {
+      if (mounted) setState(() => _messagesNonLus = 0);
+    }
   }
 
   Future<void> _compterAConfirmer() async {
@@ -92,6 +136,7 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
         if (!mounted) return;
         setState(() => _cleRafraichissement++);
         _compterAConfirmer();
+        _compterMessages();
       });
     }
 
@@ -130,11 +175,18 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
               _compterAConfirmer();
             },
           ),
+          MessagesTab(
+            cle: _cleRafraichissement,
+            onChangement: () => setState(() => _cleRafraichissement++),
+          ),
         ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _onglet,
-        onDestinationSelected: (i) => setState(() => _onglet = i),
+        onDestinationSelected: (i) {
+          setState(() => _onglet = i);
+          if (i == 4) _marquerMessagesLus();
+        },
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.point_of_sale_outlined),
@@ -163,6 +215,19 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
               child: const Icon(Icons.notifications),
             ),
             label: l.aConfirmerTitre,
+          ),
+          NavigationDestination(
+            icon: Badge(
+              isLabelVisible: _messagesNonLus > 0,
+              label: Text('$_messagesNonLus'),
+              child: const Icon(Icons.mail_outline),
+            ),
+            selectedIcon: Badge(
+              isLabelVisible: _messagesNonLus > 0,
+              label: Text('$_messagesNonLus'),
+              child: const Icon(Icons.mail),
+            ),
+            label: l.ongletMessages,
           ),
         ],
       ),

@@ -10,11 +10,18 @@
 -- échouer ici.
 --
 -- CE QUE CE FICHIER NE TESTE PAS, et qu'il ne faut pas croire testé :
---   * le comportement réel des politiques RLS sous une vraie identité Supabase
 --   * le hook d'émission de jeton, appelé par le service d'authentification
 --   * la diffusion Realtime
 --   * l'exécution effective des tâches pg_cron
 -- Tout cela exige un vrai projet Supabase.
+--
+-- LES POLITIQUES RLS, ELLES, SONT DÉSORMAIS TESTABLES ICI. Elles ne l'étaient
+-- pas : les suites tournaient sous le propriétaire de la base, qui les
+-- contourne, et un cas écrit « tel rôle voit N lignes » ne vérifiait en réalité
+-- que la clause WHERE des vues. `droits_supabase_local.sql`, appliqué par le
+-- harnais après les migrations, donne à `authenticated` ses droits de table ;
+-- un test qui fait `SET LOCAL ROLE authenticated` éprouve alors les politiques
+-- pour de bon.
 --
 --   psql -d yalla_test -f supabase/tests/stubs_supabase_local.sql
 

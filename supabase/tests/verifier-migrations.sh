@@ -94,6 +94,16 @@ done
 
 [ "$ECHEC" = "0" ] || die "migration en échec, rien n'a été poussé"
 
+# Les droits de table, posés APRÈS les migrations puisqu'ils portent sur les
+# tables qu'elles créent. Sans eux, un test qui fait `SET LOCAL ROLE
+# authenticated` se heurte à un refus de privilège avant même d'atteindre les
+# politiques, et les suites ne peuvent éprouver RLS que sous l'identité du
+# propriétaire, qui la contourne.
+say "Droits des rôles Supabase"
+$PSQL -d "$DB" -f supabase/tests/droits_supabase_local.sql >/dev/null 2>&1 \
+  || die "les droits des rôles n'ont pas pu être posés"
+ok "authenticated et anon ont leurs droits de table"
+
 say "Contrôles de cohérence"
 NB_T=$($PSQL -tA -d "$DB" -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")
 NB_V=$($PSQL -tA -d "$DB" -c "SELECT count(*) FROM information_schema.views WHERE table_schema='public'")

@@ -104,9 +104,14 @@ final tempsReelCoursesProvider = ChangeNotifierProvider.autoDispose(
 /// Le signal de la boutique. Elle ne suit que ses propres ruptures : la
 /// diffusion est filtrée par RLS, donc l'abonnement à `ruptures` ne lui apporte
 /// que les siennes.
+///
+/// `notifications` s'y ajoute parce qu'une consigne de service qui attendrait
+/// le prochain rafraîchissement manuel n'en serait plus une. La même règle
+/// s'applique : le boutiquier ne reçoit que ce qui lui est adressé, les
+/// politiques s'en chargent, et l'abonnement n'ouvre rien de plus.
 final tempsReelBoutiqueProvider = ChangeNotifierProvider.autoDispose(
   (ref) {
-    final signal = SignalTempsReel(const ['ruptures', 'stocks']);
+    final signal = SignalTempsReel(const ['ruptures', 'stocks', 'notifications']);
     ref.onDispose(signal.dispose);
     return signal;
   },
