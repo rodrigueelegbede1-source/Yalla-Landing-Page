@@ -714,6 +714,109 @@
 }
 .pt.est-choisi text{ fill:var(--yellow); font-weight:600; }
 
+/* Le livreur. Losange plutôt que disque, pour qu'on distingue un livreur
+   d'une boutique sans avoir à lire la légende : ce sont deux natures
+   d'objets, pas deux états du même. */
+.lv{ cursor:pointer; }
+.lv path.corps{ fill:var(--yellow); stroke:var(--green-950); stroke-width:2; }
+.lv[data-etat="dort"] path.corps{ fill:rgba(255,229,0,.35); }
+.lv[data-etat="course"] path.corps{ fill:var(--yellow); }
+.lv circle.halo{ fill:none; stroke:var(--white); stroke-width:2; opacity:0; }
+.lv.est-choisi circle.halo{ opacity:1; }
+.lv text{
+  font-family:var(--ff-body);
+  font-size:10.5px;
+  fill:rgba(255,229,0,.85);
+  pointer-events:none;
+}
+
+/* Le filtre de commune, posé sur le canevas. Il flotte au-dessus de la carte
+   plutôt que de la surmonter : la carte est l'objet, le filtre son réglage. */
+.canevas-filtre{
+  position:absolute;
+  top:14px;
+  inset-inline-end:16px;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.canevas-filtre label{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  color:rgba(255,255,255,.55);
+}
+.canevas-filtre select{
+  appearance:none;
+  font-family:var(--ff-body);
+  font-size:12.5px;
+  color:var(--white);
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:999px;
+  padding:6px 30px 6px 13px;
+  cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%23FFFFFF' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 11px center;
+  background-size:11px;
+}
+.canevas-filtre select option{ background:var(--green-950); color:var(--white); }
+.canevas-filtre select:focus-visible{ outline:2px solid var(--yellow); outline-offset:2px; }
+
+/* ══ Diffusion ═════════════════════════════════════════════ */
+
+.champ textarea{
+  font-family:var(--ff-body);
+  font-size:15px;
+  line-height:1.5;
+  color:var(--ink);
+  background:var(--white);
+  border:1.5px solid rgba(8,22,14,.16);
+  border-radius:var(--r-sm);
+  padding:11px 13px;
+  width:100%;
+  resize:vertical;
+}
+.champ textarea:focus{
+  outline:none;
+  border-color:var(--green-700);
+  box-shadow:0 0 0 3px rgba(20,107,58,.14);
+}
+.facultatif{
+  font-weight:450;
+  font-size:10.5px;
+  color:rgba(8,22,14,.45);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  margin-inline-start:4px;
+}
+
+/* L'évolution. Le signe compte autant que le nombre, et la couleur ne suffit
+   pas : un daltonien lit « +14 % » aussi bien que n'importe qui. */
+.evolution{ font-family:var(--ff-mono); font-weight:600; }
+.evolution[data-sens="hausse"]{ color:var(--green-700); }
+.evolution[data-sens="baisse"]{ color:#9B3218; }
+.evolution[data-sens="stable"]{ color:rgba(8,22,14,.45); }
+
+/* ══ Impression ════════════════════════════════════════════ */
+
+/* Le PDF du cahier des charges, sans bibliothèque : le navigateur sait déjà
+   faire. On lui retire la coque d'exploitation, qui n'a aucun sens sur une
+   feuille, et on laisse les cartes. */
+@media print{
+  .console-barre,
+  .canevas-filtre,
+  .tiroir-actions,
+  .console-message{ display:none !important; }
+  .console-corps{ padding:0; max-width:none; }
+  .carte{ break-inside:avoid; border-color:#CCC; }
+  .console-volet[hidden]{ display:none !important; }
+  .table th{ position:static; }
+  body{ background:#FFF; }
+}
+
 /* ══ Le tiroir de détail ═══════════════════════════════════ */
 
 .tiroir{
