@@ -54,12 +54,21 @@ else
 fi
 
 say "Landing — syntaxe JavaScript"
+# TOUS les fichiers du dossier, pas une liste écrite à la main. La liste en dur
+# n'en couvrait que deux sur huit : les tableaux de bord, ajoutés plus tard,
+# n'étaient pas vérifiés du tout, et une coquille n'y serait apparue qu'à
+# l'ouverture de la page par un utilisateur.
+#
+# `config.js` est exclu : il est généré au déploiement et absent du dépôt, donc
+# son absence ne doit pas faire échouer le lint.
 if command -v node >/dev/null 2>&1; then
-  for f in landing/script.js landing/server.js; do
+  for f in landing/*.js; do
+    [ "$(basename "$f")" = "config.js" ] && continue
     if node --check "$f" 2>/dev/null; then
-      ok "$f valide"
+      ok "$(basename "$f") valide"
     else
-      ko "$f invalide"; STATUS=1
+      ko "$(basename "$f") invalide"; STATUS=1
+      node --check "$f" 2>&1 | sed 's/^/      /' | head -4
     fi
   done
 else
