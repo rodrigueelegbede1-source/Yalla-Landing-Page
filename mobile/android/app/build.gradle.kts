@@ -54,6 +54,25 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Deux architectures, pas trois.
+        //
+        // Un APK universel embarque le moteur Flutter compilé pour chaque
+        // architecture, soit environ 18 Mo par jeu. En incluant x86_64, le
+        // fichier atteint 57 Mo, ce qui dépasse la limite d'hébergement et
+        // surtout fait payer au boutiquier 20 Mo de données pour du code
+        // qu'aucun téléphone n'exécutera : x86_64 ne sert qu'aux émulateurs de
+        // développement.
+        //
+        // `arm64-v8a` couvre tous les téléphones récents, `armeabi-v7a` les
+        // appareils d'entrée de gamme plus anciens, encore très présents à
+        // Abidjan. Les deux réunis couvrent le parc réel.
+        //
+        // Pour installer sur un émulateur pendant le développement, compiler
+        // avec `--target-platform android-x64`, qui outrepasse ce filtre.
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
     }
 
     signingConfigs {

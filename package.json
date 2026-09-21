@@ -17,7 +17,10 @@
     "pilote:amorcer": "bash scripts/amorcer-pilote.sh",
     "dev:landing": "node landing/server.js",
     "dev:maquettes": "node landing/server.js maquettes 4181",
-    "publish:landing": "bash scripts/publish-landing.sh"
+    "publish:landing": "bash scripts/publish-landing.sh",
+    "site:config": "bash scripts/publier-acces.sh",
+    "app:publier": "bash scripts/publier-application.sh",
+    "fabricant:creer": "bash scripts/creer-fabricant.sh"
   },
   "workspaces": [],
   "license": "UNLICENSED"

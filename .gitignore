@@ -49,3 +49,6 @@ mobile/android/key.properties
 # Elles se régénèrent à chaque `flutter pub get`, les versionner ne ferait que
 # produire du bruit à chaque compilation.
 mobile/lib/l10n/app_localizations*.dart
+
+# Configuration publique du site, générée depuis le .env au déploiement.
+landing/config.js

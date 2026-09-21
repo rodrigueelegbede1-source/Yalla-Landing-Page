@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tableau de bord — Yalla</title>
+<meta name="theme-color" content="#0A3D24">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="acces.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23146B3A'/><path d='M28 30h10l14 30' stroke='%23FFE500' stroke-width='11' fill='none' stroke-linecap='round'/><rect x='52' y='24' width='24' height='24' rx='3' fill='%23FFE500' transform='rotate(-18 64 36)'/><circle cx='50' cy='72' r='8' fill='%23FFE500'/></svg>">
+</head>
+<body class="page-acces">
+
+<a class="skip-link" href="#main">Aller au contenu</a>
+
+<header class="acces-nav">
+  <a class="logo" href="index.html" aria-label="Yalla, accueil">
+    <span class="logo__mark" aria-hidden="true">
+      <svg viewBox="0 0 40 40" fill="none">
+        <path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/>
+        <rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/>
+        <circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/>
+      </svg>
+    </span>
+    <span class="logo__word">YALLA</span>
+  </a>
+  <button type="button" class="acces-retour" id="boutonDeconnexion">Se déconnecter</button>
+</header>
+
+<main id="main" class="acces-main" style="grid-template-columns:minmax(0,1fr)">
+  <div>
+
+    <div class="bord-entete">
+      <div>
+        <h1 id="titreFabricant">Tableau de bord</h1>
+        <p id="sousTitreFabricant">Chargement des données…</p>
+      </div>
+    </div>
+
+    <p class="acces-message" id="messageBord" role="status" hidden></p>
+
+    <!-- ── Les trois chiffres qui décident ────────────────────────── -->
+    <div class="bord-chiffres" id="chiffres" hidden>
+      <div class="bord-chiffre bord-chiffre--fort">
+        <b id="chiffreTaux">—</b>
+        <span>Taux de service</span>
+        <em>Part de vos ruptures effectivement servies, sur celles qui sont
+          closes. C'est l'indicateur du réseau.</em>
+      </div>
+      <div class="bord-chiffre">
+        <b id="chiffreDelai">—</b>
+        <span>Délai de prise en charge</span>
+        <em>Entre le signalement et l'affectation à un livreur, en moyenne.</em>
+      </div>
+      <div class="bord-chiffre">
+        <b id="chiffreOuvertes">—</b>
+        <span>Ruptures ouvertes</span>
+        <em>En attente d'un livreur en ce moment.</em>
+      </div>
+      <div class="bord-chiffre">
+        <b id="chiffreReseau">—</b>
+        <span>Boutiques couvertes</span>
+        <em id="detailReseau">—</em>
+      </div>
+    </div>
+
+    <!-- ── Les ruptures en cours ──────────────────────────────────── -->
+    <section class="bord-section">
+      <h2>Vos ruptures en cours</h2>
+      <p>
+        Les produits de votre catalogue actuellement manquants dans une boutique
+        du réseau. Vous les voyez en lecture : c'est le distributeur qui affecte
+        un livreur.
+      </p>
+      <div id="zoneRuptures">
+        <div class="bord-vide">Chargement…</div>
+      </div>
+    </section>
+
+    <!-- ── La couverture ──────────────────────────────────────────── -->
+    <section class="bord-section">
+      <h2>Où vos produits sont suivis</h2>
+      <p>
+        Chaque boutique où l'un de vos produits est suivi en stock, et le
+        distributeur qui la dessert pour votre marque.
+      </p>
+      <div id="zoneReseau">
+        <div class="bord-vide">Chargement…</div>
+      </div>
+    </section>
+
+    <p class="acces-aide" style="max-width:70ch">
+      Vous ne voyez ni les ventes ni les stocks d'une boutique, et vous ne les
+      verrez jamais. C'est la promesse qui fait accepter la caisse gratuite au
+      boutiquier, donc celle qui fait remonter vos ruptures. L'écart entre ce
+      que rapporte votre réseau et ce que rapporte votre marque dit en revanche
+      quelle part de votre distribution vous échappe.
+    </p>
+
+  </div>
+</main>
+
+<script src="config.js"></script>
+<script src="tableau-de-bord.js"></script>
+</body>
+</html>

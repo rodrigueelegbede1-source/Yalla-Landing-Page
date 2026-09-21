@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Espace professionnel — Yalla</title>
+<meta name="description" content="Fabricants et distributeurs : accédez à votre tableau de bord Yalla, ou demandez à rejoindre le réseau d'Abidjan.">
+<meta name="theme-color" content="#0A3D24">
+<meta property="og:title" content="Espace professionnel — Yalla">
+<meta property="og:description" content="Fabricants et distributeurs du réseau Yalla, Abidjan.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_CI">
+<meta property="og:site_name" content="Yalla">
+<meta name="author" content="Yalla">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="acces.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23146B3A'/><path d='M28 30h10l14 30' stroke='%23FFE500' stroke-width='11' fill='none' stroke-linecap='round'/><rect x='52' y='24' width='24' height='24' rx='3' fill='%23FFE500' transform='rotate(-18 64 36)'/><circle cx='50' cy='72' r='8' fill='%23FFE500'/></svg>">
+</head>
+<body class="page-acces">
+
+<a class="skip-link" href="#main">Aller au contenu</a>
+
+<header class="acces-nav">
+  <a class="logo" href="index.html" aria-label="Yalla, accueil">
+    <span class="logo__mark" aria-hidden="true">
+      <svg viewBox="0 0 40 40" fill="none">
+        <path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/>
+        <rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/>
+        <circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/>
+      </svg>
+    </span>
+    <span class="logo__word">YALLA</span>
+  </a>
+  <a href="index.html" class="acces-retour">Retour au site</a>
+</header>
+
+<main id="main" class="acces-main">
+  <div class="acces-carte">
+
+    <h1 class="acces-titre">Bienvenue</h1>
+    <p class="acces-sous-titre">
+      L'espace des fabricants et des distributeurs du réseau. Les boutiques et
+      les livreurs, eux, passent par l'application.
+    </p>
+
+    <div class="acces-onglets" role="tablist" aria-label="Connexion ou inscription">
+      <button type="button" role="tab" id="ongletConnexion"
+              aria-controls="voletConnexion" aria-selected="true"
+              class="acces-onglet est-actif">Se connecter</button>
+      <button type="button" role="tab" id="ongletInscription"
+              aria-controls="voletInscription" aria-selected="false"
+              class="acces-onglet">S'inscrire</button>
+    </div>
+
+    <!-- ─────────────────────────── CONNEXION ─────────────────────────── -->
+    <section id="voletConnexion" role="tabpanel" aria-labelledby="ongletConnexion">
+      <form class="acces-form" id="formConnexion" novalidate>
+
+        <div class="champ">
+          <label for="connexionTelephone">Numéro de téléphone</label>
+          <input type="tel" id="connexionTelephone" name="telephone"
+                 inputmode="tel" autocomplete="username"
+                 placeholder="07 06 30 30 30" required>
+          <small>Le même numéro que celui remis à la validation de votre compte.</small>
+        </div>
+
+        <div class="champ">
+          <label for="connexionMotDePasse">Mot de passe</label>
+          <div class="champ-mdp">
+            <input type="password" id="connexionMotDePasse" name="motdepasse"
+                   autocomplete="current-password" required>
+            <button type="button" class="champ-oeil" id="basculerMdp"
+                    aria-label="Afficher le mot de passe">Afficher</button>
+          </div>
+        </div>
+
+        <p class="acces-message" id="messageConnexion" role="status" hidden></p>
+
+        <button type="submit" class="btn btn--yellow btn--lg acces-bouton" id="boutonConnexion">
+          <span>Entrer dans mon espace</span>
+        </button>
+
+        <p class="acces-aide">
+          Votre rôle est porté par votre compte : vous arrivez directement sur le
+          tableau de bord qui vous concerne, sans avoir à le choisir.
+        </p>
+      </form>
+    </section>
+
+    <!-- ────────────────────────── INSCRIPTION ────────────────────────── -->
+    <section id="voletInscription" role="tabpanel" aria-labelledby="ongletInscription" hidden>
+      <form class="acces-form" id="formInscription" novalidate>
+
+        <fieldset class="profils">
+          <legend>Vous êtes</legend>
+
+          <label class="profil">
+            <input type="radio" name="profil" value="fabricant" required>
+            <span class="profil-corps">
+              <strong>Fabricant</strong>
+              <em>Vous produisez ou importez des marques, et vous voulez savoir
+                où elles manquent.</em>
+            </span>
+          </label>
+
+          <label class="profil">
+            <input type="radio" name="profil" value="distributeur_affilie">
+            <span class="profil-corps">
+              <strong>Distributeur affilié</strong>
+              <em>Vous distribuez pour un seul fabricant, ou vous êtes sa
+                filiale de distribution.</em>
+            </span>
+          </label>
+
+          <label class="profil">
+            <input type="radio" name="profil" value="distributeur_independant">
+            <span class="profil-corps">
+              <strong>Distributeur indépendant</strong>
+              <em>Vous portez plusieurs marques et vous desservez vos propres
+                boutiques.</em>
+            </span>
+          </label>
+        </fieldset>
+
+        <div class="champ-duo">
+          <div class="champ">
+            <label for="inscriptionNom">Votre nom</label>
+            <input type="text" id="inscriptionNom" name="nom"
+                   autocomplete="name" required minlength="3">
+          </div>
+          <div class="champ">
+            <label for="inscriptionSociete">Société</label>
+            <input type="text" id="inscriptionSociete" name="societe"
+                   autocomplete="organization" required minlength="2">
+          </div>
+        </div>
+
+        <div class="champ-duo">
+          <div class="champ">
+            <label for="inscriptionTelephone">Téléphone</label>
+            <input type="tel" id="inscriptionTelephone" name="telephone"
+                   inputmode="tel" autocomplete="tel"
+                   placeholder="07 06 30 30 30" required>
+          </div>
+          <div class="champ">
+            <label for="inscriptionEmail">E-mail <span class="facultatif">facultatif</span></label>
+            <input type="email" id="inscriptionEmail" name="email" autocomplete="email">
+          </div>
+        </div>
+
+        <div class="champ-duo">
+          <div class="champ">
+            <label for="inscriptionVille">Ville</label>
+            <input type="text" id="inscriptionVille" name="ville" value="Abidjan">
+          </div>
+          <div class="champ" id="champCommunes">
+            <label for="inscriptionCommunes">Communes desservies</label>
+            <input type="text" id="inscriptionCommunes" name="communes"
+                   placeholder="Cocody, Marcory, Treichville">
+          </div>
+        </div>
+
+        <div class="champ">
+          <label for="inscriptionMarques" id="labelMarques">Marques distribuées</label>
+          <input type="text" id="inscriptionMarques" name="marques"
+                 placeholder="Alyssa, Maman, Darci…">
+          <small id="aideMarques">Séparez-les par des virgules.</small>
+        </div>
+
+        <div class="champ">
+          <label for="inscriptionMessage">Un mot sur votre activité <span class="facultatif">facultatif</span></label>
+          <textarea id="inscriptionMessage" name="message" rows="3"
+                    placeholder="Nombre de boutiques servies, taille de votre flotte…"></textarea>
+        </div>
+
+        <p class="acces-message" id="messageInscription" role="status" hidden></p>
+
+        <button type="submit" class="btn btn--yellow btn--lg acces-bouton" id="boutonInscription">
+          <span>Envoyer ma demande</span>
+        </button>
+
+        <p class="acces-aide">
+          Votre demande est examinée par l'administrateur du réseau. Nous vous
+          rappelons pour vous remettre vos identifiants : aucun mot de passe ne
+          circule par e-mail.
+        </p>
+      </form>
+    </section>
+
+  </div>
+
+  <aside class="acces-lateral">
+    <h2>Les boutiques passent par l'application</h2>
+    <p>
+      Un gérant de boutique n'a rien à faire ici. Son compte lui est remis par
+      l'agent qui recense son commerce, et tout se passe sur son téléphone :
+      la caisse, le stock, et le signalement automatique des ruptures.
+    </p>
+    <a href="index.html#telecharger" class="acces-lien-app">
+      Télécharger l'application
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v12m0 0 5-5m-5 5-5-5M4 20h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+
+    <h2>Ce que vous verrez</h2>
+    <ul class="acces-liste">
+      <li><strong>Votre taux de service</strong>, la part des ruptures
+        effectivement servies sur vos produits.</li>
+      <li><strong>Le délai de prise en charge</strong>, entre le signalement et
+        l'affectation à un livreur.</li>
+      <li><strong>Vos ruptures ouvertes</strong>, boutique par boutique et
+        commune par commune.</li>
+    </ul>
+    <p class="acces-note">
+      Vous ne verrez jamais les ventes ni les stocks d'une boutique. C'est la
+      promesse qui lui fait accepter la caisse, donc celle qui fait remonter
+      vos ruptures.
+    </p>
+  </aside>
+</main>
+
+<script src="config.js"></script>
+<script src="acces.js"></script>
+</body>
+</html>

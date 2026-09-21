@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Télécharger Yalla</title>
+<meta name="description" content="L'application Yalla pour Android : caisse, stock et signalement automatique des ruptures.">
+<meta name="theme-color" content="#0A3D24">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="acces.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23146B3A'/><path d='M28 30h10l14 30' stroke='%23FFE500' stroke-width='11' fill='none' stroke-linecap='round'/><rect x='52' y='24' width='24' height='24' rx='3' fill='%23FFE500' transform='rotate(-18 64 36)'/><circle cx='50' cy='72' r='8' fill='%23FFE500'/></svg>">
+</head>
+<body class="page-acces">
+
+<a class="skip-link" href="#main">Aller au contenu</a>
+
+<header class="acces-nav">
+  <a class="logo" href="index.html" aria-label="Yalla, accueil">
+    <span class="logo__mark" aria-hidden="true">
+      <svg viewBox="0 0 40 40" fill="none">
+        <path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/>
+        <rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/>
+        <circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/>
+      </svg>
+    </span>
+    <span class="logo__word">YALLA</span>
+  </a>
+  <a href="index.html" class="acces-retour">Retour au site</a>
+</header>
+
+<main id="main" class="acces-main">
+  <div class="acces-carte">
+
+    <h1 class="acces-titre">L'application Yalla</h1>
+    <p class="acces-sous-titre">
+      Pour Android. Le téléchargement démarre tout seul&nbsp;; s'il ne part pas,
+      le bouton ci-dessous le relance.
+    </p>
+
+    <p class="acces-message" id="messageTelechargement" role="status" hidden></p>
+
+    <a href="#" class="btn btn--yellow btn--lg acces-bouton" id="boutonTelecharger" download>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:20px;height:20px"><path d="M12 4v12m0 0 5-5m-5 5-5-5M4 20h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Télécharger Yalla</span>
+    </a>
+
+    <p class="acces-aide" id="detailFichier">Android 5.0 ou plus récent.</p>
+
+    <h2 style="font-family:var(--ff-display);font-size:17px;margin:28px 0 10px;color:var(--green-900)">
+      À l'installation, Android vous préviendra
+    </h2>
+    <p style="font-size:14px;line-height:1.65;color:rgba(8,22,14,.7);margin:0 0 14px">
+      Yalla n'est pas sur le Play Store, et Android bloque par défaut ce qui
+      vient d'ailleurs. C'est normal, et voici quoi faire&nbsp;:
+    </p>
+    <ol style="margin:0 0 18px;padding-inline-start:20px;display:flex;flex-direction:column;gap:9px;font-size:14px;line-height:1.55;color:rgba(8,22,14,.7)">
+      <li>Ouvrez le fichier téléchargé, <code style="font-family:var(--ff-mono);font-size:13px">yalla.apk</code>.</li>
+      <li>Android affiche « Installation bloquée » ou « Source inconnue ». Touchez <strong>Paramètres</strong>.</li>
+      <li>Activez <strong>Autoriser cette source</strong>, puis revenez en arrière.</li>
+      <li>Touchez <strong>Installer</strong>.</li>
+    </ol>
+
+    <h2 style="font-family:var(--ff-display);font-size:17px;margin:24px 0 10px;color:var(--green-900)">
+      Deux réglages à faire tout de suite si vous livrez
+    </h2>
+    <p style="font-size:14px;line-height:1.65;color:rgba(8,22,14,.7);margin:0">
+      Un livreur doit autoriser la position sur <strong>« Toujours »</strong>, et
+      non « Seulement pendant l'utilisation ». Et sur les téléphones Tecno,
+      Infinix ou itel, il faut retirer Yalla de l'économiseur de batterie du
+      constructeur, sans quoi le système coupe le suivi dès que l'écran s'éteint
+      et le distributeur voit la moto s'arrêter.
+    </p>
+
+  </div>
+
+  <aside class="acces-lateral">
+    <h2>Vous n'avez pas encore de compte</h2>
+    <p>
+      L'application ne s'ouvre pas en libre-service. Une boutique reçoit son
+      compte de l'agent qui la recense, sur le pas de sa porte ; un livreur, de
+      son distributeur.
+    </p>
+    <p>
+      C'est ce qui permet de se passer de vérification par SMS, donc de ne rien
+      facturer à chaque connexion, et de savoir qu'il y a un vrai commerce
+      derrière chaque compte.
+    </p>
+
+    <h2>Fabricant ou distributeur&nbsp;?</h2>
+    <p>
+      Votre accès se demande depuis le site, et c'est l'administrateur du réseau
+      qui le valide.
+    </p>
+    <a href="rejoindre.html#inscription" class="acces-lien-app">
+      Demander un accès
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </aside>
+</main>
+
+<script src="config.js"></script>
+<script src="telechargement.js"></script>
+</body>
+</html>

@@ -29,6 +29,14 @@ BEGIN
   ASSERT v_livreur_id IS NOT NULL, 'Seed absent : lancez supabase db reset';
   ASSERT v_rupture_id IS NOT NULL, 'Aucune rupture ouverte dans le seed';
 
+  -- Depuis la règle de confirmation du 18/09/2026, une rupture détectée par la
+  -- caisse n'est visible de personne avant l'accord du boutiquier. Le seed en
+  -- produit une, non confirmée : on la confirme ici pour retrouver le point de
+  -- départ de ce test, qui porte sur le cycle de livraison et non sur la
+  -- confirmation elle-même. Celle-ci a sa propre suite.
+  UPDATE ruptures SET confirmee_le = date_signalement
+   WHERE id = v_rupture_id AND confirmee_le IS NULL;
+
   -- On se fait passer pour ce livreur, exactement comme le ferait un jeton
   -- émis par Supabase après passage du hook.
   PERFORM set_config('request.jwt.claims',
