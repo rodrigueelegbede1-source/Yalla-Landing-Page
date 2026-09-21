@@ -53,6 +53,35 @@ else
   fi
 fi
 
+say "Scripts — ordre des arguments de psql"
+# LE PIÈGE, ET POURQUOI IL MÉRITE SON PROPRE CONTRÔLE. Le `getopt` livré avec
+# PostgreSQL sous Windows ne réordonne pas les arguments : il s'arrête au
+# premier qui n'est pas une option. Écrire `psql "$CONNEXION" -w -c "..."`
+# revient donc à passer l'URL comme base de données puis à JETER tout le reste,
+# `-c` et sa requête compris. psql écrit « option supplémentaire ignorée » sur
+# la sortie d'erreur et sort avec le code 0.
+#
+# Conséquence : la commande ne fait rien, le script croit avoir réussi, et
+# `set -e` ne voit rien passer. Trouvé sur huit appels dans quatre scripts, dont
+# un qui annonçait « cache rechargé » sans avoir rien rechargé et un autre qui
+# répondait « rien à faire » sur une liste qu'il n'avait jamais lue.
+#
+# La règle est donc simple : les options d'abord, la chaîne de connexion en
+# dernier. Ce contrôle la fait respecter.
+#
+# Les lignes de commentaire sont écartées, sans quoi ce contrôle se déclenche
+# sur l'exemple fautif écrit juste au-dessus. C'est arrivé à la première
+# exécution.
+FAUTIFS="$(grep -rn 'psql "\$[A-Z_]*" \+-' scripts/ supabase/tests/ 2>/dev/null \
+  | grep -v ':[[:space:]]*#' | cut -d: -f1 | sort -u || true)"
+if [ -n "$FAUTIFS" ]; then
+  ko "options passées après la chaîne de connexion, elles seront ignorées :"
+  printf '%s\n' "$FAUTIFS" | sed 's/^/      /'
+  STATUS=1
+else
+  ok "les options précèdent partout la chaîne de connexion"
+fi
+
 say "Landing — syntaxe JavaScript"
 # TOUS les fichiers du dossier, pas une liste écrite à la main. La liste en dur
 # n'en couvrait que deux sur huit : les tableaux de bord, ajoutés plus tard,

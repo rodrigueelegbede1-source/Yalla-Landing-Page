@@ -91,7 +91,10 @@ for fichier in "$DOSSIER"/*; do
 
   # La référence doit exister, sinon l'image serait chargée pour rien et
   # personne ne s'en apercevrait.
-  if [ "$(psql "$CONNEXION" -w -tAc "SELECT count(*) FROM produits WHERE reference = '$(printf '%s' "$reference" | sed "s/'/''/g")'")" = "0" ]; then
+  # `tr -d '\r'` : sous Windows psql termine ses lignes par CRLF, et « 0 »
+  # comparé à « 0\r » n'est jamais égal. Sans cette purge, toute référence
+  # absente du catalogue passerait pour présente.
+  if [ "$(psql -w -tAc "SELECT count(*) FROM produits WHERE reference = '$(printf '%s' "$reference" | sed "s/'/''/g")'" "$CONNEXION" | tr -d '\r')" = "0" ]; then
     echo "  ⊘ $base : aucune référence « $reference » au catalogue"
     INCONNUES=$((INCONNUES + 1))
     continue
@@ -115,10 +118,10 @@ for fichier in "$DOSSIER"/*; do
     continue
   fi
 
-  psql "$CONNEXION" -w -q -c "
+  psql -w -q -c "
     UPDATE produits
        SET image_url = '$URL/storage/v1/object/public/$chemin'
-     WHERE reference = '$(printf '%s' "$reference" | sed "s/'/''/g")'"
+     WHERE reference = '$(printf '%s' "$reference" | sed "s/'/''/g")'" "$CONNEXION"
 
   echo "  ✓ $reference"
   CHARGEES=$((CHARGEES + 1))
@@ -130,12 +133,12 @@ echo "$CHARGEES image(s) rattachée(s)."
 [ "$ECHECS" != "0" ]    && echo "$ECHECS envoi(s) en échec."
 
 echo
-psql "$CONNEXION" -w -c "
+psql -w -c "
   SELECT f.nom AS fabricant,
          count(*) FILTER (WHERE p.image_url IS NOT NULL) AS avec_image,
          count(*) AS total
     FROM produits p JOIN fabricants f ON f.id = p.fabricant_id
-   GROUP BY f.nom ORDER BY f.nom"
+   GROUP BY f.nom ORDER BY f.nom" "$CONNEXION"
 
 echo "Les produits sans image gardent leur vignette : initiales du produit sur"
 echo "une couleur tirée de la catégorie. L'écran reste lisible sans photo."

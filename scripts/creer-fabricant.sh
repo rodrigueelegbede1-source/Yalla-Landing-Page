@@ -9,10 +9,18 @@
 # pas une inscription en libre-service, et son catalogue arrive sous forme de
 # liste de références, pas saisi une par une sur un téléphone.
 #
-# CE QUE LE SCRIPT NE CRÉE PAS : de compte de connexion. Le fabricant n'aurait
-# rien à consulter. Sa ligne `utilisateurs` existe sans compte `auth`, et le
-# rattacher plus tard, quand son tableau de bord existera, se fera par
-# `rattacher_compte_auth()`.
+# CE QUE LE SCRIPT NE CRÉE PAS : de compte de connexion. Sa ligne
+# `utilisateurs` existe sans compte `auth`.
+#
+# C'était sans conséquence tant que le fabricant n'avait aucun écran : un compte
+# l'aurait laissé devant une page vide. Son tableau de bord existe depuis le
+# 21/09/2026, et l'omission est devenue un blocage muet. Rien ne la signale,
+# puisque la marque, le catalogue et les ruptures existent parfaitement en
+# base ; elle ne se voit qu'en essayant de se connecter, c'est-à-dire devant le
+# client.
+#
+#   ENCHAÎNEZ DONC TOUJOURS SUR :
+#     bash scripts/ouvrir-compte-fabricant.sh "Nom de la marque"
 #
 # LE CATALOGUE se donne en CSV, séparé par des points-virgules, encodé en UTF-8,
 # avec une ligne d'en-tête ignorée :
@@ -310,7 +318,7 @@ echo
 
 # Tout dans une transaction : un fabricant sans catalogue ne sert à rien, et un
 # catalogue sans fabricant est impossible. L'un ou l'autre échoue, rien n'est écrit.
-psql "$CONNEXION" -w -v ON_ERROR_STOP=1 <<SQL
+psql -w -v ON_ERROR_STOP=1 "$CONNEXION" <<SQL
 BEGIN;
 
 DO \$bloc\$

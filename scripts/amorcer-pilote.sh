@@ -107,7 +107,7 @@ creer_compte() {
     ligne_role="INSERT INTO $table ($colonnes) VALUES ($valeurs);"
   fi
 
-  psql "$CONNEXION" -w -v ON_ERROR_STOP=1 -q <<SQL
+  psql -w -v ON_ERROR_STOP=1 -q "$CONNEXION" <<SQL
 BEGIN;
 INSERT INTO utilisateurs (nom, telephone, role, auth_user_id)
 VALUES ('$(printf '%s' "$nom" | sed "s/'/''/g")', '$tel', '$role', '$auth_id');
@@ -122,7 +122,7 @@ echo
 echo "Amorçage du pilote Yalla sur $REF"
 echo
 
-if [ "$(psql "$CONNEXION" -w -tAc 'SELECT count(*) FROM utilisateurs')" != "0" ]; then
+if [ "$(psql -w -tAc 'SELECT count(*) FROM utilisateurs' "$CONNEXION" | tr -d '\r')" != "0" ]; then
   echo "  La base contient déjà des comptes. Ce script ne s'exécute que sur une"
   echo "  base vide, pour éviter de créer des doublons."
   echo "  Pour repartir de zéro : psql \"\$CONNEXION\" -f supabase/purge-demonstration.sql"
