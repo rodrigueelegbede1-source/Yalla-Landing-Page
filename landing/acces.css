@@ -593,3 +593,156 @@
 .bord-livreur:focus-visible{ outline:2px solid var(--green-700); outline-offset:2px; }
 .bord-livreur strong{ font-size:14.5px; font-weight:600; color:var(--green-900); }
 .bord-livreur em{ font-style:normal; font-size:12.5px; color:rgba(8,22,14,.6); }
+
+/* ═══════════════════════════════════════════════════════════
+   Supervision du réseau
+   ═══════════════════════════════════════════════════════════ */
+
+/* Les listes déroulantes n'existaient nulle part avant cet écran : les
+   formulaires de la landing n'ont que des champs libres et des boutons radio.
+   On reprend exactement l'habillage des champs texte, chevron compris, pour
+   que les deux se ressemblent dans une même fenêtre. */
+.champ select{
+  font-family:var(--ff-body);
+  font-size:15px;
+  color:var(--ink);
+  background:var(--white);
+  border:1.5px solid rgba(8,22,14,.16);
+  border-radius:var(--r-sm);
+  padding:12px 38px 12px 14px;
+  width:100%;
+  appearance:none;
+  cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%2308160E' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  background-size:12px;
+  transition:border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+.champ select:focus{
+  outline:none;
+  border-color:var(--green-700);
+  box-shadow:0 0 0 3px rgba(20,107,58,.14);
+}
+.champ select:disabled{
+  background-color:var(--cream-2);
+  color:rgba(8,22,14,.7);
+  cursor:default;
+}
+
+/* ── Une demande d'accès ──────────────────────────────────── */
+
+#zoneDemandes{ display:flex; flex-direction:column; gap:12px; }
+
+.demande{
+  background:var(--white);
+  border:1px solid rgba(8,22,14,.1);
+  border-inline-start:3px solid var(--green-700);
+  border-radius:var(--r-md);
+  padding:18px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.demande-tete{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+.demande-tete strong{
+  display:block;
+  font-family:var(--ff-display);
+  font-size:16px;
+  font-weight:600;
+  color:var(--green-900);
+}
+.demande-tete em{
+  display:block;
+  margin-top:3px;
+  font-style:normal;
+  font-size:13.5px;
+  color:rgba(8,22,14,.62);
+}
+.demande-tete a{ color:var(--green-700); font-family:var(--ff-mono); }
+
+.demande-details{
+  margin:0;
+  padding:0;
+  list-style:none;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 18px;
+}
+.demande-details li{
+  font-size:13px;
+  line-height:1.5;
+  color:rgba(8,22,14,.66);
+}
+
+/* Le mot laissé par le demandeur. C'est souvent lui qui dit s'il faut valider
+   ou rappeler, donc il se lit, il ne se devine pas dans une info-bulle. */
+.demande-mot{
+  margin:0;
+  padding:10px 14px;
+  background:var(--cream-2);
+  border-radius:var(--r-sm);
+  font-size:13.5px;
+  line-height:1.55;
+  color:rgba(8,22,14,.72);
+}
+
+.demande-pied{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.demande-pied small{ font-size:12.5px; color:rgba(8,22,14,.5); }
+.demande-actions{ display:flex; gap:8px; }
+
+/* ── Les anomalies ────────────────────────────────────────── */
+
+/* La conséquence de la panne, pas son intitulé. « Boutique sans
+   distributeur » ne dit rien à qui ne connaît pas le mécanisme d'escalade ;
+   « ses ruptures n'apparaîtront qu'après deux heures » le dit. */
+.anomalie-effet{
+  margin:0 0 10px;
+  font-size:13px;
+  line-height:1.55;
+  color:rgba(8,22,14,.6);
+  max-width:72ch;
+}
+
+/* ── Les identifiants remis en main propre ────────────────── */
+
+.bord-identifiants{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:1px;
+  background:rgba(8,22,14,.1);
+  border:1px solid rgba(8,22,14,.1);
+  border-radius:var(--r-md);
+  overflow:hidden;
+}
+.bord-identifiants > div{ background:var(--cream-2); padding:16px 18px; }
+.bord-identifiants small{
+  display:block;
+  font-size:11.5px;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  color:rgba(8,22,14,.55);
+}
+.bord-identifiants strong{
+  display:block;
+  margin-top:6px;
+  font-family:var(--ff-mono);
+  font-size:19px;
+  font-weight:600;
+  letter-spacing:.06em;
+  color:var(--green-800);
+  word-break:break-all;
+}

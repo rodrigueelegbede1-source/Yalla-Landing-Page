@@ -242,7 +242,10 @@ function claimsDuJeton(jeton) {
 
 const DESTINATIONS = {
   fabricant: 'tableau-de-bord.html',
-  administrateur: 'tableau-de-bord.html',
+  // L'administrateur ne supervise pas une marque mais le réseau entier : il a
+  // son propre écran, et il y voit moins que le fabricant, pas plus. Ni ventes
+  // ni chiffre d'affaires d'une boutique n'y figurent.
+  administrateur: 'administration.html',
   distributeur: 'distributeur.html',
 };
 

@@ -136,6 +136,61 @@ Lancement prévu sur Abidjan, Côte d'Ivoire, en iOS et Android.
    standard s'arrête sur la locale « French_Côte d'Ivoire.1252 ». Contournement
    qui marche sans toucher aux réglages Windows : `initdb --locale=C`.
 
+   *Correction apportée le 21/09/2026 :* `--locale=C` ne suffit plus. `initdb`
+   échoue en RESTAURANT l'ancienne locale, après avoir tout fait, parce que
+   l'apostrophe courbe de « Côte d'Ivoire » ne survit pas à l'aller-retour.
+   Le seul contournement observé qui marche : basculer
+   `HKCU\Control Panel\International` sur `fr-FR` / `FRA`, créer le cluster
+   depuis un processus neuf, puis restaurer `fr-CI` / `FRI` (les valeurs
+   d'origine sont notées dans `.devtools/locale-origine.txt`). Le cluster
+   jetable vit dans `.devtools/data`, port 55432, et n'est pas conservé.
+
+11. **Le tableau de bord administrateur** (2026-09-21).
+
+   Le sixième rôle avait des comptes et aucun écran. Or c'est lui qui débloque
+   tous les autres : sans lui, les demandes d'inscription déposées depuis le
+   site s'empilent dans une table que personne ne regarde, et un distributeur
+   qui démarre ne voit aucune boutique, sa politique ne lui montrant que les
+   communes où il opère déjà.
+
+   Trois vues (`v_supervision_reseau`, `v_anomalies_reseau`,
+   `v_supervision_boutiques` / `_distributeurs`), une fonction
+   `attribuer_boutique_admin`, et la page `landing/administration.html`.
+
+   **Ce que l'administrateur ne voit pas, et ne verra pas** : les ventes et le
+   chiffre d'affaires d'une boutique. Les politiques `stocks_prives` et
+   `ventes_privees` omettent délibérément `est_admin()`, et un test le vérifie.
+   La promesse faite au boutiquier est ce qui lui fait accepter la caisse
+   gratuite ; une promesse qui souffre une exception pour l'exploitant n'en est
+   plus une.
+
+   **Deux défauts silencieux sont sortis en vérifiant l'écran sur la
+   production**, et aucun des deux n'aurait produit la moindre erreur :
+
+   - **`creer_compte_metier` ne savait pas créer un fabricant.** Elle traitait
+     quatre rôles sur cinq et laissait passer le cinquième en rendant
+     `id_metier: null`, sans exception. Le compte se serait connecté, son jeton
+     n'aurait porté aucun `id_metier`, et toutes ses vues auraient rendu zéro
+     ligne. L'annulation prévue dans la fonction Edge ne se déclenche que sur
+     erreur, et il n'y en avait pas. Corrigé, et doublé d'un garde-fou général :
+     tout rôle qui ressort sans ligne métier fait désormais échouer la
+     transaction.
+   - **Un fabricant voyait la ligne de ses concurrents.**
+     `v_tableau_de_bord_fabricant` part de `fabricants`, table lisible de tous
+     parce que le boutiquier parcourt les catalogues, et n'ajoutait aucun
+     filtre. Pire que la fuite : la page lit `lignes[0]`, donc avec deux
+     fabricants en base elle affichait à chacun le tableau de bord du premier
+     venu, nom d'entreprise compris. Le filtre est maintenant dans la vue, pas
+     dans la page.
+
+   **Le script de déploiement mentait aussi.** Son rechargement du cache de
+   schéma PostgREST passait `psql "postgresql://…" -w -q -c "NOTIFY …"` ; or le
+   `getopt` de PostgreSQL sous Windows ne réordonne pas les arguments et
+   s'arrête au premier qui n'est pas une option. La notification n'est jamais
+   partie, psql sortait avec le code 0, et le script annonçait « cache
+   rechargé ». Les déploiements marchaient quand même, PostgREST rechargeant
+   aussi sur événement DDL, mais la garde ne gardait rien.
+
 ## Où ça en est, honnêtement
 
 - **La base, le backend et le routage ont maintenant tourné pour de vrai**

@@ -81,6 +81,8 @@ Deno.serve(async (req: Request) => {
   const role = String(charge.role ?? '').trim();
   const motDePasse = String(charge.mot_de_passe ?? '');
   const details = (charge.details ?? {}) as Record<string, unknown>;
+  // Facultatif : la demande d'accès que cette création vient satisfaire.
+  const demandeId = charge.demande_id ? String(charge.demande_id) : null;
   const telephone = normaliserTelephone(String(charge.telephone ?? ''));
 
   if (!nom) return reponse({ erreur: 'Le nom est obligatoire' }, 400);
@@ -145,9 +147,26 @@ Deno.serve(async (req: Request) => {
     return reponse({ erreur: erreurMetier.message }, refus ? 403 : 400);
   }
 
+  // 4. La demande d'accès est marquée validée, dans le même geste.
+  //
+  //    L'ORDRE COMPTE : le compte d'abord, la demande ensuite. Si l'on marquait
+  //    la demande en premier et que la création échouait, l'administrateur
+  //    verrait une demande traitée sans compte derrière, et personne ne le
+  //    rattraperait. Dans l'autre sens, l'incident laisse un compte valide et
+  //    une demande encore en attente : visible, et corrigeable en un clic.
+  let demandeTraitee = true;
+  if (demandeId) {
+    const { error: erreurDemande } = await appelant.rpc('marquer_demande_validee', {
+      p_demande_id: demandeId,
+      p_utilisateur_id: (metier as Record<string, unknown>).utilisateur_id,
+    });
+    if (erreurDemande) demandeTraitee = false;
+  }
+
   return reponse({
     ...(metier as Record<string, unknown>),
     auth_user_id: cree.user.id,
     identifiant: telephone,
+    demande_traitee: demandeTraitee,
   }, 201);
 });
