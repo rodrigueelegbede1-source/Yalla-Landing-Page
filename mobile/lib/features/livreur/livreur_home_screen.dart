@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth/auth_providers.dart';
+import '../../core/coque.dart';
+import '../../core/theme.dart';
 import '../../core/format.dart';
 import '../../core/supabase.dart';
 import '../../core/temps_reel.dart';
@@ -133,45 +135,85 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
       });
     }
 
+    // LE LIVREUR EST LE SEUL À GARDER SON INTERRUPTEUR DANS LE CANEVAS. Être en
+    // service ou non décide de tout ce qu'il voit, et ce n'est pas un réglage
+    // rangé dans un menu : c'est l'état dans lequel il se trouve. Il est donc
+    // posé dans le vert, à hauteur de pouce, avec son libellé en clair.
     return Scaffold(
-      appBar: AppBar(
-        title: Text(session?.nom ?? 'Livreur'),
-        actions: [
-          _PastilleTempsReel(connecte: signal.connecte),
-          Switch(
-            value: _enLigne,
-            onChanged: _basculerEnLigne,
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Se déconnecter',
-            onPressed: () async {
-              await _suivi.arreter();
-              if (!context.mounted) return;
-              await ref.read(authProvider).deconnecter();
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          _BandeauSuivi(suivi: _suivi, enLigne: _enLigne),
-          Expanded(
-            child: IndexedStack(
-              index: _onglet,
-              children: [
-                CoursesTab(
-                  cle: _cleCourses,
-                  onCoursePrise: () => setState(() => _cleLivraisons++),
-                ),
-                LivraisonTab(
-                  cle: _cleLivraisons,
-                  onChangement: () => setState(() => _cleCourses++),
+      backgroundColor: Jetons.vert800,
+      body: CoqueVerte(
+        entete: Column(
+          children: [
+            SalutationCanevas(
+              salutation: _enLigne ? 'En service' : 'Hors service',
+              nom: session?.nom ?? 'Livreur',
+              actions: [
+                _PastilleTempsReel(connecte: signal.connecte),
+                BoutonCanevas(
+                  icone: Icons.logout,
+                  infobulle: 'Se déconnecter',
+                  onTap: () async {
+                    await _suivi.arreter();
+                    if (!context.mounted) return;
+                    await ref.read(authProvider).deconnecter();
+                  },
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsetsDirectional.symmetric(horizontal: 22),
+              child: Container(
+                padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 8, 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: .14),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _enLigne
+                            ? 'Vous recevez les courses proches'
+                            : 'Vous ne recevez aucune course',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          color: Colors.white.withValues(alpha: .88),
+                        ),
+                      ),
+                    ),
+                    Switch(
+                      value: _enLigne,
+                      onChanged: _basculerEnLigne,
+                      activeThumbColor: Jetons.vert900,
+                      activeTrackColor: Jetons.jaune,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        enfant: Column(
+          children: [
+            _BandeauSuivi(suivi: _suivi, enLigne: _enLigne),
+            Expanded(
+              child: IndexedStack(
+                index: _onglet,
+                children: [
+                  CoursesTab(
+                    cle: _cleCourses,
+                    onCoursePrise: () => setState(() => _cleLivraisons++),
+                  ),
+                  LivraisonTab(
+                    cle: _cleLivraisons,
+                    onChangement: () => setState(() => _cleCourses++),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _onglet,

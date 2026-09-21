@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth/auth_providers.dart';
+import '../../core/coque.dart';
+import '../../core/theme.dart';
 import '../../core/temps_reel.dart';
 import '../../core/widgets.dart';
 import 'carnet_tab.dart';
@@ -61,28 +63,32 @@ class _DistributeurHomeScreenState extends ConsumerState<DistributeurHomeScreen>
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(session?.nom ?? 'Distributeur'),
-        actions: [
-          PastilleTempsReel(connecte: signal.connecte),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Se déconnecter',
-            onPressed: () => ref.read(authProvider).deconnecter(),
-          ),
-        ],
-      ),
-      body: IndexedStack(
-        index: _onglet,
-        children: [
-          CarnetTab(
-            cle: _cleCarnet,
-            onChangement: () => setState(() => _cleFlotte++),
-          ),
-          FlotteTab(cle: _cleFlotte),
-          ReseauTab(cle: _cleReseau),
-        ],
+      backgroundColor: Jetons.vert800,
+      body: CoqueVerte(
+        entete: SalutationCanevas(
+          salutation: 'Bonjour,',
+          nom: session?.nom ?? 'Distributeur',
+          detail: 'Vos courses, votre flotte et vos boutiques.',
+          actions: [
+            PastilleTempsReel(connecte: signal.connecte, surVert: true),
+            BoutonCanevas(
+              icone: Icons.logout,
+              infobulle: 'Se déconnecter',
+              onTap: () => ref.read(authProvider).deconnecter(),
+            ),
+          ],
+        ),
+        enfant: IndexedStack(
+          index: _onglet,
+          children: [
+            CarnetTab(
+              cle: _cleCarnet,
+              onChangement: () => setState(() => _cleFlotte++),
+            ),
+            FlotteTab(cle: _cleFlotte),
+            ReseauTab(cle: _cleReseau),
+          ],
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _onglet,

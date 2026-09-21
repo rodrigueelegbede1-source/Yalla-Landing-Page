@@ -55,3 +55,9 @@ landing/config.js
 
 .vercel
 .env*
+
+# Les aperçus de design sont régénérés à la demande par
+# `flutter test --update-goldens`. Ce sont des images de diagnostic, rendues
+# avec la police de test qui dessine des blocs : elles servent à vérifier une
+# mise en page, pas à montrer le produit.
+mobile/test/apercu/

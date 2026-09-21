@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/auth/auth_providers.dart';
+import '../../core/coque.dart';
 import '../../core/langue.dart';
+import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Connexion par numéro de téléphone.
@@ -74,27 +76,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final l = L.of(context);
 
+    // L'ÉCRAN D'ACCUEIL DE LA RÉFÉRENCE, adapté. Chez elle : un vert plein, une
+    // illustration au trait, un mot de bienvenue, un seul bouton. Ici le vert
+    // porte la marque et l'accroche, la feuille blanche porte le formulaire.
+    //
+    // La différence tient au métier. La référence accueille un promeneur qui a
+    // le temps ; celle-ci accueille quelqu'un qui ouvre l'application pour la
+    // première fois avec un mot de passe dicté au téléphone, souvent dehors.
+    // Le formulaire est donc posé tout de suite, en grand, sur fond clair.
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
+      backgroundColor: Jetons.vert800,
+      body: CoqueVerte(
+        entete: Padding(
+          padding: const EdgeInsets.fromLTRB(28, 18, 28, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const MarqueYalla(),
+              const SizedBox(height: 26),
+              Text(
+                l.appNom,
+                style: const TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1.2,
+                  color: Jetons.blanc,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l.appAccroche,
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.4,
+                  color: Colors.white.withValues(alpha: .82),
+                ),
+              ),
+            ],
+          ),
+        ),
+        enfant: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(22, 22, 22, 32),
+          child: Form(
               key: _formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(l.appNom,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          )),
-                  const SizedBox(height: 8),
-                  Text(l.appAccroche,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14)),
-                  const SizedBox(height: 40),
                   TextFormField(
                     controller: _telephone,
                     keyboardType: TextInputType.phone,
@@ -111,7 +140,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       labelText: l.numeroTelephone,
                       hintText: '07 06 30 30 30',
                       prefixIcon: const Icon(Icons.phone_outlined),
-                      border: const OutlineInputBorder(),
                     ),
                     validator: (v) =>
                         (v == null || v.trim().isEmpty) ? l.numeroTelephone : null,
@@ -123,7 +151,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     decoration: InputDecoration(
                       labelText: l.motDePasse,
                       prefixIcon: const Icon(Icons.lock_outline),
-                      border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         icon: Icon(_motDePasseVisible
                             ? Icons.visibility_off_outlined
@@ -138,48 +165,117 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         (v == null || v.isEmpty) ? l.motDePasse : null,
                   ),
                   if (_erreur != null) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(8),
+                        color: Jetons.alerte.withValues(alpha: .12),
+                        borderRadius: BorderRadius.circular(Jetons.rChamp),
+                        border: Border.all(color: Jetons.alerte.withValues(alpha: .34)),
                       ),
-                      child: Row(children: [
-                        const Icon(Icons.error_outline, size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(_erreur!)),
-                      ]),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.error_outline, size: 20, color: Jetons.alerte),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(_erreur!,
+                                style: const TextStyle(fontSize: 14, height: 1.4)),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 26),
                   FilledButton(
                     onPressed: _enCours ? null : _connecter,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
                     child: _enCours
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Jetons.blanc),
                           )
                         : Text(l.seConnecter),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 22),
                   Text(
                     l.indiceConnexion,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 12, height: 1.4),
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.45,
+                      color: Jetons.encre.withValues(alpha: .58),
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   const Center(child: BoutonLangue()),
                 ],
               ),
             ),
-          ),
         ),
       ),
     );
   }
+}
+
+/// La marque, au trait blanc, dans le canevas vert.
+///
+/// Reprend exactement le motif du logo du site : la barre du Y, le carton
+/// incliné, la roue. Dessiné plutôt qu'importé, pour la même raison que la
+/// bande de marché : net à toutes les densités, et zéro octet dans l'APK.
+class MarqueYalla extends StatelessWidget {
+  const MarqueYalla({super.key, this.taille = 44});
+
+  final double taille;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        width: taille,
+        height: taille,
+        child: CustomPaint(painter: _PeintreMarque()),
+      );
+}
+
+class _PeintreMarque extends CustomPainter {
+  @override
+  void paint(Canvas toile, Size t) {
+    final e = t.width / 40; // Le motif est dessiné sur une grille de 40.
+
+    final trait = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.2 * e
+      ..strokeCap = StrokeCap.round
+      ..color = Jetons.jaune;
+
+    final plein = Paint()..color = Jetons.jaune;
+
+    // La barre du Y.
+    toile.drawPath(
+      Path()
+        ..moveTo(9 * e, 10 * e)
+        ..lineTo(15.2 * e, 10 * e)
+        ..lineTo(24.7 * e, 29.5 * e),
+      trait,
+    );
+
+    // Le carton, incliné comme sur le logo.
+    toile.save();
+    toile.translate(27 * e, 13 * e);
+    toile.rotate(-19 * 3.14159 / 180);
+    toile.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset.zero, width: 13 * e, height: 13 * e),
+        Radius.circular(1.6 * e),
+      ),
+      plein,
+    );
+    toile.restore();
+
+    // La roue.
+    toile.drawCircle(Offset(17.5 * e, 31.5 * e), 4.2 * e, plein);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter ancien) => false;
 }

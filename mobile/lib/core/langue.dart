@@ -87,7 +87,12 @@ final langueProvider =
 /// boutiquier qui ne lit pas le français doit reconnaître « العربية » du
 /// premier coup d'œil, sans avoir à comprendre le libellé autour.
 class BoutonLangue extends ConsumerWidget {
-  const BoutonLangue({super.key});
+  const BoutonLangue({super.key, this.surVert = false});
+
+  /// Sur le canevas de marque, un bouton vert sur vert ne se voit pas. On passe
+  /// alors en blanc sur un disque translucide, comme les autres actions de
+  /// l'en-tête.
+  final bool surVert;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -101,12 +106,16 @@ class BoutonLangue extends ConsumerWidget {
           .read(langueProvider.notifier)
           .choisir(Locale(versArabe ? 'ar' : 'fr')),
       style: TextButton.styleFrom(
-        minimumSize: const Size(44, 44),
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        minimumSize: const Size(44, 42),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        foregroundColor: surVert ? Colors.white : null,
+        backgroundColor:
+            surVert ? Colors.white.withValues(alpha: .14) : null,
+        shape: const StadiumBorder(),
       ),
       child: Text(
         versArabe ? L.of(context).langueArabe : L.of(context).langueFrancais,
-        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
       ),
     );
   }

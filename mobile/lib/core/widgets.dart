@@ -94,19 +94,51 @@ class TitreSection extends StatelessWidget {
 
 /// Pastille d'état du temps réel : la liste est-elle vivante ou figée.
 class PastilleTempsReel extends StatelessWidget {
-  const PastilleTempsReel({super.key, required this.connecte});
+  const PastilleTempsReel({super.key, required this.connecte, this.surVert = false});
 
   final bool connecte;
 
+  /// `surVert` : la pastille vit désormais dans le canevas de marque, où un
+  /// vert sur vert ne se voit pas et un gris disparaît. Sur fond vert, c'est
+  /// donc un disque translucide avec un point blanc ou éteint.
+  final bool surVert;
+
   @override
-  Widget build(BuildContext context) => Tooltip(
-        message: connecte
-            ? 'Mise à jour en direct'
-            : 'Hors direct, tirez la liste pour rafraîchir',
+  Widget build(BuildContext context) {
+    final message = connecte
+        ? 'Mise à jour en direct'
+        : 'Hors direct, tirez la liste pour rafraîchir';
+
+    if (!surVert) {
+      return Tooltip(
+        message: message,
         child: Icon(
           connecte ? Icons.bolt : Icons.bolt_outlined,
           size: 18,
           color: connecte ? Colors.green : Colors.grey,
         ),
       );
+    }
+
+    return Tooltip(
+      message: message,
+      child: Container(
+        width: 42,
+        height: 42,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: .14),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          connecte ? Icons.bolt : Icons.bolt_outlined,
+          size: 19,
+          // Le jaune du logo pour « ça vit », blanc éteint pour « ça ne remonte
+          // plus ». C'est le seul endroit du canevas où le jaune apparaît, et
+          // il y signifie exactement une chose : le direct fonctionne.
+          color: connecte ? const Color(0xFFFFE500) : Colors.white.withValues(alpha: .45),
+        ),
+      ),
+    );
+  }
 }

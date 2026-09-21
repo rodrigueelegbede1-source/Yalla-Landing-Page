@@ -377,5 +377,18 @@
         "type": "int"
       }
     }
+  },
+  "salutation": "مرحبًا،",
+  "rienEnAttente": "لا شيء ينتظرك. نهار بيع موفّق.",
+  "enAttenteResume": "{aConfirmer, plural, =0{} =1{نفاد واحد بانتظار التأكيد} other{{aConfirmer} حالات نفاد بانتظار التأكيد}}{messages, plural, =0{} =1{ · رسالة واحدة} other{ · {messages} رسائل}}",
+  "@enAttenteResume": {
+    "placeholders": {
+      "aConfirmer": {
+        "type": "int"
+      },
+      "messages": {
+        "type": "int"
+      }
+    }
   }
 }

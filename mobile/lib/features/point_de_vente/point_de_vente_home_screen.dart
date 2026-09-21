@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/auth/auth_providers.dart';
+import '../../core/coque.dart';
 import '../../core/langue.dart';
 import '../../core/supabase.dart';
+import '../../core/theme.dart';
 import '../../core/temps_reel.dart';
 import '../../core/widgets.dart';
 import '../../l10n/app_localizations.dart';
@@ -140,20 +142,42 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
       });
     }
 
+    // LA COQUE DE LA RÉFÉRENCE, ET CE QU'ON N'EN PREND PAS.
+    //
+    // On reprend le canevas vert et la feuille blanche qui le chevauche : ils
+    // donnent au contenu une frontière franche sans tracer un filet, ce qui
+    // tient au soleil là où un gris clair disparaît.
+    //
+    // ON NE REPREND PAS SA GRILLE DE TUILES, et c'est un choix, pas un oubli.
+    // Une grille d'accueil sert un rôle qui a beaucoup de destinations
+    // occasionnelles : on l'ouvre, on lit, on choisit. Le boutiquier, lui, a
+    // cinq destinations qu'il utilise TOUTES chaque jour, et il ouvre la caisse
+    // dix fois par service. Lui imposer un écran d'accueil ajouterait une
+    // tape au geste le plus fréquent du produit, pour le confort d'un geste
+    // rare. La barre du bas reste donc, et le canevas porte à sa place l'état
+    // du jour, qui est ce que la grille de la référence donne vraiment.
+    final enAttente = _aConfirmer + _messagesNonLus;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(session?.nom ?? l.appNom),
-        actions: [
-          PastilleTempsReel(connecte: signal.connecte),
-          const BoutonLangue(),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: l.seDeconnecter,
-            onPressed: () => ref.read(authProvider).deconnecter(),
-          ),
-        ],
-      ),
-      body: IndexedStack(
+      backgroundColor: Jetons.vert800,
+      body: CoqueVerte(
+        entete: SalutationCanevas(
+          salutation: l.salutation,
+          nom: session?.nom ?? l.appNom,
+          detail: enAttente == 0
+              ? l.rienEnAttente
+              : l.enAttenteResume(_aConfirmer, _messagesNonLus),
+          actions: [
+            PastilleTempsReel(connecte: signal.connecte, surVert: true),
+            const BoutonLangue(surVert: true),
+            BoutonCanevas(
+              icone: Icons.logout,
+              infobulle: l.seDeconnecter,
+              onTap: () => ref.read(authProvider).deconnecter(),
+            ),
+          ],
+        ),
+        enfant: IndexedStack(
         index: _onglet,
         children: [
           CaisseTab(onVenteEnregistree: _apresVente),
@@ -180,6 +204,7 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
             onChangement: () => setState(() => _cleRafraichissement++),
           ),
         ],
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _onglet,

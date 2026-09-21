@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/auth/auth_providers.dart';
 import 'core/langue.dart';
+import 'core/theme.dart';
 import 'core/supabase.dart';
 import 'l10n/app_localizations.dart';
 import 'features/agent_recenseur/recensement_screen.dart';
@@ -21,15 +22,16 @@ Future<void> main() async {
 class YallaApp extends ConsumerWidget {
   const YallaApp({super.key});
 
-  // Charte de la maquette : vert profond et jaune signalétique.
-  static const _vert = Color(0xFF146B3A);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       title: 'Yalla',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorSchemeSeed: _vert, useMaterial3: true),
+      // Le système visuel vit dans core/theme.dart. Une graine de couleur
+      // laissait Material 3 déduire tout le reste, ce qui donnait une
+      // application correcte et anonyme : ni le jaune du logo, ni les rayons,
+      // ni l'échelle typographique n'en sortaient.
+      theme: themeYalla(),
 
       // Français et arabe. La locale nulle laisse Flutter suivre le téléphone,
       // ce qui est le bon défaut tant que l'utilisateur n'a rien choisi.

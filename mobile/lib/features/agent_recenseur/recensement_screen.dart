@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../core/auth/auth_providers.dart';
+import '../../core/coque.dart';
+import '../../core/theme.dart';
 import '../../core/comptes.dart';
 import '../../core/format.dart';
 import '../../core/supabase.dart';
@@ -78,22 +80,32 @@ class _AgentRecenseurHomeScreenState
     final session = ref.watch(sessionProvider).value;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(session?.nom ?? 'Recensement'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Se déconnecter',
-            onPressed: () => ref.read(authProvider).deconnecter(),
-          ),
-        ],
-      ),
+      backgroundColor: Jetons.vert800,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _recenser,
         icon: const Icon(Icons.add_business),
         label: const Text('Recenser une boutique'),
+        backgroundColor: Jetons.vert900,
+        foregroundColor: Jetons.blanc,
+        // La pilule du thème, jusque sur le bouton flottant : un rectangle
+        // arrondi au milieu d'un écran tout en pilules se remarque, et pas en
+        // bien.
+        shape: const StadiumBorder(),
       ),
-      body: RefreshIndicator(
+      body: CoqueVerte(
+        entete: SalutationCanevas(
+          salutation: 'Bonjour,',
+          nom: session?.nom ?? 'Recensement',
+          detail: 'Chaque boutique inscrite entre dans le réseau.',
+          actions: [
+            BoutonCanevas(
+              icone: Icons.logout,
+              infobulle: 'Se déconnecter',
+              onTap: () => ref.read(authProvider).deconnecter(),
+            ),
+          ],
+        ),
+        enfant: RefreshIndicator(
         onRefresh: _rafraichir,
         child: FutureBuilder<List<Map<String, dynamic>>>(
           future: _recensements,
@@ -158,6 +170,7 @@ class _AgentRecenseurHomeScreenState
               ],
             );
           },
+        ),
         ),
       ),
     );

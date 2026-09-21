@@ -377,5 +377,18 @@
         "type": "int"
       }
     }
+  },
+  "salutation": "Bonjour,",
+  "rienEnAttente": "Rien ne vous attend. Bonne journée de vente.",
+  "enAttenteResume": "{aConfirmer, plural, =0{} =1{1 rupture à confirmer} other{{aConfirmer} ruptures à confirmer}}{messages, plural, =0{} =1{ · 1 message} other{ · {messages} messages}}",
+  "@enAttenteResume": {
+    "placeholders": {
+      "aConfirmer": {
+        "type": "int"
+      },
+      "messages": {
+        "type": "int"
+      }
+    }
   }
 }
