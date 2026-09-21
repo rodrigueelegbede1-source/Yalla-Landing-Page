@@ -243,6 +243,7 @@ function claimsDuJeton(jeton) {
 const DESTINATIONS = {
   fabricant: 'tableau-de-bord.html',
   administrateur: 'tableau-de-bord.html',
+  distributeur: 'distributeur.html',
 };
 
 const SUR_MOBILE = {
@@ -250,9 +251,6 @@ const SUR_MOBILE = {
     + 'l’application, sur votre téléphone.',
   livreur: 'Votre compte est celui d’un livreur : les courses et le suivi de '
     + 'position sont dans l’application.',
-  distributeur: 'Votre espace distributeur est dans l’application : c’est là que '
-    + 'vous affectez vos livreurs et déclarez vos boutiques. Un tableau de bord web '
-    + 'arrivera ensuite.',
   agent_recenseur: 'Le recensement se fait sur le terrain, depuis l’application.',
 };
 

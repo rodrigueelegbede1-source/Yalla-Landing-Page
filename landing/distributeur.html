@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon réseau — Yalla</title>
+<meta name="theme-color" content="#0A3D24">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="acces.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23146B3A'/><path d='M28 30h10l14 30' stroke='%23FFE500' stroke-width='11' fill='none' stroke-linecap='round'/><rect x='52' y='24' width='24' height='24' rx='3' fill='%23FFE500' transform='rotate(-18 64 36)'/><circle cx='50' cy='72' r='8' fill='%23FFE500'/></svg>">
+</head>
+<body class="page-acces">
+
+<a class="skip-link" href="#main">Aller au contenu</a>
+
+<header class="acces-nav">
+  <a class="logo" href="index.html" aria-label="Yalla, accueil">
+    <span class="logo__mark" aria-hidden="true">
+      <svg viewBox="0 0 40 40" fill="none">
+        <path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/>
+        <rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/>
+        <circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/>
+      </svg>
+    </span>
+    <span class="logo__word">YALLA</span>
+  </a>
+  <div class="bord-outils">
+    <span class="bord-pouls" id="pouls" title="Dernière mise à jour">—</span>
+    <button type="button" class="acces-retour" id="boutonDeconnexion">Se déconnecter</button>
+  </div>
+</header>
+
+<main id="main" class="acces-main" style="grid-template-columns:minmax(0,1fr)">
+  <div>
+
+    <div class="bord-entete">
+      <div>
+        <h1 id="titreDistributeur">Mon réseau</h1>
+        <p id="sousTitreDistributeur">Chargement…</p>
+      </div>
+    </div>
+
+    <p class="acces-message" id="messageBord" role="status" hidden></p>
+
+    <div class="bord-chiffres" id="chiffres" hidden>
+      <div class="bord-chiffre bord-chiffre--fort">
+        <b id="chiffreAttente">—</b>
+        <span>Courses en attente</span>
+        <em id="detailAttente">À affecter à un livreur.</em>
+      </div>
+      <div class="bord-chiffre">
+        <b id="chiffreUrgent">—</b>
+        <span>Délai bientôt dépassé</span>
+        <em>Moins de trente minutes avant que la course ne s'ouvre aux autres
+          distributeurs de la commune.</em>
+      </div>
+      <div class="bord-chiffre">
+        <b id="chiffreFlotte">—</b>
+        <span>Livreurs en ligne</span>
+        <em id="detailFlotte">—</em>
+      </div>
+      <div class="bord-chiffre">
+        <b id="chiffreBoutiques">—</b>
+        <span>Boutiques desservies</span>
+        <em id="detailBoutiques">—</em>
+      </div>
+    </div>
+
+    <!-- ── Le carnet ──────────────────────────────────────────────── -->
+    <section class="bord-section">
+      <h2>Courses à affecter</h2>
+      <p>
+        Les ruptures qui vous reviennent. Le compte à rebours dit ce qu'il vous
+        reste avant qu'elles ne s'ouvrent aux autres distributeurs qui portent
+        la même marque dans la commune.
+      </p>
+      <div id="zoneCarnet">
+        <div class="bord-vide">Chargement…</div>
+      </div>
+    </section>
+
+    <!-- ── La flotte ──────────────────────────────────────────────── -->
+    <section class="bord-section">
+      <h2>Ma flotte</h2>
+      <p>
+        Une position qui n'a pas bougé depuis plus de cinq minutes signale un
+        téléphone que le système a mis en sommeil, pas un livreur à l'arrêt.
+      </p>
+      <div id="zoneFlotte">
+        <div class="bord-vide">Chargement…</div>
+      </div>
+    </section>
+
+    <!-- ── Le réseau ──────────────────────────────────────────────── -->
+    <section class="bord-section">
+      <h2>Mes boutiques</h2>
+      <p>
+        Celles que vous desservez, marque par marque. C'est cette déclaration
+        qui fait qu'une rupture vous parvient dès la première seconde plutôt
+        qu'après deux heures.
+      </p>
+      <div id="zoneReseau">
+        <div class="bord-vide">Chargement…</div>
+      </div>
+    </section>
+
+    <p class="acces-aide" style="max-width:72ch">
+      Ajouter un livreur ou déclarer une nouvelle boutique se fait depuis
+      l'application : le compte d'un livreur se remet en main propre, et une
+      boutique se choisit sur le terrain. Cette page sert à piloter ce qui
+      existe déjà.
+    </p>
+
+  </div>
+</main>
+
+<!-- ── Affectation ──────────────────────────────────────────────── -->
+<dialog id="dialogueAffectation" class="bord-dialogue">
+  <form method="dialog">
+    <h2 id="titreAffectation">Affecter à un livreur</h2>
+    <p id="sousTitreAffectation" class="bord-dialogue-sous"></p>
+    <div id="listeLivreurs" class="bord-livreurs"></div>
+    <div class="bord-dialogue-pied">
+      <button type="submit" value="annuler" class="acces-retour">Annuler</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="config.js"></script>
+<script src="distributeur.js"></script>
+</body>
+</html>
