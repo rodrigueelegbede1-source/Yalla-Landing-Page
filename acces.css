@@ -480,3 +480,116 @@
   .champ textarea,
   .profil{ transition:none; }
 }
+
+/* ── Pilotage du distributeur ─────────────────────────────── */
+
+.bord-outils{ display:flex; align-items:center; gap:14px; }
+
+/* L'heure de la dernière mise à jour, plutôt qu'un voyant « connecté ».
+   Une page qui affiche « en direct » alors qu'elle n'a rien reçu depuis dix
+   minutes ment ; une heure, non. */
+.bord-pouls{
+  font-family:var(--ff-mono);
+  font-size:11.5px;
+  color:rgba(8,22,14,.5);
+  padding:4px 10px;
+  border-radius:999px;
+  background:var(--cream-2);
+  white-space:nowrap;
+}
+.bord-pouls[data-etat="perdu"]{
+  background:rgba(255,92,57,.12);
+  color:#8C2A12;
+}
+
+.bord-action{
+  appearance:none;
+  font-family:var(--ff-body);
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--white);
+  background:var(--green-700);
+  border:0;
+  border-radius:999px;
+  padding:7px 16px;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background var(--t-fast) var(--ease);
+}
+.bord-action:hover{ background:var(--green-800); }
+.bord-action:focus-visible{ outline:2px solid var(--green-900); outline-offset:2px; }
+
+.bord-action--discret{
+  background:transparent;
+  color:var(--green-700);
+  border:1px solid rgba(20,107,58,.35);
+  padding:6px 13px;
+}
+.bord-action--discret:hover{ background:rgba(20,107,58,.08); }
+
+.bord-commune{
+  font-family:var(--ff-display);
+  font-size:14px;
+  font-weight:600;
+  color:var(--green-900);
+  margin:20px 0 8px;
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+}
+.bord-commune:first-child{ margin-top:0; }
+.bord-commune span{
+  font-family:var(--ff-body);
+  font-size:12px;
+  font-weight:450;
+  color:rgba(8,22,14,.5);
+}
+
+/* ── Fenêtre d'affectation ────────────────────────────────── */
+
+.bord-dialogue{
+  border:0;
+  border-radius:var(--r-lg);
+  padding:0;
+  max-width:440px;
+  width:calc(100% - 32px);
+  background:var(--white);
+  color:var(--ink);
+  box-shadow:0 30px 70px -30px rgba(6,39,24,.55);
+}
+.bord-dialogue::backdrop{ background:rgba(6,39,24,.5); }
+.bord-dialogue form{ padding:24px; }
+.bord-dialogue h2{
+  font-family:var(--ff-display);
+  font-size:19px;
+  font-weight:600;
+  margin:0 0 4px;
+  color:var(--green-900);
+}
+.bord-dialogue-sous{
+  margin:0 0 18px;
+  font-size:13.5px;
+  color:rgba(8,22,14,.62);
+}
+.bord-dialogue-pied{ margin-top:16px; text-align:end; }
+
+.bord-livreurs{ display:flex; flex-direction:column; gap:8px; }
+.bord-livreur{
+  appearance:none;
+  text-align:start;
+  font-family:var(--ff-body);
+  background:var(--white);
+  border:1.5px solid rgba(8,22,14,.14);
+  border-radius:var(--r-md);
+  padding:13px 15px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  transition:border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.bord-livreur:hover{ border-color:var(--green-700); background:rgba(20,107,58,.05); }
+.bord-livreur:focus-visible{ outline:2px solid var(--green-700); outline-offset:2px; }
+.bord-livreur strong{ font-size:14.5px; font-weight:600; color:var(--green-900); }
+.bord-livreur em{ font-style:normal; font-size:12.5px; color:rgba(8,22,14,.6); }
