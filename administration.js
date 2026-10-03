@@ -580,12 +580,9 @@ function tracerCharge() {
 
 /* ══ Le rail ══════════════════════════════════════════════ */
 
-/* L'état d'une boutique, dans l'ordre où il compte. Sans distributeur passe
-   avant sans stock : une boutique que personne ne dessert est un problème de
-   réseau, une boutique sans stock est un problème de démarrage. */
+/* Le risque boutique qui compte pour le réseau : l'absence de distributeur. */
 function etatBoutique(b) {
   if (!b.distributeurs) return 'alerte';
-  if (Number(b.references_suivies ?? 0) === 0) return 'dort';
   return 'ok';
 }
 
@@ -611,7 +608,7 @@ function entreesRail() {
         id: b.point_de_vente_id,
         titre: b.nom,
         detail: b.distributeurs ? `Chez ${b.distributeurs}` : 'Personne ne la dessert',
-        marge: `${nombre(b.references_suivies ?? 0)} réf.`,
+        marge: Number(b.ruptures_ouvertes ?? 0) > 0 ? `${nombre(b.ruptures_ouvertes)} rupture(s)` : '',
         etat: etatBoutique(b),
       });
     }
@@ -926,7 +923,6 @@ function tracerTiroir() {
     const b = etat.boutiques.find((x) => x.point_de_vente_id === selection.id);
     if (!b) { selection = null; return tracerTiroir(); }
 
-    const refs = Number(b.references_suivies ?? 0);
     boite.innerHTML = `
       <div class="tiroir-tete">
         <div>
@@ -944,17 +940,11 @@ function tracerTiroir() {
           ? echapper(b.distributeurs)
           : '<span class="etat etat--alerte">Personne</span>'}</span></div>
         <div><small>Marques</small><span>${echapper(b.marques ?? '—')}</span></div>
-        <div><small>Références suivies</small><strong${refs === 0 ? ' data-ton="alerte"' : ''}>${nombre(refs)}</strong></div>
         <div><small>Ruptures ouvertes</small><strong${
           Number(b.ruptures_ouvertes ?? 0) > 0 ? ' data-ton="alerte"' : ''
         }>${nombre(b.ruptures_ouvertes ?? 0)}</strong></div>
         <div><small>Recensée par</small><span>${echapper(b.agent_recenseur ?? '—')}</span></div>
-      </div>
-      ${refs === 0 ? `<p class="note" style="margin:0">
-        Cette boutique ne suit aucun stock. <b>La caisse ne peut donc déclencher
-        aucune rupture automatique</b> : c'est le stock qui alerte en tombant à
-        zéro. Le boutiquier doit faire son inventaire de départ depuis
-        l'application.</p>` : ''}`;
+      </div>`;
 
     document.getElementById('actionAttribuerBoutique')
       .addEventListener('click', () => ouvrirAttribution(b.point_de_vente_id, b.nom));
@@ -1281,7 +1271,6 @@ async function refuser({ refuser: id, societe }) {
 const ANOMALIES = {
   boutique_sans_distributeur: 'Boutique sans distributeur',
   distributeur_sans_livreur: 'Distributeur sans livreur',
-  boutique_sans_stock: 'Boutique sans stock suivi',
   rupture_sans_destinataire: 'Rupture sans destinataire',
 };
 
@@ -1291,8 +1280,8 @@ function tracerAnomalies() {
   if (!etat.anomalies.length) {
     zone.innerHTML = `<div class="vide">
       <b>Rien à signaler</b>
-      Chaque boutique active a son distributeur et son stock suivi, chaque
-      distributeur a son livreur, et chaque rupture a un destinataire.
+      Chaque boutique active a son distributeur, chaque distributeur a son
+      livreur, et chaque rupture a un destinataire.
     </div>`;
     return;
   }
@@ -1797,6 +1786,42 @@ for (const id of ['diffusionCible', 'diffusionCommune']) {
   document.getElementById(id).addEventListener('change', estimerPortee);
 }
 
+document.getElementById('diffusionVisuel').addEventListener('change', (event) => {
+  const fichier = event.target.files[0];
+  const apercu = document.getElementById('apercuDiffusionVisuel');
+  if (!fichier) {
+    apercu.hidden = true;
+    apercu.removeAttribute('src');
+    return;
+  }
+  if (fichier.size > 5 * 1024 * 1024) {
+    event.target.value = '';
+    apercu.hidden = true;
+    informer('Le visuel dépasse 5 Mo.', 'erreur');
+    return;
+  }
+  apercu.src = URL.createObjectURL(fichier);
+  apercu.hidden = false;
+});
+
+async function televerserVisuel(fichier) {
+  if (!fichier) return null;
+  const extension = fichier.name.split('.').pop().toLowerCase();
+  const chemin = `${crypto.randomUUID()}.${extension}`;
+  const reponse = await fetch(`${URL_BASE}/storage/v1/object/notifications/${chemin}`, {
+    method: 'POST',
+    headers: {
+      apikey: CLE,
+      Authorization: `Bearer ${jeton}`,
+      'Content-Type': fichier.type,
+      'x-upsert': 'false',
+    },
+    body: fichier,
+  });
+  if (!reponse.ok) throw new Error('Le visuel n’a pas pu être téléversé.');
+  return `${URL_BASE}/storage/v1/object/public/notifications/${chemin}`;
+}
+
 document.getElementById('boutonDiffuser').addEventListener('click', async () => {
   const bouton = document.getElementById('boutonDiffuser');
   const retour = document.getElementById('messageDiffusion');
@@ -1806,6 +1831,7 @@ document.getElementById('boutonDiffuser').addEventListener('click', async () => 
   const commune = document.getElementById('diffusionCommune').value || null;
   const titre = document.getElementById('diffusionTitre').value.trim();
   const message = document.getElementById('diffusionMessage').value.trim();
+  const fichier = document.getElementById('diffusionVisuel').files[0] || null;
   const options = document.getElementById('diffusionOptions').value
     .split('\n').map((s) => s.trim()).filter(Boolean);
 
@@ -1829,6 +1855,7 @@ document.getElementById('boutonDiffuser').addEventListener('click', async () => 
   bouton.textContent = 'Envoi…';
 
   try {
+    const visuelUrl = await televerserVisuel(fichier);
     const r = await interroger('rpc/diffuser_notification', {
       method: 'POST',
       body: JSON.stringify({
@@ -1838,12 +1865,15 @@ document.getElementById('boutonDiffuser').addEventListener('click', async () => 
         p_cible: cible,
         p_commune: commune,
         p_options: type === 'sondage' ? options : null,
+        p_visuel_url: visuelUrl,
       }),
     });
 
     document.getElementById('diffusionTitre').value = '';
     document.getElementById('diffusionMessage').value = '';
     document.getElementById('diffusionOptions').value = '';
+    document.getElementById('diffusionVisuel').value = '';
+    document.getElementById('apercuDiffusionVisuel').hidden = true;
     retour.hidden = true;
     informer(`Diffusion envoyée à ${r.portee} destinataire(s).`, 'succes');
     await rafraichir();

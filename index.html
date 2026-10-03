@@ -22,13 +22,13 @@
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "iOS, Android",
   "inLanguage": "fr",
-  "description": "Signalement et géolocalisation des ruptures de stock en temps réel dans les points de vente de proximité en Côte d'Ivoire, avec caisse enregistreuse intégrée.",
+  "description": "Catalogue digital pour les boutiques de proximité en Côte d'Ivoire : signalement des ruptures, publicités illustrées, notifications, sondages et retours terrain.",
   "areaServed": { "@type": "City", "name": "Abidjan", "address": { "@type": "PostalAddress", "addressCountry": "CI" } },
   "featureList": [
     "Géolocalisation des livreurs en temps réel",
     "Signalement de rupture de stock ciblé par catalogue",
-    "Caisse enregistreuse intégrée",
-    "Paiement mobile intégré"
+    "Publicités illustrées et notifications ciblées",
+    "Enquêtes, sondages et retours terrain"
   ]
 }
 </script>
@@ -106,14 +106,13 @@
       </div>
 
       <h1 class="hero__title">
-        <span class="line"><span class="line__in" style="--d:80ms">Chaque rupture,</span></span>
-        <span class="line"><span class="line__in" style="--d:180ms"><em>géolocalisée</em></span></span>
-        <span class="line"><span class="line__in" style="--d:280ms">en temps réel.</span></span>
+        <span class="line"><span class="line__in" style="--d:80ms">e-catalogue Grossiste /</span></span>
+        <span class="line"><span class="line__in" style="--d:180ms"><em>Revendeur</em></span></span>
+        <span class="line"><span class="line__in" style="--d:280ms">Disponible en un clic.</span></span>
       </h1>
 
       <p class="hero__sub reveal" style="--d:420ms">
-        Yalla connecte les boutiques de proximité, les fabricants et les livreurs de Côte d'Ivoire.
-        La boutique signale un produit manquant&nbsp;; la rupture apparaît sur la carte, à la seconde.
+        Yalla connecte les grossistes et les revendeurs aux fabricants ou distributeurs présents en Côte d’Ivoire en un clic. Signalez juste les produits dont vous avez besoin&nbsp;; votre demande apparaît sur la carte, à la seconde.
         <strong>Gagnez en temps et en efficacité.</strong>
       </p>
 
@@ -131,7 +130,7 @@
       <ul class="hero__pills reveal" style="--d:620ms">
         <li><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg>Géolocalisation</li>
         <li><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10.5 19a1.8 1.8 0 0 0 3 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Ruptures</li>
-        <li><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8 7.5h8M8 12h3m5 0h.01M8 16h3m5 0h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Caisse enregistreuse</li>
+        <li><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Catalogue digital</li>
       </ul>
     </div>
 
@@ -262,8 +261,8 @@
       <p>Métiers connectés sur une seule plateforme</p>
     </div>
     <div class="stat reveal" style="--d:180ms">
-      <div class="stat__num"><span data-count="3" data-suffix=" en 1">0 en 1</span></div>
-      <p>Géolocalisation, ruptures et caisse enregistreuse</p>
+      <div class="stat__num"><span data-count="4" data-suffix=" gestes">0 gestes</span></div>
+      <p>Consulter, signaler, recevoir, transmettre</p>
     </div>
     <div class="stat reveal" style="--d:270ms">
       <div class="stat__num"><span>iOS<em>+</em>Android</span></div>
@@ -304,8 +303,8 @@
             </svg>
           </div>
           <h3>Le point de vente signale</h3>
-          <p>Un produit manque en rayon&nbsp;? Le gérant le signale en un geste. Photo, quantité, catégorie&nbsp;: tout part en une fois. Et quand une vente vide le dernier article, la caisse enregistreuse déclenche le signalement toute seule.</p>
-          <span class="step__meta mono">CAISSE INTÉGRÉE · POSITION JOINTE</span>
+          <p>Un produit manque en rayon&nbsp;? Le gérant le choisit dans le catalogue, indique la quantité et envoie son signalement au distributeur qui dessert sa boutique.</p>
+          <span class="step__meta mono">CATALOGUE DIGITAL · SIGNALEMENT DIRECT</span>
         </li>
 
         <li class="step reveal" style="--d:120ms">
@@ -332,8 +331,8 @@
             </svg>
           </div>
           <h3>Le livreur réapprovisionne</h3>
-          <p>Le livreur le plus proche prend la course, appelle la boutique et livre. Le paiement mobile se règle dans l'application, la vente entre en caisse.</p>
-          <span class="step__meta mono">SUIVI TYPE UBER · PAIEMENT MOBILE</span>
+          <p>Le distributeur affecte un livreur, qui appelle la boutique, réapprovisionne le rayon et confirme la livraison dans l'application.</p>
+          <span class="step__meta mono">SUIVI EN DIRECT · LIVRAISON CONFIRMÉE</span>
         </li>
       </ol>
     </div>
@@ -463,17 +462,17 @@
         </div>
         <h3 class="card__title">Point de vente</h3>
         <p class="card__role">Boutique, supérette, kiosque ou maquis</p>
-        <p class="card__desc">Signalez vos ruptures en temps réel, encaissez vos ventes et restez visible auprès de tout le réseau.</p>
+        <p class="card__desc">Parcourez les catalogues, signalez vos besoins, recevez les communications des marques et partagez vos retours terrain.</p>
         <div class="mini mini--pdv" aria-hidden="true">
           <div class="mini__bar"><span class="mono">NOUVEAU SIGNALEMENT</span><span class="mini__live"></span></div>
-          <div class="mini__row"><span class="mini__thumb"></span><span class="mini__txt"><b>Lait concentré 400g</b><i>Catégorie · Épicerie</i></span><span class="mini__tag">0 EN STOCK</span></div>
+          <div class="mini__row"><span class="mini__thumb"></span><span class="mini__txt"><b>Lait concentré 400g</b><i>Catégorie · Épicerie</i></span><span class="mini__tag">À SIGNALER</span></div>
           <div class="mini__cta">Envoyer le signalement</div>
         </div>
         <ul class="card__list">
           <li>Signalement de rupture instantané</li>
-          <li>Caisse enregistreuse intégrée</li>
+          <li>Publicités illustrées et notifications</li>
           <li>Catalogue global des fabricants</li>
-          <li>Notifications, enquêtes et sondages</li>
+          <li>Enquêtes, sondages et retours terrain</li>
         </ul>
       </article>
 
