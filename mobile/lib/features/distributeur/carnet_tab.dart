@@ -96,7 +96,8 @@ class _CarnetTabState extends State<CarnetTab> {
               return ListTile(
                 leading: Icon(Icons.local_shipping_outlined,
                     color: enLigne ? Colors.green : Colors.grey),
-                title: Text(l['nom'] as String? ?? 'Livreur'),
+                title: Text(l['nom'] as String? ?? 'Livreur',
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
                 subtitle: Text(
                   enLigne
                       ? (enCours > 0 ? 'En ligne · $enCours course(s) en cours' : 'En ligne, disponible')

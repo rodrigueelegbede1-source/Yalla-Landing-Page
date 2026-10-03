@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/format.dart';
+import '../../core/theme.dart';
 import '../../core/supabase.dart';
 
 /// Les ruptures que ce livreur peut prendre, triées par distance.
@@ -144,6 +145,7 @@ class _CoursesTabState extends State<CoursesTab> {
                   isThreeLine: true,
                   trailing: FilledButton(
                     onPressed: () => _prendre(c['rupture_id'] as String),
+                    style: boutonBoutDeLigne,
                     child: const Text('Prendre'),
                   ),
                 ),

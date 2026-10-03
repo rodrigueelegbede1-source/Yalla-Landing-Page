@@ -209,6 +209,20 @@ class _Message extends StatelessWidget {
               style: const TextStyle(fontSize: 13.5, height: 1.45),
             ),
 
+            if ((message['visuel_url'] as String?)?.isNotEmpty == true) ...[
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  message['visuel_url'] as String,
+                  width: double.infinity,
+                  height: 180,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ],
+
             if (sondage && options.isNotEmpty) ...[
               const SizedBox(height: 12),
               // Les réponses sont des boutons pleins, pas une liste à cocher :

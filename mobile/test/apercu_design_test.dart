@@ -171,6 +171,65 @@ void main() {
     );
   });
 
+  // LE CAS QUI A CASSÉ EN PRODUCTION, gardé en aperçu.
+  //
+  // Un `FilledButton` en `trailing` d'un `ListTile` : le thème lui imposait une
+  // largeur minimale infinie via `Size.fromHeight`, le bouton réclamait toute
+  // la ligne, et le titre du produit se retrouvait à zéro de large. Il
+  // s'écrivait alors une lettre par ligne, à la verticale, sans qu'aucune
+  // erreur ne soit levée ni qu'un test n'échoue.
+  //
+  // Deux listes du produit avaient le même montage, le catalogue du boutiquier
+  // et les courses du livreur. L'image ci-dessous les couvre toutes les deux.
+  testWidgets('aperçu — liste avec bouton en bout de ligne', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(360, 420));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(encadrer(
+      Scaffold(
+        backgroundColor: Jetons.creme,
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            for (final cas in [
+              ('Tomate concentrée Alyssa sachet 56g', 'Demander'),
+              ('Riz parfumé Vietnam La Rizière 900g', 'Prendre'),
+              ('Eau', 'Demander'),
+            ])
+              Card(
+                margin: const EdgeInsetsDirectional.only(bottom: 8),
+                child: ListTile(
+                  contentPadding:
+                      const EdgeInsetsDirectional.fromSTEB(12, 6, 8, 6),
+                  leading: Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: Jetons.vert700.withValues(alpha: .12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  title: Text(cas.$1, style: const TextStyle(fontSize: 14)),
+                  subtitle: const Text('SDTM-CI (Carré d’Or)',
+                      style: TextStyle(fontSize: 11.5)),
+                  trailing: FilledButton.tonal(
+                      onPressed: () {},
+                      style: boutonBoutDeLigne,
+                      child: Text(cas.$2)),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('apercu/liste_bouton.png'),
+    );
+  });
+
   testWidgets('aperçu — connexion', (tester) async {
     await tester.binding.setSurfaceSize(taille);
     addTearDown(() => tester.binding.setSurfaceSize(null));

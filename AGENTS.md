@@ -7,12 +7,12 @@ Codex…) travaillant sur ce dépôt. Lis-le en entier avant de modifier quoi qu
 
 ## 1. Le projet en une minute
 
-**Yalla** est une application mobile 3 en 1 pour la distribution de proximité en
-Côte d'Ivoire (lancement Abidjan, iOS + Android) :
+**Yalla** est une application mobile de distribution de proximité en Côte
+d'Ivoire (lancement Abidjan, iOS + Android) :
 
 1. **Géolocalisation temps réel** des points de vente et des livreurs (modèle Uber).
-2. **Signalement de ruptures de stock**, transmis en temps réel au fabricant concerné.
-3. **Caisse enregistreuse** embarquée (modèle Loyverse).
+2. **Catalogue digital boutique** : signalement manuel des ruptures, publicités illustrées,
+   notifications, enquêtes, sondages et retours terrain vers fabricants et distributeurs.
 
 Six rôles, six interfaces, des droits distincts :
 `administrateur`, `fabricant`, `distributeur`, `livreur`, `point_de_vente`,
@@ -23,7 +23,9 @@ une rupture et agit dessus** ; le fabricant la voit en lecture, sur son seul
 catalogue. Un fabricant qui livre lui-même possède son propre distributeur
 (`auto_distribution`), ce qui évite tout cas particulier dans le code.
 
-Le cahier des charges fait foi : `docs/01_cahier_des_charges/`.
+Le cahier des charges initial est archivé dans `docs/01_cahier_des_charges/`.
+En cas de divergence, la décision la plus récente de `docs/HISTORIQUE.md` fait
+foi et met à jour le périmètre actif.
 
 ---
 
@@ -64,18 +66,23 @@ environnement partiellement provisionné reste utilisable.
 
 **Les migrations SQL sont la source de vérité, et la base porte la logique métier.**
 
-Ce n'est pas un choix d'organisation, c'est une contrainte du produit. La rupture
-la plus importante, celle que la caisse déclenche quand une vente vide un stock,
-est créée par un **trigger**. Aucun client ne la voit passer. Toute règle qui doit
-s'appliquer à *toutes* les ruptures va donc en SQL, jamais dans l'application.
+Ce n'est pas un choix d'organisation, c'est une contrainte du produit. Toute règle
+qui s'applique à *toutes* les ruptures va en SQL, jamais dans l'application.
+La caisse et le stock boutique sont retirés du parcours produit mobile ; les
+anciennes tables et le déclenchement historique par vente restent dans le schéma
+pour préserver les données, mais ne doivent pas être réintroduits dans l'interface.
 
 Vivent en base, et doivent y rester :
 
-- le trigger qui crée une rupture quand un stock tombe à zéro ;
+- la validation des signalements de rupture envoyés depuis le catalogue ;
 - le trigger qui résout le destinataire d'une rupture à l'insertion ;
 - la règle des deux cercles et l'escalade (`escalader_ruptures_en_attente()`) ;
 - les périmètres par rôle, sous forme de politiques RLS ;
 - les actions qui écrivent, sous forme de fonctions RPC.
+
+Le trigger historique qui créait une rupture à partir d'une vente reste dans le
+schéma pour préserver les migrations et l'historique. Il n'est plus le parcours
+boutique et ne doit pas être réutilisé sans décision produit explicite.
 
 Toute évolution de schéma = un **nouveau** fichier horodaté dans
 `supabase/migrations/`, jamais la modification d'un fichier déjà appliqué.
@@ -180,8 +187,11 @@ Ce qui reste **non vérifié** :
   tourne dans une transaction close par `ROLLBACK`, donc rejouable à l'infini
   sur la même base. Elle a besoin d'une base provisionnée avec le seed ;
   `npm test` signale et passe quand `psql` ou la base manquent.
-- Chaque interface mobile se limite à un **écran d'accueil**. Le reste de chaque
-  maquette HTML reste à porter en Flutter.
+- Les interfaces mobile **Administrateur, Fabricant et Distributeur** ont
+  désormais plusieurs onglets reliés aux vues Supabase de leur périmètre :
+  supervision/communes/acteurs/anomalies, catalogue/ruptures et aperçu/courses/
+  flotte/réseau. Les interfaces des rôles terrain restent à compléter au-delà
+  de leurs parcours actuels.
 - Trois intégrations sont déclarées mais **non branchées** : push FCM, paiement
   CinetPay, export Excel/PDF des statistiques.
 - Le backend n'est pas déployé (cible : NindoHost).
@@ -278,11 +288,11 @@ Aucun n'était visible au typage ni à l'audit de schéma.**
   l'omettaient : le seed échouait au deuxième utilisateur et n'avait donc jamais
   pu s'appliquer. Si tu ajoutes un compte, n'oublie pas la colonne.
 
-- **Une rupture peut naître sans passer par NestJS.** Le trigger de caisse de
-  `006` insère directement dans `ruptures` quand une vente vide un stock. Toute
-  logique qui doit s'appliquer à *toutes* les ruptures va donc en SQL, pas dans
-  un service. C'est pourquoi la résolution du destinataire est le trigger
-  `trg_ruptures_resout_destinataire` (`011`) et non du TypeScript.
+- **Le signalement boutique actuel vient du catalogue.** La RPC valide le produit
+  disponible, et le trigger `trg_ruptures_resout_destinataire` (`011`) résout le
+  distributeur. Le trigger historique de caisse (`006`) et ses données restent
+  dans le schéma, mais aucune interface mobile ne doit s'appuyer dessus sans
+  nouvelle décision produit.
 - **`prendre-en-charge` doit rester un UPDATE conditionnel.** Il filtre sur
   `statut = 'signalee'` et renvoie 409 quand aucune ligne n'est touchée. Un
   simple `repo.update()` laisserait deux livreurs partir sur la même course en

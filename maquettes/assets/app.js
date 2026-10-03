@@ -41,4 +41,12 @@
       chip.classList.add('is-on');
     });
   });
+
+  document.querySelectorAll('[data-survey]').forEach(groupe => {
+    groupe.addEventListener('click', e => {
+      const choix = e.target.closest('button');
+      if (!choix) return;
+      groupe.querySelectorAll('button').forEach(b => b.classList.toggle('is-selected', b === choix));
+    });
+  });
 })();

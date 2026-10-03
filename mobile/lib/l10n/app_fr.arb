@@ -92,7 +92,7 @@
     }
   },
   "catalogueTitre": "Demander un produit",
-  "catalogueExplication": "Choisissez ce dont vous avez besoin, même si vous ne le suivez pas en stock. Votre distributeur le recevra tout de suite.",
+  "catalogueExplication": "Parcourez les produits des marques qui vous desservent et signalez directement ce qui vous manque.",
   "catalogueVideTitre": "Aucun catalogue disponible",
   "catalogueVideMessage": "Aucun fabricant ne dessert encore votre boutique. Contactez l'agent qui vous a recensé.",
   "dejaDemande": "Déjà demandé",
@@ -269,7 +269,7 @@
   "recenserUneBoutique": "Recenser une boutique",
   "mesRecensements": "Mes recensements",
   "recensementVideTitre": "Aucune boutique recensée",
-  "recensementVideMessage": "Chaque boutique inscrite reçoit sa caisse gratuite et entre dans le réseau. Commencez par celles de votre secteur.",
+  "recensementVideMessage": "Chaque boutique inscrite accède au catalogue digital et peut signaler ses besoins. Commencez par celles de votre secteur.",
   "aujourdhuiEtTotal": "{jour} aujourd'hui · {total} au total",
   "@aujourdhuiEtTotal": {
     "placeholders": {
@@ -290,7 +290,7 @@
   "commune": "Commune",
   "repereFacultatif": "Repère (facultatif)",
   "leGerant": "Le gérant",
-  "leGerantExplication": "C'est lui qui se connectera à la caisse. Son numéro lui sert d'identifiant.",
+  "leGerantExplication": "C'est lui qui consultera le catalogue et signalera les produits manquants. Son numéro lui sert d'identifiant.",
   "nomDuGerant": "Nom du gérant",
   "motDePasseARemettre": "Mot de passe à remettre",
   "enGenererUnAutre": "En générer un autre",
@@ -379,7 +379,7 @@
     }
   },
   "salutation": "Bonjour,",
-  "rienEnAttente": "Rien ne vous attend. Bonne journée de vente.",
+  "rienEnAttente": "Rien de nouveau. Bonne journée à la boutique.",
   "enAttenteResume": "{aConfirmer, plural, =0{} =1{1 rupture à confirmer} other{{aConfirmer} ruptures à confirmer}}{messages, plural, =0{} =1{ · 1 message} other{ · {messages} messages}}",
   "@enAttenteResume": {
     "placeholders": {
@@ -390,5 +390,6 @@
         "type": "int"
       }
     }
-  }
+  },
+  "ongletAConfirmer": "Confirmer"
 }

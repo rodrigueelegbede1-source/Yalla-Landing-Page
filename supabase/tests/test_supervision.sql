@@ -59,15 +59,14 @@ BEGIN
   ASSERT v_nb = 1, 'Une boutique sans distributeur devrait être signalée';
   RAISE NOTICE '  ok  anomalies : une boutique que personne ne dessert est repérée';
 
-  -- Elle est aussi sans stock : la même boutique remonte deux fois, sur deux
-  -- anomalies différentes, et c'est voulu. Ce sont deux problèmes distincts,
-  -- avec deux corrections distinctes.
+  -- Le stock n'étant plus géré par le boutiquier dans l'application, son
+  -- absence ne constitue plus une anomalie du réseau.
   SELECT count(*) INTO v_nb
     FROM v_anomalies_reseau
    WHERE type_anomalie = 'boutique_sans_stock'
      AND objet_nom = 'Boutique sans distributeur';
-  ASSERT v_nb = 1, 'Une boutique sans stock suivi devrait être signalée';
-  RAISE NOTICE '  ok  anomalies : une boutique sans stock suivi est repérée';
+  ASSERT v_nb = 0, 'Une boutique ne doit plus être signalée pour absence de stock suivi';
+  RAISE NOTICE '  ok  anomalies : le stock boutique ne fait plus partie de la supervision';
 
   -- ── 3. Attribuer une boutique ────────────────────────────────────────────
   -- C'est le geste qui débloque un distributeur qui démarre : sans lui, il ne
@@ -189,6 +188,10 @@ BEGIN
     SELECT count(*) INTO v_nb FROM lignes_vente;
     ASSERT v_nb = 0,
       format('L''administrateur voit %s ligne(s) de vente : la promesse est rompue', v_nb);
+
+    SELECT count(*) INTO v_nb FROM stocks;
+    ASSERT v_nb = 0,
+      format('L''administrateur voit %s ligne(s) de stock boutique', v_nb);
   EXCEPTION WHEN insufficient_privilege THEN
     NULL;
   END;

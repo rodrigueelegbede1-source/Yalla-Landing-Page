@@ -54,13 +54,10 @@ if [ -f "$ROOT/mobile/android/key.properties" ]; then
   echo "  Signature de production détectée."
 else
   echo
-  echo "  ATTENTION : mobile/android/key.properties est absent."
-  echo "  L'APK sera signé par la clé de débogage et NE DOIT PAS être distribué :"
-  echo "  la mise à jour échouerait chez chaque utilisateur déjà équipé."
+  echo "  ERREUR : mobile/android/key.properties est absent."
+  echo "  Aucun APK ne sera produit sans la clé permanente de production."
   echo "  Lancez d'abord : bash scripts/preparer-signature.sh"
-  echo
-  read -r -p "  Continuer quand même ? [o/N] " reponse
-  case "$reponse" in [oO]*) ;; *) exit 1 ;; esac
+  exit 1
 fi
 
 echo
@@ -73,6 +70,15 @@ flutter build apk --release \
 
 APK="$ROOT/mobile/build/app/outputs/flutter-apk/app-release.apk"
 [ -f "$APK" ] || { echo "  APK introuvable après compilation"; exit 1; }
+
+if command -v apksigner >/dev/null 2>&1; then
+  apksigner verify --verbose "$APK" >/dev/null || {
+    echo "  Signature APK invalide"; exit 1;
+  }
+  echo "  Signature APK vérifiée."
+else
+  echo "  ATTENTION : apksigner absent, signature non vérifiée automatiquement."
+fi
 
 TAILLE=$(( $(wc -c < "$APK") / 1048576 ))
 echo "  APK : ${TAILLE} Mo"

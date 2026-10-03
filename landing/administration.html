@@ -171,16 +171,10 @@
     </div>
 
     <p class="note">
-      <b>Le chiffre d'affaires que vous voyez est celui des livraisons, pas
-      celui des caisses.</b> Il mesure ce que Yalla fait circuler, l'argent
-      remis au livreur contre un réapprovisionnement, et c'est bien l'activité
-      que vous pilotez. Ce que la boutique encaisse à son comptoir ne vous est
-      pas montré, et ce n'est pas un oubli : la promesse faite au boutiquier est
-      que sa caisse n'appartient qu'à lui, et une promesse qui souffre une
-      exception pour celui qui exploite le produit n'en est plus une. C'est elle
-      qui lui fait accepter la caisse gratuite, donc elle qui fait remonter les
-      ruptures de tout le réseau. Les politiques de la base la refusent à ce
-      compte comme à tous les autres, et un test le vérifie à chaque déploiement.
+      <b>Le chiffre d'affaires présenté mesure les livraisons du réseau.</b>
+      Les ventes au comptoir et les stocks des boutiques restent privés.
+      L'application boutique sert au catalogue, aux signalements et aux échanges
+      avec les partenaires, pas à tenir leur comptabilité.
     </p>
   </section>
 
@@ -216,7 +210,6 @@
           <div class="canevas-legende">
             <span><i style="background:#3ED598"></i> Desservie</span>
             <span><i style="background:#FF5C39"></i> Sans distributeur</span>
-            <span><i style="background:rgba(255,255,255,.4)"></i> Sans stock suivi</span>
             <span><i style="background:#FFE500"></i> Livreur</span>
           </div>
           <div class="canevas-echelle" id="canevasEchelle" hidden></div>
@@ -341,6 +334,13 @@
           <label for="diffusionMessage">Message</label>
           <textarea id="diffusionMessage" rows="4"
                     placeholder="Nouvelle gamme disponible au catalogue à partir de lundi."></textarea>
+        </div>
+
+        <div class="champ">
+          <label for="diffusionVisuel">Visuel <span class="facultatif">facultatif</span></label>
+          <input type="file" id="diffusionVisuel" accept="image/jpeg,image/png,image/webp">
+          <small>JPG, PNG ou WebP, 5 Mo maximum. Le visuel sera affiché avec le message.</small>
+          <img id="apercuDiffusionVisuel" alt="Aperçu du visuel" hidden style="max-width:100%;max-height:180px;margin-top:10px;border-radius:8px">
         </div>
 
         <div class="champ" id="champOptions" hidden>

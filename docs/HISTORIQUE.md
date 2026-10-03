@@ -5,6 +5,29 @@ plateforme mobile 3 en 1 : géolocalisation en temps réel (type Uber),
 notifications de ruptures de stock, et caisse enregistreuse (type Loyverse).
 Lancement prévu sur Abidjan, Côte d'Ivoire, en iOS et Android.
 
+## 2026-10-02 : le boutiquier passe au catalogue digital
+
+Après échange avec les fabricants, distributeurs et boutiques, la caisse enregistreuse
+est retirée de l'application et de l'interface point de vente. Le boutiquier utilise
+Yalla comme catalogue digital pour signaler manuellement les produits manquants,
+recevoir les publicités illustrées, notifications et sondages, et transmettre des
+retours terrain aux fabricants ou au distributeur qui dessert sa boutique.
+
+Les parcours mobile de caisse, stock boutique et confirmation automatique ne sont
+plus accessibles. Les tables, fonctions et données historiques correspondantes restent
+dans la base afin de ne pas détruire l'historique ; elles ne sont pas réutilisées par
+la nouvelle interface. Les boutiques ne déclarent plus leurs ruptures par une vente.
+
+Un flux dédié `retours_terrain` est ajouté avec une RPC qui détermine le destinataire
+depuis l'identité signée, le catalogue et les attributions de réseau. Les vues de
+lecture sont filtrées par RLS pour que seuls la boutique émettrice, le fabricant visé
+et le distributeur destinataire puissent consulter le retour. Aucun montant de vente
+ou niveau de stock n'est transmis.
+
+Le mobile boutiquier présente désormais Catalogue, Messages et Retours. Les messages
+conservent l'affichage des publicités en image, notifications et sondages. La maquette
+Point de vente est alignée sur ce parcours.
+
 ## Comment lire ce dossier
 
 | Dossier | Contenu |

@@ -49,7 +49,7 @@ class _StockTabState extends State<StockTab> {
           .from('ruptures')
           .select('id, produit_id, statut, date_signalement')
           .inFilter('statut', ['signalee', 'prise_en_charge']),
-      supabase.from('produits').select('id, nom, reference, fabricants(nom)').order('nom'),
+          supabase.from('produits').select('id, nom, reference, image_url, categorie_id, fabricants(nom)').order('nom'),
     ]);
     return _Donnees(
       stock: List<Map<String, dynamic>>.from(r[0]),

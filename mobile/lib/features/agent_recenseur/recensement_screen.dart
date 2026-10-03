@@ -12,6 +12,7 @@ import '../../core/format.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
 import '../distributeur/flotte_tab.dart' show afficherIdentifiants, telephoneSaisiValide;
+import 'inscription_distributeur.dart';
 
 /// L'agent recenseur : inscrire une boutique, sur le pas de sa porte.
 ///
@@ -75,23 +76,38 @@ class _AgentRecenseurHomeScreenState
     await afficherIdentifiants(context, compte, role: 'point_de_vente');
   }
 
+  /// L'agent inscrit aussi les distributeurs.
+  ///
+  /// La base l'y autorisait depuis la migration de gestion du réseau ; seul
+  /// l'écran manquait. Sur le terrain, l'agent rencontre les grossistes avant
+  /// les boutiques : ce sont eux qui savent quelles échoppes existent. Le
+  /// renvoyer vers le formulaire du site revenait à perdre la personne qu'on
+  /// avait en face de soi.
+  Future<void> _inscrireDistributeur() async {
+    final compte = await Navigator.of(context).push<CompteCree>(
+      MaterialPageRoute(builder: (_) => const InscriptionDistributeur()),
+    );
+    if (compte == null || !mounted) return;
+    await afficherIdentifiants(context, compte, role: 'distributeur');
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(sessionProvider).value;
 
+    // LA GRILLE DE TUILES TROUVE ICI SON RÔLE, et c'est le seul.
+    //
+    // Elle avait été écartée de l'écran du boutiquier, qui va directement au
+    // catalogue digital et à ses messages : un écran d'accueil aurait ajouté
+    // une tape à ses gestes quotidiens.
+    //
+    // L'agent est l'inverse exact. Il a deux gestes, occasionnels, et entre
+    // les deux il consulte sa tournée. Deux tuiles pleine largeur se touchent
+    // sans viser, avec une main, dans la rue — ce qu'un bouton flottant
+    // unique ne permettait pas, puisqu'il n'offrait qu'une seule des deux
+    // actions et cachait la seconde nulle part.
     return Scaffold(
       backgroundColor: Jetons.vert800,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _recenser,
-        icon: const Icon(Icons.add_business),
-        label: const Text('Recenser une boutique'),
-        backgroundColor: Jetons.vert900,
-        foregroundColor: Jetons.blanc,
-        // La pilule du thème, jusque sur le bouton flottant : un rectangle
-        // arrondi au milieu d'un écran tout en pilules se remarque, et pas en
-        // bien.
-        shape: const StadiumBorder(),
-      ),
       body: CoqueVerte(
         entete: SalutationCanevas(
           salutation: 'Bonjour,',
@@ -110,28 +126,7 @@ class _AgentRecenseurHomeScreenState
         child: FutureBuilder<List<Map<String, dynamic>>>(
           future: _recensements,
           builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snap.hasError) {
-              return EtatVide(
-                icone: Icons.cloud_off_outlined,
-                titre: 'Chargement impossible',
-                message: messageErreur(context, snap.error!),
-              );
-            }
-
             final liste = snap.data ?? const [];
-            if (liste.isEmpty) {
-              return EtatVide(
-                icone: Icons.storefront_outlined,
-                titre: 'Aucune boutique recensée',
-                message: 'Chaque boutique inscrite reçoit sa caisse gratuite et '
-                    'entre dans le réseau. Commencez par celles de votre secteur.',
-                action: 'Recenser une boutique',
-                onAction: _recenser,
-              );
-            }
 
             // Compte du jour : l'agent est payé au recensement, il doit pouvoir
             // vérifier son chiffre sans appeler personne.
@@ -144,16 +139,83 @@ class _AgentRecenseurHomeScreenState
                   d.day == aujourdhui.day;
             }).length;
 
+            // LES DEUX TUILES RESTENT VISIBLES QUEL QUE SOIT L'ÉTAT DE LA
+            // LISTE, y compris pendant le chargement et en cas d'erreur
+            // réseau. L'agent est dans la rue avec quelqu'un en face de lui :
+            // une liste qui n'a pas pu se charger ne doit pas l'empêcher
+            // d'inscrire une boutique, puisque l'inscription ne dépend pas de
+            // cette lecture.
+            final actions = GrilleActions(tuiles: [
+              TuileAction(
+                icone: Icons.add_business,
+                libelle: 'Recenser une boutique',
+                onTap: _recenser,
+              ),
+              TuileAction(
+                icone: Icons.local_shipping_outlined,
+                libelle: 'Inscrire un distributeur',
+                teinte: Jetons.vert500,
+                onTap: _inscrireDistributeur,
+              ),
+            ]);
+
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
               children: [
-                TitreSection('Mes recensements',
-                    detail: '$duJour aujourd\'hui · ${liste.length} au total'),
-                ...liste.map((b) => Card(
+                actions,
+                const SizedBox(height: 22),
+
+                if (snap.connectionState == ConnectionState.waiting)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (snap.hasError)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Jetons.alerte.withValues(alpha: .1),
+                      borderRadius: BorderRadius.circular(Jetons.rCarte),
+                    ),
+                    child: Text(messageErreur(context, snap.error!),
+                        style: const TextStyle(fontSize: 13.5, height: 1.45)),
+                  )
+                else if (liste.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Jetons.blanc,
+                      borderRadius: BorderRadius.circular(Jetons.rCarte),
+                      boxShadow: Jetons.ombreCarte,
+                    ),
+                    child: const Column(
+                      children: [
+                        Icon(Icons.storefront_outlined,
+                            size: 40, color: Jetons.vert700),
+                        SizedBox(height: 12),
+                        Text('Aucune boutique recensée',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600)),
+                        SizedBox(height: 8),
+                        Text(
+                          'Chaque boutique inscrite accède au catalogue digital '
+                          'et peut signaler ses besoins. Commencez par celles de '
+                          'votre secteur.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 13.5, height: 1.45),
+                        ),
+                      ],
+                    ),
+                  )
+                else ...[
+                  TitreSection('Ma tournée',
+                      detail: '$duJour aujourd\'hui · ${liste.length} au total'),
+                  ...liste.map((b) => Card(
                       margin: const EdgeInsets.only(bottom: 10),
                       child: ListTile(
                         leading: const Icon(Icons.storefront_outlined),
-                        title: Text(b['nom'] as String? ?? ''),
+                        title: Text(b['nom'] as String? ?? '',
+                            maxLines: 2, overflow: TextOverflow.ellipsis),
                         subtitle: Text(
                           '${b['commune']} · ${b['type_activite']}\n'
                           '${b['gerant_nom'] ?? ''} · ${b['telephone'] ?? ''}',
@@ -167,6 +229,7 @@ class _AgentRecenseurHomeScreenState
                         ),
                       ),
                     )),
+                ],
               ],
             );
           },
@@ -320,8 +383,8 @@ class _FormulaireRecensementState extends State<_FormulaireRecensement> {
 
     try {
       final compte = await const ServiceComptes().creer(
-        // Le compte appartient au gérant, pas à la boutique : c'est lui qui se
-        // connectera à la caisse.
+        // Le compte appartient au gérant, pas à la boutique : c'est lui qui
+        // consultera le catalogue et transmettra les besoins du point de vente.
         nom: _nomGerant.text,
         telephone: _telephone.text,
         role: 'point_de_vente',
@@ -412,7 +475,7 @@ class _FormulaireRecensementState extends State<_FormulaireRecensement> {
                 style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
             const SizedBox(height: 4),
             const Text(
-              'C\'est lui qui se connectera à la caisse. Son numéro lui sert '
+              'C\'est lui qui consultera le catalogue et signalera les produits manquants. Son numéro lui sert '
               'd\'identifiant.',
               style: TextStyle(fontSize: 12, height: 1.4),
             ),

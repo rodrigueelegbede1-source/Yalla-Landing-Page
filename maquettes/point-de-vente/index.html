@@ -21,6 +21,7 @@
   <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8 12 4l8 4v8l-8 4-8-4z"/><path d="m4 8 8 4 8-4M12 12v8"/></symbol>
   <symbol id="i-cam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.4"/></symbol>
   <symbol id="i-poll" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 19V9M12 19V5M18 19v-6"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.5-.7L4 20l1.3-3.7A7.2 7.2 0 0 1 4 12c0-4.1 3.6-7.5 8-7.5s8 3.1 8 7z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></symbol>
   <symbol id="i-store" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 10h16v10H4z"/><path d="m3 10 2-5h14l2 5"/><path d="M10 20v-5h4v5"/></symbol>
   <symbol id="i-mark" viewBox="0 0 40 40" fill="none"><path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/><rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/><circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/></symbol>
 </defs></svg>
@@ -30,7 +31,7 @@
     <svg class="head__mark" aria-hidden="true"><use href="#i-mark"/></svg>
     <div>
       <h1>Interface Point de vente</h1>
-      <p>Signalement des ruptures, caisse enregistreuse et profil de la boutique</p>
+      <p>Catalogue digital, signalements et échanges terrain</p>
     </div>
   </div>
   <a class="head__back" href="../index.html">← TOUTES LES INTERFACES</a>
@@ -57,45 +58,29 @@
 
       <div class="body">
 
-        <!-- ─── Accueil ─── -->
+        <!-- ─── Catalogue ─── -->
         <section class="screen is-active" data-screen="accueil">
           <div class="hero-cta">
-            <p>Un produit manque en rayon&nbsp;?</p>
-            <h3>Signalez-le, un livreur est prévenu.</h3>
-            <button class="btn-main" data-go="signaler">
-              <svg aria-hidden="true"><use href="#i-plus"/></svg>Signaler une rupture
-            </button>
+            <p>Le catalogue de vos marques</p>
+            <h3>Choisissez un produit et signalez une rupture.</h3>
+            <button class="btn-main" data-go="signaler"><svg aria-hidden="true"><use href="#i-box"/></svg>Parcourir les produits</button>
           </div>
 
-          <p class="eyebrow">Aujourd'hui</p>
-          <div class="kpis">
-            <div class="kpi"><p class="kpi__l">Chiffre d'affaires</p><p class="kpi__v">184 500</p><p class="kpi__d">+12% vs hier</p></div>
-            <div class="kpi"><p class="kpi__l">Ventes</p><p class="kpi__v">47</p><p class="kpi__d">+5</p></div>
-            <div class="kpi"><p class="kpi__l">Ruptures en cours</p><p class="kpi__v">3</p><p class="kpi__d kpi__d--down">2 non livrées</p></div>
-          </div>
-
-          <p class="eyebrow">Mes signalements</p>
+          <p class="eyebrow">Références populaires</p>
           <div class="row">
-            <div class="row__ic row__ic--alert"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
-            <div class="row__t"><b>Lait concentré 400g</b><span>SIGNALÉ IL Y A 16 MIN</span></div>
-            <span class="tag tag--warn">EN ROUTE</span>
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
+            <div class="row__t"><b>Lait concentré sucré 400g</b><span>NESTLÉ · ÉPICERIE</span></div>
+            <button class="tag tag--alert" data-go="signaler">RUPTURE</button>
           </div>
           <div class="row">
-            <div class="row__ic row__ic--alert"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
-            <div class="row__t"><b>Sucre en morceaux 1kg</b><span>SIGNALÉ IL Y A 42 MIN</span></div>
-            <span class="tag tag--alert">EN ATTENTE</span>
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
+            <div class="row__t"><b>Huile végétale 1L</b><span>SANIA · HUILES</span></div>
+            <button class="tag tag--alert" data-go="signaler">RUPTURE</button>
           </div>
           <div class="row">
-            <div class="row__ic row__ic--ok"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
-            <div class="row__t"><b>Huile végétale 5L</b><span>LIVRÉ À 08:12</span></div>
-            <span class="tag tag--ok">LIVRÉ</span>
-          </div>
-
-          <p class="eyebrow">Notifications</p>
-          <div class="row">
-            <div class="row__ic"><svg aria-hidden="true"><use href="#i-poll"/></svg></div>
-            <div class="row__t"><b>Enquête satisfaction</b><span>2 MIN · RÉSEAU YALLA</span></div>
-            <span class="tag tag--info">RÉPONDRE</span>
+            <div class="row__ic"><svg aria-hidden="true"><use href="#i-box"/></svg></div>
+            <div class="row__t"><b>Eau minérale 1,5L</b><span>BRASSIVOIRE · BOISSONS</span></div>
+            <button class="tag tag--alert" data-go="signaler">RUPTURE</button>
           </div>
         </section>
 
@@ -147,37 +132,33 @@
           </div>
         </section>
 
-        <!-- ─── Caisse ─── -->
-        <section class="screen" data-screen="caisse">
-          <div class="total">
-            <span>TOTAL PANIER</span>
-            <b>7 250 F</b>
-          </div>
+        <!-- ─── Messages, publicités et sondages ─── -->
+        <section class="screen" data-screen="messages">
+          <p class="eyebrow">Publicité des marques</p>
+          <article class="campaign">
+            <img src="https://images.unsplash.com/photo-1543255006-d6395b6f1171?auto=format&amp;fit=crop&amp;w=640&amp;q=80" alt="Boissons fraîches présentées en rayon">
+            <div class="campaign__body"><span class="tag tag--info">BRASSIVOIRE</span><h3>La fraîcheur qui rassemble</h3><p>Découvrez les nouveautés disponibles dans votre secteur.</p></div>
+          </article>
 
-          <div class="row">
-            <div class="row__t"><b>Riz parfumé 5kg</b><span>× 1 · 4 500 F</span></div>
-            <div class="row__x"><b>4 500</b></div>
-          </div>
-          <div class="row">
-            <div class="row__t"><b>Boisson gazeuse 33cl</b><span>× 5 · 550 F</span></div>
-            <div class="row__x"><b>2 750</b></div>
-          </div>
+          <p class="eyebrow">Notifications</p>
+          <div class="row"><div class="row__ic"><svg aria-hidden="true"><use href="#i-bell"/></svg></div><div class="row__t"><b>Livraison confirmée</b><span>VOTRE DEMANDE A ÉTÉ SERVIE · 10:42</span></div><span class="tag tag--ok">INFO</span></div>
+          <div class="row"><div class="row__ic"><svg aria-hidden="true"><use href="#i-bell"/></svg></div><div class="row__t"><b>Nouveaux produits au catalogue</b><span>3 RÉFÉRENCES · HIER</span></div><span class="tag tag--info">NOUVEAU</span></div>
 
-          <p class="eyebrow">Montant reçu</p>
-          <div class="pad">
-            <button type="button">1</button><button type="button">2</button><button type="button">3</button>
-            <button type="button">4</button><button type="button">5</button><button type="button">6</button>
-            <button type="button">7</button><button type="button">8</button><button type="button">9</button>
-            <button type="button">.</button><button type="button">0</button>
-            <button type="button" class="is-accent">OK</button>
-          </div>
+          <p class="eyebrow">Sondage du réseau</p>
+          <div class="card"><b style="font-size:13px">Quel format de livraison vous convient le mieux&nbsp;?</b><p style="font-size:11px;color:var(--dim);margin-top:5px">Votre réponse aide les partenaires à mieux vous servir.</p><div class="survey-options" data-survey><button type="button">Carton complet</button><button type="button">Demi-carton</button><button type="button">À l'unité</button></div></div>
+        </section>
 
-          <div style="margin-top:12px">
-            <button class="btn-main" type="button">Encaisser</button>
-          </div>
-          <p class="mono" style="font-size:9px;color:var(--faint);text-align:center;margin-top:10px">
-            CHAQUE VENTE METTANT UN STOCK À ZÉRO DÉCLENCHE UNE RUPTURE
-          </p>
+        <!-- ─── Retours terrain ─── -->
+        <section class="screen" data-screen="retours">
+          <p class="eyebrow">Faire remonter une observation</p>
+          <div class="card" style="margin-bottom:12px"><p style="font-size:12px;line-height:1.5;color:var(--dim)">Votre retour est transmis au fabricant ou au distributeur qui dessert votre boutique.</p></div>
+          <div class="field"><label for="retour-destinataire">Destinataire</label><select id="retour-destinataire"><option>Fabricant · Nestlé Côte d'Ivoire</option><option>Distributeur · Distrib Cocody</option></select></div>
+          <div class="field"><label for="retour-produit">Produit concerné</label><select id="retour-produit"><option>Lait concentré sucré 400g</option><option>Café soluble 100g</option><option>Aucun produit précis</option></select></div>
+          <div class="field"><label for="retour-sujet">Sujet</label><select id="retour-sujet"><option>Qualité du produit</option><option>Prix</option><option>Disponibilité</option><option>Livraison</option><option>Publicité reçue</option><option>Autre retour terrain</option></select></div>
+          <div class="field"><label for="retour-message">Votre observation</label><textarea id="retour-message" rows="4" placeholder="Décrivez ce que vous observez sur le terrain."></textarea></div>
+          <button class="btn-main" type="button" data-go="accueil">Envoyer le retour</button>
+          <p class="eyebrow">Mes retours récents</p>
+          <div class="row"><div class="row__ic"><svg aria-hidden="true"><use href="#i-box"/></svg></div><div class="row__t"><b>Qualité du produit · Nestlé CI</b><span>LAIT CONCENTRÉ · ENVOYÉ HIER</span></div><span class="tag tag--ok">TRANSMIS</span></div>
         </section>
 
         <!-- ─── Profil ─── -->
@@ -229,14 +210,15 @@
       </div>
 
       <nav class="tabs" aria-label="Navigation de l'application">
-        <a class="tab is-active" href="#" data-go="accueil"><svg aria-hidden="true"><use href="#i-home"/></svg><span>Accueil</span></a>
+        <a class="tab is-active" href="#" data-go="accueil"><svg aria-hidden="true"><use href="#i-box"/></svg><span>Catalogue</span></a>
         <a class="tab" href="#" data-go="signaler"><svg aria-hidden="true"><use href="#i-bell"/></svg><span>Signaler</span></a>
-        <a class="tab" href="#" data-go="caisse"><svg aria-hidden="true"><use href="#i-cash"/></svg><span>Caisse</span></a>
+        <a class="tab" href="#" data-go="messages"><svg aria-hidden="true"><use href="#i-poll"/></svg><span>Messages</span></a>
+        <a class="tab" href="#" data-go="retours"><svg aria-hidden="true"><use href="#i-chat"/></svg><span>Retours</span></a>
         <a class="tab" href="#" data-go="profil"><svg aria-hidden="true"><use href="#i-user"/></svg><span>Profil</span></a>
       </nav>
 
     </div></div>
-    <p class="phone__label">Point de vente — 4 écrans, cliquez les onglets</p>
+    <p class="phone__label">Point de vente — catalogue, signalements, messages et retours</p>
   </div>
 </div>
 

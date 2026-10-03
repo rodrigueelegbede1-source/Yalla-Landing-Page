@@ -102,6 +102,35 @@ abstract final class Jetons {
   static const cible = 56.0;
 }
 
+/// Le bouton de BOUT DE LIGNE, à ne pas confondre avec l'appel à l'action.
+///
+/// POURQUOI IL EXISTE SÉPARÉMENT. Le thème donne aux boutons la taille d'un
+/// grand appel à l'action : seize points de texte, cinquante-six de haut, la
+/// marge intérieure généreuse de Material 3. C'est juste au bas d'un
+/// formulaire, où le bouton est seul et décisif. C'est désastreux au bout d'une
+/// ligne de liste, où il mesure alors cent soixante-dix points de large sur un
+/// écran qui en fait trois cent soixante : il ne reste rien au nom du produit,
+/// qui s'écrit une lettre par ligne.
+///
+/// Constaté sur un vrai téléphone, sur le catalogue du boutiquier et sur les
+/// courses du livreur, qui avaient le même montage. Ni `flutter analyze` ni les
+/// tests n'en disaient rien : la mise en page était légale, seulement illisible.
+///
+/// Treize points de texte et des marges serrées : le bouton fait alors dans les
+/// quatre-vingts points, et laisse au nom la place de tenir sur deux lignes.
+const ButtonStyle boutonBoutDeLigne = ButtonStyle(
+  textStyle: WidgetStatePropertyAll(
+      TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+  padding: WidgetStatePropertyAll(
+      EdgeInsetsDirectional.symmetric(horizontal: 14, vertical: 0)),
+  minimumSize: WidgetStatePropertyAll(Size(64, 38)),
+  // La cible tactile reste réglementaire même si le dessin est plus petit :
+  // c'est `tapTargetSize` qui la tient, pas la taille visible.
+  tapTargetSize: MaterialTapTargetSize.padded,
+  visualDensity: VisualDensity.compact,
+  shape: WidgetStatePropertyAll(StadiumBorder()),
+);
+
 /// Le thème clair, et le seul. Pas de thème sombre : la moitié de l'usage se
 /// fait dehors, en plein jour, où un fond noir se transforme en miroir. Un
 /// thème sombre mal éprouvé coûterait plus qu'il ne rapporte.
@@ -189,9 +218,20 @@ ThemeData themeYalla() {
 
     // Des pilules, comme la référence. Un bouton rectangulaire à coins
     // légèrement arrondis se confond avec un champ de saisie ; une pilule, non.
+    //
+    // ⚠ `Size.fromHeight` EST UN PIÈGE, et il a cassé un écran en production.
+    // Il pose une largeur minimale à l'INFINI, ce qui est sans effet dans une
+    // colonne étirée mais dévastateur dans une ligne : le bouton y réclame
+    // toute la place et écrase ses voisins à zéro. Sur la liste du catalogue,
+    // le nom du produit s'est mis à s'écrire une lettre par ligne, à la
+    // verticale, sans qu'aucune erreur ne soit levée.
+    //
+    // La hauteur seule est donc imposée ici, avec une largeur minimale
+    // raisonnable. Un bouton qui doit tenir toute la largeur le tient de son
+    // parent, qui est le seul à savoir s'il le peut.
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        minimumSize: const Size.fromHeight(Jetons.cible),
+        minimumSize: const Size(72, Jetons.cible),
         backgroundColor: Jetons.vert700,
         foregroundColor: Jetons.blanc,
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -200,7 +240,7 @@ ThemeData themeYalla() {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        minimumSize: const Size.fromHeight(48),
+        minimumSize: const Size(72, 48),
         foregroundColor: Jetons.vert700,
         side: const BorderSide(color: Color(0x5C146B3A), width: 1.4),
         textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),

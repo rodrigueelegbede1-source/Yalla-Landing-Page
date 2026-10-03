@@ -2,23 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../../core/format.dart';
 import '../../core/supabase.dart';
+import '../../core/theme.dart';
 import '../../core/vignette_produit.dart';
 import '../../core/widgets.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Le catalogue des fabricants qui desservent la boutique, pour demander un
-/// produit sans passer par la caisse.
+/// Le catalogue des fabricants qui desservent la boutique, pour signaler un
+/// produit manquant sans tenir d'inventaire.
 ///
-/// POURQUOI CET ÉCRAN EST INDISPENSABLE, et pas un supplément de confort. La
-/// caisse est le mécanisme le plus élégant du produit, mais elle repose sur une
-/// hypothèse forte : que le boutiquier l'utilise. Beaucoup tiendront leurs
-/// comptes sur un cahier, comme ils le font depuis toujours, et n'ouvriront la
-/// caisse jamais. Sans ce catalogue, ceux-là ne peuvent rien demander, et Yalla
-/// ne leur sert à rien.
-///
-/// Il couvre aussi un cas que la caisse ne peut pas atteindre : demander un
-/// produit qu'on ne suit pas en stock, voire qu'on n'a jamais vendu. Un
-/// boutiquier qui veut essayer une référence nouvelle passe forcément par là.
+/// Le catalogue est le point d'entrée du boutiquier : recherche, repérage
+/// visuel et signalement direct d'un produit manquant. Il permet aussi de
+/// demander une référence qui n'a jamais été suivie dans cette boutique.
 ///
 /// LES IMAGES ONT ICI LEUR PLUS GRANDE UTILITÉ. Choisir dans une liste de
 /// trente références en texte seul est lent et source d'erreur. Une vignette,
@@ -199,7 +193,7 @@ class _CatalogueTabState extends State<CatalogueTab> {
                   itemBuilder: (context, i) {
                     final p = liste[i];
                     final demande = p['deja_demande'] == true;
-                    final stock = (p['quantite_en_stock'] as num?)?.toInt();
+                    final reference = p['reference'] as String?;
 
                     return Card(
                       margin: const EdgeInsetsDirectional.only(bottom: 8),
@@ -212,13 +206,26 @@ class _CatalogueTabState extends State<CatalogueTab> {
                           categorie: p['categorie_nom'] as String?,
                           taille: 46,
                         ),
+                        // DEUX LIGNES AU MAXIMUM, ET LA COUPE PLUTÔT QUE LE
+                        // DÉBORDEMENT. Sans cette borne, un nom long dans une
+                        // colonne étroite s'écrit une lettre par ligne, à la
+                        // verticale, et la liste devient illisible sans qu'une
+                        // seule erreur ne soit levée. C'est arrivé.
+                        //
+                        // La borne ne dépend ni de la police, ni de la largeur
+                        // de l'écran, ni de la taille du bouton voisin : elle
+                        // tient quoi qu'il arrive en amont, ce qu'aucun
+                        // réglage de marge ne garantit.
                         title: Text(p['produit_nom'] as String? ?? '',
-                            style: const TextStyle(fontSize: 14)),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 14, height: 1.25)),
                         subtitle: Text(
-                          [
-                            p['fabricant_nom'],
-                            if (stock != null && stock > 0) l.enStock(stock),
-                          ].where((e) => e != null).join(' · '),
+                          [p['fabricant_nom'], if (reference?.isNotEmpty == true) reference]
+                              .whereType<String>()
+                              .join(' · '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontSize: 11.5),
                         ),
                         trailing: demande
@@ -226,6 +233,7 @@ class _CatalogueTabState extends State<CatalogueTab> {
                                 style: const TextStyle(fontSize: 11))
                             : FilledButton.tonal(
                                 onPressed: () => _demander(p),
+                                style: boutonBoutDeLigne,
                                 child: Text(l.demander),
                               ),
                       ),

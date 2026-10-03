@@ -8,8 +8,10 @@ import 'core/theme.dart';
 import 'core/supabase.dart';
 import 'l10n/app_localizations.dart';
 import 'features/agent_recenseur/recensement_screen.dart';
+import 'features/administrateur/administrateur_home_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/distributeur/distributeur_home_screen.dart';
+import 'features/fabricant/fabricant_home_screen.dart';
 import 'features/livreur/livreur_home_screen.dart';
 import 'features/point_de_vente/point_de_vente_home_screen.dart';
 
@@ -56,17 +58,10 @@ class YallaApp extends ConsumerWidget {
 
 /// Aiguille vers l'écran du rôle, ou vers la connexion.
 ///
-/// Quatre rôles sur six. Aux trois de la boucle centrale, Point de vente,
-/// Distributeur et Livreur, s'ajoute l'agent recenseur.
-///
-/// Il avait été écarté du périmètre, et c'était une erreur : sans lui, chaque
-/// boutique du pilote demandait deux `INSERT` SQL et un appel à l'API
-/// d'administration, tapés à la main. Le périmètre était juste sur le papier et
-/// faux sur le terrain, puisqu'il rendait le terrain inatteignable.
-///
-/// Restent dehors le fabricant et l'administrateur, qui sont deux tableaux de
-/// bord en lecture. Ils ne bloquent rien, et l'écran le dit franchement plutôt
-/// que d'afficher une page vide.
+/// Les six rôles sont maintenant aiguillés dans l'application :
+/// point de vente, fabricant, distributeur, livreur, agent recenseur et
+/// administrateur. Les droits réels restent décidés par les politiques RLS et
+/// les fonctions SQL, jamais par ce switch d'interface.
 class _EcranRacine extends ConsumerWidget {
   const _EcranRacine();
 
@@ -95,6 +90,10 @@ class _EcranRacine extends ConsumerWidget {
         }
 
         switch (s.role) {
+          case 'administrateur':
+            return const AdministrateurHomeScreen();
+          case 'fabricant':
+            return FabricantHomeScreen(fabricantId: s.idMetier!);
           case 'point_de_vente':
             return PointDeVenteHomeScreen(pointDeVenteId: s.idMetier!);
           case 'distributeur':

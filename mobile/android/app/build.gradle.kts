@@ -2,6 +2,7 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -30,7 +31,7 @@ val signatureDisponible = proprietesSignature.getProperty("storeFile") != null
 android {
     namespace = "ci.yalla.yalla_mobile"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -88,29 +89,23 @@ android {
 
     buildTypes {
         release {
-            // Sans `key.properties`, on retombe sur la clé de débogage plutôt que
-            // d'échouer : un développeur qui clone le dépôt doit pouvoir compiler
-            // sans détenir la clé de production. L'APK produit est alors utilisable
-            // pour essayer, jamais pour distribuer, et la ligne affichée à la
-            // compilation le dit.
-            signingConfig = if (signatureDisponible) {
-                signingConfigs.getByName("production")
-            } else {
-                logger.warn(
-                    "\n  ATTENTION : key.properties absent, APK signé avec la clé de " +
-                    "débogage.\n  Ne pas distribuer : la mise à jour échouerait chez " +
-                    "l'utilisateur.\n  Pour signer correctement : bash scripts/preparer-signature.sh\n"
+            // Une release non signée avec la clé permanente serait installable,
+            // mais impossible à mettre à jour sur les téléphones du pilote.
+            // Échouer ici protège les données terrain et évite une distribution
+            // accidentelle d'un APK signé par la clé de débogage.
+            if (!signatureDisponible) {
+                throw GradleException(
+                    "key.properties absent : préparez la signature de production " +
+                        "avec scripts/preparer-signature.sh avant de construire l'APK."
                 )
-                signingConfigs.getByName("debug")
             }
+            signingConfig = signingConfigs.getByName("production")
         }
     }
 }
 
 kotlin {
-    compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
-    }
+    jvmToolchain(17)
 }
 
 flutter {

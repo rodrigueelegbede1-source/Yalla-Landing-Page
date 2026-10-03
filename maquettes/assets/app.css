@@ -96,6 +96,14 @@ h1,h2,h3,h4{ font-family:var(--ff-display); font-weight:700; letter-spacing:-.02
 /* ── Composants ─────────────────────────────────────────── */
 .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--r); padding:14px; }
 .card + .card{ margin-top:9px; }
+.campaign{ overflow:hidden; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--panel); }
+.campaign img{ display:block; width:100%; height:136px; object-fit:cover; }
+.campaign__body{ padding:12px 14px 14px; }
+.campaign__body h3{ font-size:15px; margin-top:8px; }
+.campaign__body p{ color:var(--dim); font-size:11px; margin-top:4px; }
+.survey-options{ display:grid; gap:7px; margin-top:12px; }
+.survey-options button{ text-align:start; background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:12px; }
+.survey-options button.is-selected{ border-color:var(--green-700); background:rgba(20,107,58,.08); color:var(--green-700); font-weight:600; }
 
 .hero-cta{
   background:linear-gradient(150deg,var(--green-900),var(--green-700)); color:#fff;

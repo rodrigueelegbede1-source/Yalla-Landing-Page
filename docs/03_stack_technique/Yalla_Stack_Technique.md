@@ -2,6 +2,8 @@
 
 Recommandation construite à partir des contraintes du cahier des charges : app iOS + Android, géolocalisation temps réel type Uber, notifications de rupture, caisse enregistreuse type Loyverse, paiement mobile ivoirien, lancement sur Abidjan.
 
+> **Mise à jour produit (2026-10-02)** : ce document conserve les choix historiques de stack, mais la caisse enregistreuse et le stock boutique sont retirés du parcours mobile. L'interface boutique est un catalogue digital avec signalements manuels, publicités illustrées, notifications, sondages et retours terrain. Voir `docs/HISTORIQUE.md` pour la décision et ses conséquences.
+
 ---
 
 ## 1. Résumé

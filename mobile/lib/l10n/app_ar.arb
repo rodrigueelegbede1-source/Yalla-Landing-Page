@@ -92,7 +92,7 @@
     }
   },
   "catalogueTitre": "اطلب منتجًا",
-  "catalogueExplication": "اختر ما تحتاجه، حتى لو لم تكن تتتبّعه في المخزون. سيصل الطلب إلى موزّعك فورًا.",
+  "catalogueExplication": "تصفّح منتجات العلامات التي تخدم متجرك وأبلغ مباشرة عمّا ينقصك.",
   "catalogueVideTitre": "لا يوجد كتالوج",
   "catalogueVideMessage": "لا يخدم متجرك أي مصنّع بعد. تواصل مع المندوب الذي سجّلك.",
   "dejaDemande": "مطلوب سابقًا",
@@ -269,7 +269,7 @@
   "recenserUneBoutique": "تسجيل متجر",
   "mesRecensements": "تسجيلاتي",
   "recensementVideTitre": "لم تسجّل أي متجر",
-  "recensementVideMessage": "كل متجر مسجَّل يحصل على صندوقه مجانًا ويدخل الشبكة. ابدأ بمتاجر منطقتك.",
+  "recensementVideMessage": "كل متجر مسجَّل يحصل على كتالوج رقمي ويستطيع الإبلاغ عن احتياجاته. ابدأ بمتاجر منطقتك.",
   "aujourdhuiEtTotal": "{jour} اليوم · {total} إجمالًا",
   "@aujourdhuiEtTotal": {
     "placeholders": {
@@ -290,7 +290,7 @@
   "commune": "البلدية",
   "repereFacultatif": "علامة مميّزة (اختياري)",
   "leGerant": "المسؤول",
-  "leGerantExplication": "هو من سيدخل إلى الصندوق. رقمه هو معرّفه.",
+  "leGerantExplication": "هو من سيتصفح الكتالوج ويبلّغ عن المنتجات الناقصة. رقمه هو معرّفه.",
   "nomDuGerant": "اسم المسؤول",
   "motDePasseARemettre": "كلمة المرور التي ستسلّمها",
   "enGenererUnAutre": "توليد كلمة أخرى",
@@ -379,7 +379,7 @@
     }
   },
   "salutation": "مرحبًا،",
-  "rienEnAttente": "لا شيء ينتظرك. نهار بيع موفّق.",
+  "rienEnAttente": "لا جديد. يوم موفق في متجرك.",
   "enAttenteResume": "{aConfirmer, plural, =0{} =1{نفاد واحد بانتظار التأكيد} other{{aConfirmer} حالات نفاد بانتظار التأكيد}}{messages, plural, =0{} =1{ · رسالة واحدة} other{ · {messages} رسائل}}",
   "@enAttenteResume": {
     "placeholders": {
@@ -390,5 +390,6 @@
         "type": "int"
       }
     }
-  }
+  },
+  "ongletAConfirmer": "التأكيد"
 }

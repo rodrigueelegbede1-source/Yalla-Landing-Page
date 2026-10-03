@@ -4,6 +4,8 @@ Ce document décrit le modèle de données commun aux 6 interfaces (Administrate
 
 > **Le distributeur a été ajouté le 2026-09-15** par la migration `011`, après la rédaction de ce document. Il reçoit les ruptures et agit dessus, le fabricant les voit en lecture. Voir `docs/HISTORIQUE.md`, entrée 9, pour le détail du routage et de la règle d'escalade.
 
+> **Portée actuelle (2026-10-02)** : la caisse est retirée de l'application boutique. Les entités `Vente`, `LigneVente` et `Stock` ci-dessous documentent le schéma historique et ne sont plus utilisées par le parcours boutique. Les ruptures sont signalées manuellement depuis le catalogue. Les retours terrain sont ajoutés par la migration `20261002001000_retours_terrain.sql`.
+
 ---
 
 ## 1. Vue d'ensemble des entités
@@ -22,6 +24,7 @@ Ce document décrit le modèle de données commun aux 6 interfaces (Administrate
 | `Transaction` | Paiement mobile lié à une livraison |
 | `Notification` | Message, splash publicitaire ou sondage émis par l'administrateur ou un fabricant |
 | `SondageReponse` | Réponse d'un point de vente à un sondage |
+| `RetourTerrain` | Observation envoyée par une boutique au fabricant ou distributeur qui la dessert |
 
 ---
 
@@ -184,8 +187,27 @@ Une notification de type `sondage` porte ses options ; chaque réponse d'un poin
 | `option_choisie` | string | |
 | `date_reponse` | datetime | |
 
-### `Stock`
-Niveau de stock d'un produit sur un point de vente donné — alimenté par le module caisse enregistreuse.
+### `RetourTerrain`
+Observation envoyée par une boutique à un fabricant ou au distributeur qui dessert cette boutique.
+
+| Champ | Type | Description |
+|---|---|---|
+| `id` | UUID (PK) | |
+| `point_de_vente_id` | UUID (FK) | Boutique émettrice |
+| `destinataire_role` | enum texte | `fabricant` ou `distributeur` |
+| `fabricant_id` | UUID (FK, nullable) | Renseigné si le retour vise une marque |
+| `distributeur_id` | UUID (FK, nullable) | Renseigné si le retour vise le distributeur attribué |
+| `produit_id` | UUID (FK, nullable) | Produit concerné, facultatif pour un retour au distributeur |
+| `sujet` | enum texte | `qualite`, `prix`, `disponibilite`, `livraison`, `publicite`, `autre` |
+| `message` | texte | 5 à 1200 caractères |
+| `created_at` | timestamptz | Date d'envoi |
+
+La RPC déduit la boutique depuis le jeton et vérifie les attributions avant
+l'envoi. RLS rend le retour visible à la boutique émettrice et au seul
+destinataire désigné.
+
+### `Stock` (historique, hors parcours boutique actuel)
+Niveau de stock historique d'un produit sur un point de vente donné.
 
 | Champ | Type | Description |
 |---|---|---|
@@ -195,8 +217,8 @@ Niveau de stock d'un produit sur un point de vente donné — alimenté par le m
 | `quantite` | int | |
 | `date_maj` | datetime | |
 
-### `Vente`
-Ticket de caisse enregistré sur un point de vente (type Loyverse).
+### `Vente` et `LigneVente` (historique, hors parcours boutique actuel)
+Anciennes lignes de caisse conservées pour préserver les données existantes.
 
 | Champ | Type | Description |
 |---|---|---|
@@ -215,7 +237,7 @@ Ticket de caisse enregistré sur un point de vente (type Loyverse).
 | `quantite` | int | |
 | `prix_unitaire` | decimal | |
 
-**Déclenchement automatique d'une rupture** : à chaque `LigneVente` enregistrée, décrémenter `Stock.quantite` du produit correspondant. Si `Stock.quantite` atteint 0, créer automatiquement une `Rupture` avec `signalement_automatique = true` et `statut = signalee` — sans action du gérant du point de vente. Le signalement manuel (bouton "Signaler une rupture" de la maquette Point de vente) reste disponible en complément, pour les cas où le stock n'est pas suivi précisément par la caisse.
+**Ancien déclenchement de rupture (historique, hors parcours mobile actuel)** : le trigger de caisse de la migration `006` peut créer une rupture à partir d'une `LigneVente` qui vide le stock. Cette chaîne et ses données sont conservées, mais la boutique ne tient plus de caisse ni d'inventaire dans Yalla. Le parcours actif est le signalement manuel depuis le catalogue digital.
 
 ---
 

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../core/format.dart';
@@ -32,6 +34,19 @@ class _CaisseTabState extends State<CaisseTab> {
   late Future<List<Map<String, dynamic>>> _catalogue;
   final List<_LignePanier> _panier = [];
   bool _encaissement = false;
+  String? _cleOperationEnCours;
+
+  String _cleOperation() {
+    final octets = List<int>.generate(16, (_) => Random.secure().nextInt(256));
+    octets[6] = (octets[6] & 0x0f) | 0x40;
+    octets[8] = (octets[8] & 0x3f) | 0x80;
+    final hex = octets.map((o) => o.toRadixString(16).padLeft(2, '0')).join();
+    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-'
+        '${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
+  }
+
+  String get _cleOperationStable =>
+      _cleOperationEnCours ??= _cleOperation();
 
   @override
   void initState() {
@@ -163,6 +178,10 @@ class _CaisseTabState extends State<CaisseTab> {
 
     try {
       await supabase.rpc('enregistrer_vente', params: {
+        // Cette clé reste la même pendant toute la tentative. Si le réseau
+        // coupe après l'écriture en base, un nouvel envoi renvoie la vente
+        // existante au lieu de décrémenter le stock une seconde fois.
+        'p_cle_operation': _cleOperationStable,
         'p_lignes': _panier
             .map((l) => {
                   if (l.produitId != null) 'produit_id': l.produitId,
@@ -176,6 +195,7 @@ class _CaisseTabState extends State<CaisseTab> {
       if (!mounted) return;
       final total = _total;
       setState(() => _panier.clear());
+      _cleOperationEnCours = null;
       _catalogue = _chargerCatalogue();
       widget.onVenteEnregistree();
       _message(l.venteEncaissee(montant(context, total)));

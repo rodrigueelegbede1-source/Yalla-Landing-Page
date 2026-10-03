@@ -1,8 +1,9 @@
 # Yalla
 
 Plateforme de distribution de proximité pour la Côte d'Ivoire — **géolocalisation
-temps réel**, **signalement de ruptures de stock** et **caisse enregistreuse**,
-réunis dans une seule application mobile iOS + Android. Lancement prévu à Abidjan.
+temps réel** et **catalogue digital boutique** pour signaler les ruptures, recevoir
+publicités, notifications et sondages, puis partager les retours terrain avec les
+fabricants et distributeurs. Application mobile iOS + Android, lancement prévu à Abidjan.
 
 > Les boutiques signalent un produit manquant en un geste. La rupture apparaît
 > instantanément sur la carte du fabricant concerné et des livreurs à proximité.
@@ -69,7 +70,7 @@ La landing page est le seul ajout : elle n'existait pas dans les livrables initi
 
 | Rôle | Ce qu'il fait |
 |---|---|
-| **Point de vente** | Signale ses ruptures, encaisse ses ventes, reçoit notifications et sondages |
+| **Point de vente** | Parcourt le catalogue digital, signale ses ruptures, reçoit publicités et notifications, répond aux sondages et partage ses retours terrain |
 | **Fabricant** | Suit son réseau attribué, voit **en lecture** les ruptures de son seul catalogue |
 | **Distributeur** | Reçoit les ruptures et **agit** : prend la course, affecte un livreur, porte les marques qu'il distribue |
 | **Livreur** | Voit les ruptures à proximité, prend la course, contacte la boutique, livre |
@@ -85,8 +86,9 @@ Chaque rôle a un périmètre de données strict — détaillé dans
 
 Les migrations SQL sont la **source de vérité du schéma**. TypeORM tourne avec
 `synchronize: false` et ne doit jamais le régénérer : le schéma contient des
-colonnes PostGIS, des vues, et un trigger qui crée automatiquement une rupture
-lorsqu'une vente vide un stock.
+colonnes PostGIS et des vues. Les anciennes tables de caisse/stock restent
+présentes pour préserver l'historique, mais ne font plus partie du parcours
+boutique mobile ; un signalement est désormais initié depuis le catalogue.
 
 Avec un serveur PostgreSQL démarré et `psql` dans le PATH :
 

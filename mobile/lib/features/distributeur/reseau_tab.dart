@@ -121,6 +121,47 @@ class _ReseauTabState extends State<ReseauTab> {
     }
   }
 
+  Future<void> _ajouterProduit() async {
+    final marques = List<Map<String, dynamic>>.from(
+      await supabase.from('v_mes_marques').select('fabricant_id, fabricant_nom').order('fabricant_nom'),
+    );
+    if (!mounted || marques.isEmpty) {
+      _message('Aucun catalogue autorisé par un fabricant.');
+      return;
+    }
+    final nom = TextEditingController();
+    final categorie = TextEditingController(text: 'Boissons');
+    final fabricantId = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Fabricant autorisant le produit'),
+        children: marques.map((m) => SimpleDialogOption(
+          onPressed: () => Navigator.pop(context, m['fabricant_id'] as String),
+          child: Text(m['fabricant_nom'] as String? ?? ''),
+        )).toList(),
+      ),
+    );
+    if (fabricantId == null || !mounted) return;
+    final ok = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
+      title: const Text('Ajouter un produit'),
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        TextField(controller: nom, autofocus: true, decoration: const InputDecoration(labelText: 'Nom du produit')),
+        TextField(controller: categorie, decoration: const InputDecoration(labelText: 'Catégorie')),
+      ]),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+        FilledButton(onPressed: () => Navigator.pop(context, nom.text.trim().length >= 2), child: const Text('Ajouter')),
+      ],
+    ));
+    if (ok != true || !mounted) return;
+    try {
+      await supabase.rpc('enregistrer_produit', params: {
+        'p_nom': nom.text.trim(), 'p_categorie': categorie.text.trim(), 'p_fabricant_id': fabricantId,
+      });
+      _message('Produit ajouté au catalogue autorisé.');
+    } catch (e) { if (mounted) _message(messageErreur(context, e)); }
+  }
+
   void _message(String texte) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -177,6 +218,14 @@ class _ReseauTabState extends State<ReseauTab> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
               children: [
                 TitreSection('Mes marques', detail: '${reseau.marques.length}'),
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: OutlinedButton.icon(
+                    onPressed: _ajouterProduit,
+                    icon: const Icon(Icons.add_box_outlined),
+                    label: const Text('Ajouter un produit autorisé'),
+                  ),
+                ),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,

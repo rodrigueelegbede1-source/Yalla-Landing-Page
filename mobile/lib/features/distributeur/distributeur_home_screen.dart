@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth/auth_providers.dart';
 import '../../core/coque.dart';
+import '../../core/retours_recus_tab.dart';
 import '../../core/theme.dart';
 import '../../core/temps_reel.dart';
 import '../../core/widgets.dart';
+import 'apercu_tab.dart';
 import 'carnet_tab.dart';
 import 'flotte_tab.dart';
 import 'reseau_tab.dart';
@@ -39,6 +41,7 @@ class _DistributeurHomeScreenState extends ConsumerState<DistributeurHomeScreen>
   int _cleCarnet = 0;
   int _cleFlotte = 0;
   int _cleReseau = 0;
+  int _cleApercu = 0;
 
   int _revisionVue = 0;
 
@@ -58,6 +61,7 @@ class _DistributeurHomeScreenState extends ConsumerState<DistributeurHomeScreen>
         setState(() {
           _cleCarnet++;
           _cleFlotte++;
+          _cleApercu++;
         });
       });
     }
@@ -81,9 +85,14 @@ class _DistributeurHomeScreenState extends ConsumerState<DistributeurHomeScreen>
         enfant: IndexedStack(
           index: _onglet,
           children: [
+            DistributeurApercuTab(cle: _cleApercu),
+            RetoursRecusTab(cle: _cleApercu, fabricant: false),
             CarnetTab(
               cle: _cleCarnet,
-              onChangement: () => setState(() => _cleFlotte++),
+              onChangement: () => setState(() {
+                _cleFlotte++;
+                _cleApercu++;
+              }),
             ),
             FlotteTab(cle: _cleFlotte),
             ReseauTab(cle: _cleReseau),
@@ -97,10 +106,20 @@ class _DistributeurHomeScreenState extends ConsumerState<DistributeurHomeScreen>
             _onglet = i;
             // Le réseau ne bouge pas tout seul : on le recharge à l'ouverture
             // de l'onglet plutôt que de l'abonner au temps réel pour rien.
-            if (i == 2) _cleReseau++;
+            if (i == 4) _cleReseau++;
           });
         },
         destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.space_dashboard_outlined),
+            selectedIcon: Icon(Icons.space_dashboard),
+            label: 'Aperçu',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.forum_outlined),
+            selectedIcon: Icon(Icons.forum),
+            label: 'Retours',
+          ),
           NavigationDestination(
             icon: Icon(Icons.assignment_outlined),
             selectedIcon: Icon(Icons.assignment),

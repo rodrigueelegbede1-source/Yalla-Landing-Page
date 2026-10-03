@@ -1,8 +1,9 @@
 # Yalla — Application mobile (Flutter)
 
-Squelette d'application connecté à `yalla-backend-api` (NestJS), qui aiguille
-vers l'une des 6 interfaces déjà maquettées en HTML selon le rôle renvoyé par
-la connexion.
+Application qui achemine vers l'interface correspondant au rôle connecté.
+L'espace boutique est un catalogue digital avec signalements de rupture,
+communications du réseau et retours terrain. La caisse n'est pas exposée dans
+l'application ; les tables historiques de ventes et stocks sont conservées en base.
 
 ## Démarrage
 
@@ -26,10 +27,11 @@ lib/
     storage/        Stockage sécurisé du token (flutter_secure_storage)
   features/
     auth/           Écran de connexion
-    administrateur/ Accueil Administrateur (ruptures ouvertes, réseau)
-    fabricant/       Accueil Fabricant (ruptures sur son catalogue uniquement)
+    administrateur/ Supervision, couverture par commune, acteurs et alertes
+    fabricant/       Aperçu, catalogue et ruptures de son propre catalogue
+    distributeur/    Aperçu, courses, flotte et réseau attribué
     livreur/         Accueil Livreur (ruptures proches + envoi de position réelle)
-    point_de_vente/  Accueil Point de vente (signalement de rupture)
+    point_de_vente/  Catalogue, signalements, messages et retours terrain
     agent_recenseur/ Accueil Agent recenseur (formulaire + capture GPS réelle)
 ```
 
@@ -47,6 +49,15 @@ lib/
   `Yalla_Stack_Technique.md`.
 - **Client WebSocket** prêt à consommer les événements `livreur:position` et
   `reseau:activite` de la passerelle temps réel du backend.
+- **Fabricant** : aperçu graphique, taux de service, ruptures et catalogue à
+  partir de vues filtrées par le fabricant connecté.
+- **Administrateur** : synthèse réseau, couverture par commune, gestion des
+  acteurs et anomalies opérationnelles, sans afficher les ventes des boutiques.
+- **Distributeur** : aperçu de ses courses, sa flotte et ses boutiques, via les
+  vues limitées à son propre réseau. Affiliés et indépendants utilisent le même
+  parcours, conformément au modèle métier.
+- **Point de vente** : catalogue digital, demandes manuelles, messages illustrés,
+  enquêtes/sondages et retours liés à une marque ou au distributeur attribué.
 
 ## Décision prise sur l'ID métier
 
@@ -60,11 +71,10 @@ rôles.
 
 ## Ce qui reste à construire
 
-- Le reste de chaque interface au-delà de l'écran d'accueil (les 4 autres
-  onglets de chaque maquette HTML : Réseau, Statistiques, Notifications,
-  Catalogue pour l'Administrateur ; Catalogue et Livreurs pour le Fabricant ;
-  Historique et Profil pour le Livreur ; etc.) — chaque écran déjà construit
-  ici sert de modèle pour brancher les autres sur l'API réelle.
+- Les écrans métier restants des rôles terrain, notamment l'historique et le
+  profil du livreur ainsi que les vues de suivi avancées du point de vente et de
+  l'agent recenseur. Les écrans déjà présents restent le modèle pour les
+  brancher sur les données réelles.
 - **Cartes réelles** (`google_maps_flutter` déjà en dépendance) — les écrans
   actuels affichent des listes, pas encore de carte interactive.
 - **Notifications push** (Firebase déjà en dépendance, configuration

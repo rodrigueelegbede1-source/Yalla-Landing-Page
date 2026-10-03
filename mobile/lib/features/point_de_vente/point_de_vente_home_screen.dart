@@ -10,29 +10,11 @@ import '../../core/theme.dart';
 import '../../core/temps_reel.dart';
 import '../../core/widgets.dart';
 import '../../l10n/app_localizations.dart';
-import 'caisse_tab.dart';
 import 'catalogue_tab.dart';
-import 'confirmation_tab.dart';
 import 'messages_tab.dart';
-import 'stock_tab.dart';
+import 'retours_tab.dart';
 
-/// Interface du point de vente : la caisse, le stock, le catalogue et les
-/// demandes à confirmer.
-///
-/// L'ORDRE DES ONGLETS N'EST PAS ANODIN. La caisse vient en premier parce que
-/// c'est ce que le boutiquier ouvre tous les jours, et que c'est le service
-/// qu'on lui rend. Le catalogue vient juste après, parce que celui qui
-/// n'utilise pas la caisse n'a que lui pour demander quoi que ce soit : le
-/// reléguer en dernier reviendrait à ne rien proposer à cette moitié-là.
-///
-/// LA CONFIRMATION S'OUVRE D'ELLE-MÊME APRÈS UN ENCAISSEMENT qui a vidé un
-/// stock. C'est la seule façon de rendre ce geste quasi gratuit : le boutiquier
-/// tient encore son téléphone, il vient d'appuyer sur « Encaisser », et la
-/// demande arrive dans la seconde. Attendre qu'il pense à ouvrir un onglet,
-/// c'est accepter que la rupture ne parte jamais.
-///
-/// Le compteur reste ensuite visible en permanence sur l'onglet, parce qu'un
-/// boutiquier interrompu par un client ne reviendra pas de lui-même.
+/// Interface boutique : catalogue de signalement, communications et retours terrain.
 class PointDeVenteHomeScreen extends ConsumerStatefulWidget {
   const PointDeVenteHomeScreen({super.key, required this.pointDeVenteId});
 
@@ -46,11 +28,8 @@ class PointDeVenteHomeScreen extends ConsumerStatefulWidget {
 class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen> {
   int _onglet = 0;
 
-  /// Incrémentée après chaque encaissement. Les autres onglets l'observent et
-  /// se rechargent : c'est à cet instant qu'une rupture a pu naître toute seule.
   int _cleRafraichissement = 0;
 
-  int _aConfirmer = 0;
   int _revisionVue = 0;
 
   /// Messages non lus SUR CE TÉLÉPHONE.
@@ -67,7 +46,6 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
   @override
   void initState() {
     super.initState();
-    _compterAConfirmer();
     _compterMessages();
   }
 
@@ -83,7 +61,7 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
       if (mounted) setState(() => _messagesNonLus = lignes.count);
     } catch (_) {
       // Sans ce compteur, l'onglet n'affiche simplement pas de pastille. Ce
-      // n'est pas une raison d'empêcher le boutiquier d'encaisser.
+      // n'est pas une raison d'empêcher le boutiquier de parcourir le catalogue.
     }
   }
 
@@ -101,43 +79,18 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
     }
   }
 
-  Future<void> _compterAConfirmer() async {
-    try {
-      final lignes = await supabase
-          .from('v_ruptures_a_confirmer')
-          .select('rupture_id')
-          .count();
-      if (mounted) setState(() => _aConfirmer = lignes.count);
-    } catch (_) {
-      // Sans ce compteur, l'onglet n'affiche simplement pas de pastille.
-    }
-  }
-
-  /// Après un encaissement, on bascule sur les demandes s'il y en a de
-  /// nouvelles. Sinon on reste sur la caisse : interrompre un boutiquier qui
-  /// enchaîne les clients pour lui montrer une liste vide serait une nuisance.
-  Future<void> _apresVente() async {
-    setState(() => _cleRafraichissement++);
-    final avant = _aConfirmer;
-    await _compterAConfirmer();
-    if (!mounted) return;
-    if (_aConfirmer > avant) setState(() => _onglet = 3);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l = L.of(context);
     final session = ref.watch(sessionProvider).value;
     final signal = ref.watch(tempsReelBoutiqueProvider);
 
-    // Une livraison qui reconstitue le stock arrive par le temps réel : c'est
-    // le seul moment où le produit se montre au boutiquier sans qu'il agisse.
+    // Les mises à jour du réseau rafraîchissent le catalogue et les messages.
     if (signal.revision != _revisionVue) {
       _revisionVue = signal.revision;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         setState(() => _cleRafraichissement++);
-        _compterAConfirmer();
         _compterMessages();
       });
     }
@@ -148,15 +101,7 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
     // donnent au contenu une frontière franche sans tracer un filet, ce qui
     // tient au soleil là où un gris clair disparaît.
     //
-    // ON NE REPREND PAS SA GRILLE DE TUILES, et c'est un choix, pas un oubli.
-    // Une grille d'accueil sert un rôle qui a beaucoup de destinations
-    // occasionnelles : on l'ouvre, on lit, on choisit. Le boutiquier, lui, a
-    // cinq destinations qu'il utilise TOUTES chaque jour, et il ouvre la caisse
-    // dix fois par service. Lui imposer un écran d'accueil ajouterait une
-    // tape au geste le plus fréquent du produit, pour le confort d'un geste
-    // rare. La barre du bas reste donc, et le canevas porte à sa place l'état
-    // du jour, qui est ce que la grille de la référence donne vraiment.
-    final enAttente = _aConfirmer + _messagesNonLus;
+    final enAttente = _messagesNonLus;
 
     return Scaffold(
       backgroundColor: Jetons.vert800,
@@ -164,9 +109,7 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
         entete: SalutationCanevas(
           salutation: l.salutation,
           nom: session?.nom ?? l.appNom,
-          detail: enAttente == 0
-              ? l.rienEnAttente
-              : l.enAttenteResume(_aConfirmer, _messagesNonLus),
+            detail: enAttente == 0 ? l.rienEnAttente : l.enAttenteResume(0, _messagesNonLus),
           actions: [
             PastilleTempsReel(connecte: signal.connecte, surVert: true),
             const BoutonLangue(surVert: true),
@@ -180,26 +123,15 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
         enfant: IndexedStack(
         index: _onglet,
         children: [
-          CaisseTab(onVenteEnregistree: _apresVente),
           CatalogueTab(
             cle: _cleRafraichissement,
-            onChangement: () {
-              setState(() => _cleRafraichissement++);
-              _compterAConfirmer();
-            },
-          ),
-          StockTab(
-            pointDeVenteId: widget.pointDeVenteId,
-            cle: _cleRafraichissement,
-          ),
-          ConfirmationTab(
-            cle: _cleRafraichissement,
-            onChangement: () {
-              setState(() => _cleRafraichissement++);
-              _compterAConfirmer();
-            },
+            onChangement: () => setState(() => _cleRafraichissement++),
           ),
           MessagesTab(
+            cle: _cleRafraichissement,
+            onChangement: () => setState(() => _cleRafraichissement++),
+          ),
+          RetoursTab(
             cle: _cleRafraichissement,
             onChangement: () => setState(() => _cleRafraichissement++),
           ),
@@ -210,36 +142,13 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
         selectedIndex: _onglet,
         onDestinationSelected: (i) {
           setState(() => _onglet = i);
-          if (i == 4) _marquerMessagesLus();
+          if (i == 1) _marquerMessagesLus();
         },
         destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.point_of_sale_outlined),
-            selectedIcon: const Icon(Icons.point_of_sale),
-            label: l.ongletCaisse,
-          ),
           NavigationDestination(
             icon: const Icon(Icons.menu_book_outlined),
             selectedIcon: const Icon(Icons.menu_book),
             label: l.ongletCatalogue,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.inventory_2_outlined),
-            selectedIcon: const Icon(Icons.inventory_2),
-            label: l.ongletStock,
-          ),
-          NavigationDestination(
-            icon: Badge(
-              isLabelVisible: _aConfirmer > 0,
-              label: Text('$_aConfirmer'),
-              child: const Icon(Icons.notifications_outlined),
-            ),
-            selectedIcon: Badge(
-              isLabelVisible: _aConfirmer > 0,
-              label: Text('$_aConfirmer'),
-              child: const Icon(Icons.notifications),
-            ),
-            label: l.aConfirmerTitre,
           ),
           NavigationDestination(
             icon: Badge(
@@ -253,6 +162,11 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
               child: const Icon(Icons.mail),
             ),
             label: l.ongletMessages,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.chat_bubble_outline),
+            selectedIcon: const Icon(Icons.chat_bubble),
+            label: Localizations.localeOf(context).languageCode == 'ar' ? 'الملاحظات' : 'Retours',
           ),
         ],
       ),

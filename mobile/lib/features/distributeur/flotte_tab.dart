@@ -428,6 +428,14 @@ Future<void> afficherIdentifiants(
   CompteCree compte, {
   required String role,
 }) {
+  // OÙ CE COMPTE SE CONNECTE, ET POURQUOI IL FAUT LE DIRE. Le paramètre `role`
+  // était reçu et jamais lu. Or les trois rôles ne se connectent pas au même
+  // endroit : la boutique et le livreur dans cette application, le distributeur
+  // sur le site. Sans cette phrase, l'agent qui vient d'inscrire un grossiste
+  // lui dit d'installer l'application, où il ne trouvera rien, et l'erreur ne
+  // se découvre qu'au moment où il essaie.
+  final surLeSite = role == 'distributeur' || role == 'fabricant';
+
   return showDialog<void>(
     context: context,
     barrierDismissible: false,
@@ -447,6 +455,33 @@ Future<void> afficherIdentifiants(
           _Ligne(label: 'Identifiant', valeur: compte.telephone),
           const SizedBox(height: 8),
           _Ligne(label: 'Mot de passe', valeur: compte.motDePasse),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: .09),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(surLeSite ? Icons.language : Icons.phone_android,
+                    size: 18, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    surLeSite
+                        ? 'Il se connecte sur yalla.ci, depuis un ordinateur ou '
+                            'un téléphone. Son espace n’est pas dans cette '
+                            'application.'
+                        : 'Il se connecte dans cette application, avec ces '
+                            'mêmes identifiants.',
+                    style: const TextStyle(fontSize: 12.5, height: 1.4),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
       actions: [

@@ -63,15 +63,50 @@ Map<String, dynamic> _claimsDuJeton(String jeton) {
   }
 }
 
-SessionYalla _sessionDepuis(Session? session) {
+Future<SessionYalla> _sessionDepuis(Session? session) async {
   if (session == null) return const SessionYalla.deconnecte();
 
   final claims = _claimsDuJeton(session.accessToken);
   final role = claims['user_role'] as String?;
   if (role == null) {
-    // Authentifié côté Supabase, mais le hook n'a rien trouvé dans
-    // `utilisateurs`. Le compte existe sans profil métier.
-    return const SessionYalla(role: null);
+    // Repli pour les sessions émises avant l'activation du hook Supabase, ou
+    // pour un jeton qui n'a pas encore été renouvelé. La ligne est protégée
+    // par RLS et ne peut être lue que par son propre auth_user_id.
+    try {
+      final profil = await supabase
+          .from('utilisateurs')
+          .select('id, nom, role')
+          .eq('auth_user_id', session.user.id)
+          .maybeSingle();
+      if (profil == null) return const SessionYalla(role: null);
+
+      final profilRole = profil['role'] as String;
+      String? idMetier;
+      final table = switch (profilRole) {
+        'fabricant' => 'fabricants',
+        'distributeur' => 'distributeurs',
+        'livreur' => 'livreurs',
+        'point_de_vente' => 'points_de_vente',
+        'agent_recenseur' => 'agents_recenseurs',
+        _ => null,
+      };
+      if (table != null) {
+        final metier = await supabase
+            .from(table)
+            .select('id')
+            .eq('utilisateur_id', profil['id'])
+            .maybeSingle();
+        idMetier = metier?['id'] as String?;
+      }
+      return SessionYalla(
+        role: profilRole,
+        nom: profil['nom'] as String?,
+        idMetier: idMetier,
+        utilisateurId: profil['id'] as String?,
+      );
+    } catch (_) {
+      return const SessionYalla(role: null);
+    }
   }
 
   return SessionYalla(
@@ -90,10 +125,10 @@ SessionYalla _sessionDepuis(Session? session) {
 /// l'interface. L'ancienne version lisait le rôle une fois sur le disque et
 /// considérait l'utilisateur connecté même avec un jeton expiré.
 final sessionProvider = StreamProvider<SessionYalla>((ref) async* {
-  yield _sessionDepuis(supabase.auth.currentSession);
+  yield await _sessionDepuis(supabase.auth.currentSession);
 
   await for (final etat in supabase.auth.onAuthStateChange) {
-    yield _sessionDepuis(etat.session);
+    yield await _sessionDepuis(etat.session);
   }
 });
 
