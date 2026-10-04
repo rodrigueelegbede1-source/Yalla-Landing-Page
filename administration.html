@@ -28,7 +28,9 @@
     <b>YALLA</b>
   </a>
 
+  <div class="console-barre-contenu">
   <nav class="console-nav" aria-label="Sections">
+    <span class="console-nav-caption">Pilotage</span>
     <button type="button" class="console-onglet est-actif" data-volet="tableau">Tableau de bord</button>
     <button type="button" class="console-onglet" data-volet="reseau">Carte du réseau</button>
     <button type="button" class="console-onglet" data-volet="acteurs">
@@ -49,6 +51,7 @@
     </span>
     <button type="button" class="console-sortie" id="boutonDeconnexion">Quitter</button>
   </div>
+  </div>
 </header>
 
 <main id="corps" class="console-corps">
@@ -56,7 +59,16 @@
   <p class="console-message" id="message" role="status" hidden></p>
 
   <!-- ══ Volet 1 — Tableau de bord ════════════════════════ -->
-  <section class="console-volet" id="voletTableau" aria-label="Tableau de bord">
+  <section class="console-volet tableau-volet" id="voletTableau" aria-label="Tableau de bord">
+
+    <header class="tableau-entete">
+      <div>
+        <span class="tableau-sur-titre">Réseau de distribution</span>
+        <h1>Vue d'ensemble</h1>
+        <p>Demandes, livraisons et couverture en un coup d’œil.</p>
+      </div>
+      <span class="tableau-perimetre">Données de supervision · temps réel</span>
+    </header>
 
     <!-- Les quatre chiffres du cahier des charges, en bandeau. Celui du
          chiffre d'affaires est celui des LIVRAISONS, jamais celui des caisses :
