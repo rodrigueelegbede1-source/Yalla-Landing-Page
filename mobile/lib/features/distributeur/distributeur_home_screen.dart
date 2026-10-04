@@ -72,7 +72,7 @@ class _DistributeurHomeScreenState extends ConsumerState<DistributeurHomeScreen>
         entete: SalutationCanevas(
           salutation: 'Bonjour,',
           nom: session?.nom ?? 'Distributeur',
-          detail: 'Vos courses, votre flotte et vos boutiques.',
+          detail: 'Vos demandes, votre flotte et votre réseau.',
           actions: [
             PastilleTempsReel(connecte: signal.connecte, surVert: true),
             BoutonCanevas(
@@ -123,7 +123,7 @@ class _DistributeurHomeScreenState extends ConsumerState<DistributeurHomeScreen>
           NavigationDestination(
             icon: Icon(Icons.assignment_outlined),
             selectedIcon: Icon(Icons.assignment),
-            label: 'Courses',
+            label: 'Demandes',
           ),
           NavigationDestination(
             icon: Icon(Icons.two_wheeler_outlined),

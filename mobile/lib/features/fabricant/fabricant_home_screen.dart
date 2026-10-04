@@ -112,7 +112,7 @@ class _FabricantHomeScreenState extends ConsumerState<FabricantHomeScreen> {
       bottomNavigationBar: NavigationBar(selectedIndex: _onglet, onDestinationSelected: (i) => setState(() => _onglet = i), destinations: const [
         NavigationDestination(icon: Icon(Icons.space_dashboard_outlined), label: 'Aperçu'),
         NavigationDestination(icon: Icon(Icons.inventory_2_outlined), label: 'Catalogue'),
-        NavigationDestination(icon: Icon(Icons.warning_amber_outlined), label: 'Ruptures'),
+        NavigationDestination(icon: Icon(Icons.notifications_active_outlined), label: 'Demandes'),
         NavigationDestination(icon: Icon(Icons.forum_outlined), label: 'Retours'),
       ]),
     );
@@ -132,7 +132,7 @@ class _Catalogue extends StatelessWidget {
       if (snap.hasError) return Center(child: Text('Catalogue indisponible : ${snap.error}'));
       final rows = snap.data ?? const [];
       return Column(children: [
-        Padding(padding: const EdgeInsets.all(16), child: Row(children: [const Expanded(child: Text('Mon catalogue', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))), FilledButton.icon(onPressed: onAdd, icon: const Icon(Icons.add), label: const Text('Produit'))])),
+        Padding(padding: const EdgeInsets.all(16), child: Row(children: [const Expanded(child: Text('Mon catalogue', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))), FilledButton.icon(onPressed: onAdd, icon: const Icon(Icons.add), label: const Text('Ajouter'))])),
         Expanded(child: ListView.builder(padding: const EdgeInsets.symmetric(horizontal: 16), itemCount: rows.length, itemBuilder: (context, i) {
           final p = rows[i];
           return Card(child: ListTile(leading: VignetteProduit(nom: p['nom'] as String? ?? '', imageUrl: p['image_url'] as String?, categorie: p['categorie'] as String?, taille: 48), title: Text(p['nom'] as String? ?? ''), subtitle: Text('${p['reference'] ?? ''} · ${p['boutiques_suivant'] ?? 0} boutique(s)')));
@@ -150,7 +150,7 @@ class _Ruptures extends StatelessWidget {
     if (snap.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
     if (snap.hasError) return Center(child: Text('Ruptures indisponibles : ${snap.error}'));
     final rows = snap.data ?? const [];
-    if (rows.isEmpty) return const Center(child: Text('Aucune rupture sur votre catalogue'));
+    if (rows.isEmpty) return const Center(child: Text('Aucune demande sur votre catalogue'));
     return ListView.builder(padding: const EdgeInsets.all(16), itemCount: rows.length, itemBuilder: (context, i) {
       final r = rows[i];
       return Card(child: ListTile(leading: VignetteProduit(nom: r['produit'] as String? ?? '', imageUrl: r['image_url'] as String?, categorie: r['categorie'] as String?, taille: 48), title: Text(r['produit'] as String? ?? ''), subtitle: Text('${r['point_de_vente'] ?? ''} · ${r['commune'] ?? ''}'), trailing: Text('${r['quantite_demandee'] ?? 0}')));

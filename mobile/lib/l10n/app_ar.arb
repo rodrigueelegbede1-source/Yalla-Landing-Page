@@ -1,7 +1,7 @@
 {
   "@@locale": "ar",
   "appNom": "يالا",
-  "appAccroche": "نفاد المخزون، يُحلّ في الوقت الفعلي",
+  "appAccroche": "كتالوج الجملة، طلبات في الوقت الفعلي",
   "seConnecter": "تسجيل الدخول",
   "numeroTelephone": "رقم الهاتف",
   "motDePasse": "كلمة المرور",
@@ -21,8 +21,8 @@
   "chargementImpossible": "تعذّر التحميل",
   "rechercher": "بحث",
   "tousLesProduits": "الكل",
-  "ongletCaisse": "الصندوق",
-  "ongletStock": "المخزون",
+  "ongletCaisse": "الطلبات",
+  "ongletStock": "إعادة التزويد",
   "ongletCatalogue": "الكتالوج",
   "ongletCourses": "الطلبات",
   "ongletFlotte": "الموزّعون",
@@ -52,11 +52,11 @@
       }
     }
   },
-  "rupture": "نفد",
+  "rupture": "طلب",
   "monStock": "مخزوني",
   "suivreUnProduit": "تتبّع منتج",
   "stockVideTitre": "لا يوجد منتج متتبَّع",
-  "stockVideMessage": "أضف المنتجات التي تبيعها أكثر. عندما تُفرغ عملية بيع أحدها، سيُعرض عليك طلب التموين تلقائيًا.",
+  "stockVideMessage": "أضف المنتجات التي تحتاجها أكثر. عندما يرتفع الطلب، يُعرض عليك الطلب تلقائيًا.",
   "signaler": "إبلاغ",
   "signale": "تم الإبلاغ",
   "reapprovisionner": "تموين",
@@ -79,7 +79,7 @@
       }
     }
   },
-  "aConfirmerExplication": "رصد صندوقك نفاد هذه المنتجات. لن يراها أحد غيرك ما لم تؤكّدها.",
+  "aConfirmerExplication": "حدد شبكتك هذا الطلب. لن يراه أحد غيرك ما لم تؤكّده.",
   "confirmerLaRupture": "تأكيد",
   "rejeterLaRupture": "لا، ما زال لديّ",
   "combienDeCartons": "كم كرتونًا تحتاج؟",
@@ -92,7 +92,7 @@
     }
   },
   "catalogueTitre": "اطلب منتجًا",
-  "catalogueExplication": "تصفّح منتجات العلامات التي تخدم متجرك وأبلغ مباشرة عمّا ينقصك.",
+  "catalogueExplication": "تصفّح مراجع الشبكة وأرسل مباشرة ما تحتاجه.",
   "catalogueVideTitre": "لا يوجد كتالوج",
   "catalogueVideMessage": "لا يخدم متجرك أي مصنّع بعد. تواصل مع المندوب الذي سجّلك.",
   "dejaDemande": "مطلوب سابقًا",

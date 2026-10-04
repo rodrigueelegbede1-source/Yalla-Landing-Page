@@ -112,7 +112,7 @@ class _AgentRecenseurHomeScreenState
         entete: SalutationCanevas(
           salutation: 'Bonjour,',
           nom: session?.nom ?? 'Recensement',
-          detail: 'Chaque boutique inscrite entre dans le réseau.',
+          detail: 'Chaque point de vente inscrit entre dans le réseau.',
           actions: [
             BoutonCanevas(
               icone: Icons.logout,
@@ -148,7 +148,7 @@ class _AgentRecenseurHomeScreenState
             final actions = GrilleActions(tuiles: [
               TuileAction(
                 icone: Icons.add_business,
-                libelle: 'Recenser une boutique',
+                libelle: 'Recenser un revendeur',
                 onTap: _recenser,
               ),
               TuileAction(
@@ -193,13 +193,13 @@ class _AgentRecenseurHomeScreenState
                         Icon(Icons.storefront_outlined,
                             size: 40, color: Jetons.vert700),
                         SizedBox(height: 12),
-                        Text('Aucune boutique recensée',
+                        Text('Aucun revendeur recensé',
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w600)),
                         SizedBox(height: 8),
                         Text(
-                          'Chaque boutique inscrite accède au catalogue digital '
-                          'et peut signaler ses besoins. Commencez par celles de '
+                          'Chaque revendeur inscrit accède au catalogue digital '
+                          'et peut signaler ses besoins. Commencez par ceux de '
                           'votre secteur.',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 13.5, height: 1.45),

@@ -1,7 +1,7 @@
 {
   "@@locale": "fr",
   "appNom": "Yalla",
-  "appAccroche": "La rupture de stock, réglée en temps réel",
+  "appAccroche": "Catalogue grossiste, demandes en temps réel",
   "seConnecter": "Se connecter",
   "numeroTelephone": "Numéro de téléphone",
   "motDePasse": "Mot de passe",
@@ -21,8 +21,8 @@
   "chargementImpossible": "Chargement impossible",
   "rechercher": "Rechercher",
   "tousLesProduits": "Tous",
-  "ongletCaisse": "Caisse",
-  "ongletStock": "Stock",
+  "ongletCaisse": "Demandes",
+  "ongletStock": "Réassort",
   "ongletCatalogue": "Catalogue",
   "ongletCourses": "Courses",
   "ongletFlotte": "Flotte",
@@ -52,11 +52,11 @@
       }
     }
   },
-  "rupture": "Rupture",
+  "rupture": "Demande",
   "monStock": "Mon stock",
   "suivreUnProduit": "Suivre un produit",
   "stockVideTitre": "Aucun produit suivi",
-  "stockVideMessage": "Ajoutez les références que vous vendez le plus. Quand une vente en videra une, la rupture vous sera proposée toute seule.",
+  "stockVideMessage": "Ajoutez les références qui vous manquent le plus. Quand le besoin remonte, la demande vous est proposée automatiquement.",
   "signaler": "Signaler",
   "signale": "Signalé",
   "reapprovisionner": "Réapprovisionner",
@@ -70,8 +70,8 @@
       }
     }
   },
-  "aConfirmerTitre": "Ruptures à confirmer",
-  "aConfirmerCompteur": "{nombre, plural, =1{1 rupture à confirmer} other{{nombre} ruptures à confirmer}}",
+  "aConfirmerTitre": "Demandes à confirmer",
+  "aConfirmerCompteur": "{nombre, plural, =1{1 demande à confirmer} other{{nombre} demandes à confirmer}}",
   "@aConfirmerCompteur": {
     "placeholders": {
       "nombre": {
@@ -79,7 +79,7 @@
       }
     }
   },
-  "aConfirmerExplication": "Votre caisse a vu ces produits tomber à zéro. Tant que vous n'avez pas confirmé, personne d'autre ne les voit.",
+  "aConfirmerExplication": "Votre réseau a identifié ce besoin. Tant que vous ne confirmez pas, personne d'autre ne le voit.",
   "confirmerLaRupture": "Confirmer",
   "rejeterLaRupture": "Non, j'en ai encore",
   "combienDeCartons": "Combien de cartons vous faut-il ?",
@@ -91,8 +91,8 @@
       "duree": {}
     }
   },
-  "catalogueTitre": "Demander un produit",
-  "catalogueExplication": "Parcourez les produits des marques qui vous desservent et signalez directement ce qui vous manque.",
+  "catalogueTitre": "Commander un produit",
+  "catalogueExplication": "Parcourez les références du réseau et envoyez directement ce dont vous avez besoin.",
   "catalogueVideTitre": "Aucun catalogue disponible",
   "catalogueVideMessage": "Aucun fabricant ne dessert encore votre boutique. Contactez l'agent qui vous a recensé.",
   "dejaDemande": "Déjà demandé",

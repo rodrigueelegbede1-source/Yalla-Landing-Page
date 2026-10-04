@@ -174,8 +174,8 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
                     Expanded(
                       child: Text(
                         _enLigne
-                            ? 'Vous recevez les courses proches'
-                            : 'Vous ne recevez aucune course',
+                            ? 'Vous recevez les demandes proches'
+                            : 'Vous ne recevez aucune demande',
                         style: TextStyle(
                           fontSize: 13.5,
                           color: Colors.white.withValues(alpha: .88),
@@ -227,7 +227,7 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
           NavigationDestination(
             icon: Icon(Icons.local_shipping_outlined),
             selectedIcon: Icon(Icons.local_shipping),
-            label: 'Mes courses',
+            label: 'Mes livraisons',
           ),
         ],
       ),
