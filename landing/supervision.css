@@ -1173,3 +1173,180 @@
   .pt circle,
   .console-onglet{ transition:none; }
 }
+
+/* ══ Nouveau tableau de pilotage ══════════════════════════ */
+
+.console-barre{
+  position:sticky;
+  top:0;
+  z-index:50;
+  width:100%;
+  height:auto;
+  flex-direction:row;
+  align-items:stretch;
+  box-shadow:0 8px 24px rgba(6,39,24,.1);
+}
+.console-marque{
+  min-height:72px;
+  padding-inline:22px;
+}
+.console-barre-contenu{
+  display:flex;
+  flex:1;
+  min-width:0;
+  min-height:0;
+  flex-direction:row;
+  align-items:stretch;
+}
+.console-nav{
+  display:flex;
+  min-width:0;
+  flex:1;
+  flex-direction:row;
+  align-items:stretch;
+  gap:2px;
+  overflow-x:auto;
+  padding:0 8px;
+  scrollbar-width:none;
+}
+.console-nav::-webkit-scrollbar{ display:none; }
+.console-nav-caption{
+  display:none;
+}
+.console-onglet{
+  min-height:72px;
+  padding:18px 13px 16px;
+  border:0;
+  border-bottom:3px solid transparent;
+  border-radius:0;
+  font-family:var(--ff-display);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-align:center;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.console-onglet:hover{ background:rgba(255,255,255,.05); }
+.console-onglet.est-actif{
+  border-bottom-color:var(--yellow);
+  background:transparent;
+}
+.console-onglet span{
+  float:inline-end;
+  margin-inline-start:8px;
+  background:var(--alert);
+  color:var(--white);
+}
+.console-droite{
+  margin-inline-start:auto;
+  padding:0 16px;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  gap:10px;
+}
+.console-qui{ font-size:12px; }
+.console-corps{
+  width:100%;
+  max-width:1680px;
+  margin:0 auto;
+  padding:26px clamp(20px,3vw,44px) 48px;
+  gap:22px;
+}
+.tableau-volet{ gap:18px; }
+.tableau-entete{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:20px;
+  padding:4px 2px 2px;
+}
+.tableau-sur-titre{
+  color:var(--green-700);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.tableau-entete h1{
+  margin:6px 0 4px;
+  color:var(--green-950);
+  font-family:var(--ff-display);
+  font-size:28px;
+  font-weight:700;
+  line-height:1.15;
+  letter-spacing:0;
+}
+.tableau-entete p{
+  margin:0;
+  color:rgba(8,22,14,.56);
+  font-size:13px;
+}
+.tableau-perimetre{
+  flex:none;
+  padding:8px 11px;
+  border:1px solid rgba(8,22,14,.09);
+  border-radius:6px;
+  background:var(--white);
+  color:rgba(8,22,14,.56);
+  font-family:var(--ff-mono);
+  font-size:10px;
+}
+.tableau-volet > .grille:first-of-type .carte{
+  min-height:132px;
+  padding:19px 20px;
+}
+.tableau-volet > .grille:first-of-type .chiffre{ margin-block:3px; }
+.tableau-volet > .grille:not(:first-of-type) .carte{ min-height:250px; }
+.tableau-volet > .grille:not(:first-of-type) .c12{ min-height:0; }
+
+@media (max-width:1040px){
+  .console-marque{ min-height:64px; padding-inline:18px; }
+  .console-nav{
+    min-width:0;
+    flex:1;
+    flex-direction:row;
+    align-items:stretch;
+    overflow-x:auto;
+    padding:0 6px;
+  }
+  .console-onglet{
+    min-height:64px;
+    padding:12px 10px;
+    border-inline-start:0;
+    border-bottom:3px solid transparent;
+    font-size:11px;
+    white-space:nowrap;
+  }
+  .console-onglet.est-actif{ border-bottom-color:var(--yellow); }
+  .console-droite{
+    margin-inline-start:0;
+    padding:10px 12px;
+    border-inline-start:1px solid rgba(255,255,255,.1);
+    flex-wrap:nowrap;
+  }
+  .console-qui span:last-child{ display:none; }
+  .console-corps{
+    width:100%;
+    margin-inline-start:0;
+    padding:24px clamp(16px,3vw,30px) 36px;
+  }
+}
+
+@media (max-width:720px){
+  .console-barre{ flex-wrap:wrap; }
+  .console-marque{ min-height:54px; flex:1; }
+  .console-barre-contenu{ flex:0 0 100%; order:3; border-top:1px solid rgba(255,255,255,.1); }
+  .console-nav{ min-height:46px; padding:0 6px; }
+  .console-onglet{ min-height:46px; padding:9px 8px; font-size:9.5px; }
+  .console-droite{
+    justify-content:flex-start;
+    padding:8px 14px;
+    border-inline-start:0;
+    border-top:1px solid rgba(255,255,255,.1);
+  }
+  .tableau-entete{ align-items:flex-start; flex-direction:column; gap:12px; }
+  .tableau-entete h1{ font-size:24px; }
+  .tableau-perimetre{ font-size:9.5px; }
+  .tableau-volet > .grille:not(:first-of-type) .carte{ min-height:0; }
+}
