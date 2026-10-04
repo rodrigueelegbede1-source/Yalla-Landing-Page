@@ -102,7 +102,7 @@ function rendreCarnet(courses) {
 
   if (!courses.length) {
     zone.innerHTML =
-      '<div class="bord-vide">Aucune course en attente. Vos boutiques sont '
+      '<div class="bord-vide">Aucune demande à livrer. Vos revendeurs sont '
       + 'servies.</div>';
     return;
   }
@@ -126,10 +126,10 @@ function rendreCarnet(courses) {
     }
 
     const action = prise
-      ? '<span style="opacity:.6">Affectée</span>'
+      ? '<span style="opacity:.6">En livraison</span>'
       : `<button type="button" class="bord-action" data-rupture="${echapper(c.rupture_id)}"
            data-produit="${echapper(c.produit_nom)}"
-           data-boutique="${echapper(c.point_de_vente_nom)}">Affecter</button>`;
+           data-boutique="${echapper(c.point_de_vente_nom)}">Assigner</button>`;
 
     return `<tr>
       <td>
@@ -147,7 +147,7 @@ function rendreCarnet(courses) {
 
   zone.innerHTML = `<div class="bord-tableau-boite"><table class="bord-tableau">
     <thead><tr>
-      <th>Produit</th><th>Boutique</th><th>Depuis</th><th>Délai</th><th></th>
+      <th>Produit</th><th>Revendeur</th><th>Depuis</th><th>Délai</th><th></th>
     </tr></thead>
     <tbody>${rangs.join('')}</tbody>
   </table></div>`;
@@ -180,7 +180,7 @@ function rendreFlotte(flotte) {
   if (!flotte.length) {
     zone.innerHTML =
       '<div class="bord-vide">Aucun livreur. Sans livreur, vous voyez les '
-      + 'ruptures mais ne pouvez les affecter à personne : ajoutez-en un depuis '
+      + 'demandes mais ne pouvez les affecter à personne : ajoutez-en un depuis '
       + 'l’application, son compte se remet en main propre.</div>';
     return;
   }
@@ -207,7 +207,7 @@ function rendreFlotte(flotte) {
   zone.innerHTML = `<div class="bord-tableau-boite"><table class="bord-tableau">
     <thead><tr>
       <th>Livreur</th><th>Téléphone</th><th>État</th>
-      <th>En cours</th><th>Livrées</th><th></th>
+      <th>Demandes en livraison</th><th>Livrées</th><th></th>
     </tr></thead>
     <tbody>${rangs.join('')}</tbody>
   </table></div>`;
@@ -224,8 +224,8 @@ function rendreReseau(boutiques) {
 
   if (!boutiques.length) {
     zone.innerHTML =
-      '<div class="bord-vide">Aucune boutique déclarée. Tant que vous n’en '
-      + 'déclarez aucune, les ruptures ne vous parviennent qu’après deux heures '
+      '<div class="bord-vide">Aucun revendeur déclaré. Tant que vous n’en '
+      + 'déclarez aucun, les demandes ne vous parviennent qu’après deux heures '
       + 'd’escalade, et en concurrence avec les autres distributeurs.</div>';
     return;
   }
@@ -244,14 +244,14 @@ function rendreReseau(boutiques) {
       <td>${echapper(b.point_de_vente_nom)}</td>
       <td>${echapper(b.fabricant_nom)}</td>
       <td>${Number(b.ruptures_ouvertes ?? 0) > 0
-        ? `<span class="pastille pastille--attente">${b.ruptures_ouvertes} ouverte(s)</span>`
+        ? `<span class="pastille pastille--attente">${b.ruptures_ouvertes} demande(s) ouverte(s)</span>`
         : '<span style="opacity:.5">—</span>'}</td>
     </tr>`);
 
     return `<h3 class="bord-commune">${echapper(commune)}
-        <span>${liste.length} boutique(s)</span></h3>
+        <span>${liste.length} revendeur(s)</span></h3>
       <div class="bord-tableau-boite"><table class="bord-tableau">
-        <thead><tr><th>Boutique</th><th>Marque</th><th>Ruptures</th></tr></thead>
+        <thead><tr><th>Revendeur</th><th>Marque</th><th>Demandes</th></tr></thead>
         <tbody>${rangs.join('')}</tbody>
       </table></div>`;
   });
@@ -288,8 +288,8 @@ function ouvrirAffectation({ rupture, produit, boutique }) {
     const etat = etatLivreur(l);
     const enCours = Number(l.courses_en_cours ?? 0);
     const detail = l.en_ligne === true
-      ? (enCours > 0 ? `${etat.texte} · ${enCours} course(s) en cours` : `${etat.texte}, disponible`)
-      : 'Hors ligne, il ne verra la course qu’à sa reconnexion';
+      ? (enCours > 0 ? `${etat.texte} · ${enCours} livraison(s) en cours` : `${etat.texte}, disponible`)
+      : 'Hors ligne, il ne verra la demande qu’à sa reconnexion';
 
     return `<button type="button" class="bord-livreur" data-livreur="${echapper(l.livreur_id)}"
               data-rupture="${echapper(rupture)}">
@@ -314,7 +314,7 @@ async function affecter(ruptureId, livreurId) {
       method: 'POST',
       body: JSON.stringify({ p_rupture_id: ruptureId, p_livreur_id: livreurId }),
     });
-    informer('Course affectée.', 'succes');
+    informer('Livreur assigné à la demande.', 'succes');
     await rafraichir();
   } catch (erreur) {
     if (erreur.message === 'session') return;
@@ -330,7 +330,7 @@ async function basculerLivreur({ livreur, actif, nom: nomLivreur }) {
 
   if (ecarter && !confirm(
     `Écarter ${nomLivreur} ?\n\n`
-    + 'Il ne recevra plus de course et n’apparaîtra plus sur votre carte. '
+    + 'Il ne recevra plus de demande à livrer et n’apparaîtra plus sur votre carte. '
     + 'Son historique est conservé, et vous pouvez le réintégrer à tout moment.',
   )) return;
 
@@ -364,7 +364,7 @@ function rendreChiffres(carnet, flotte, boutiques) {
   document.getElementById('chiffreAttente').textContent = nombre(aAffecter.length);
   document.getElementById('detailAttente').textContent = aAffecter.length
     ? 'À affecter à un livreur.'
-    : 'Rien en attente : vos boutiques sont servies.';
+    : 'Rien en attente : vos revendeurs sont servis.';
 
   document.getElementById('chiffreUrgent').textContent = nombre(urgentes.length);
   document.getElementById('chiffreFlotte').textContent = nombre(enLigne.length);
@@ -373,7 +373,7 @@ function rendreChiffres(carnet, flotte, boutiques) {
 
   document.getElementById('chiffreBoutiques').textContent = nombre(pdv.size);
   document.getElementById('detailBoutiques').textContent =
-    `${nombre(marques.size)} marque(s) portée(s).`;
+    `${nombre(marques.size)} marque(s) · ${nombre(pdv.size)} revendeur(s).`;
 
   chiffres.hidden = false;
 }

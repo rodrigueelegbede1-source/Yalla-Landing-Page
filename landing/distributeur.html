@@ -49,13 +49,13 @@
     <div class="bord-chiffres" id="chiffres" hidden>
       <div class="bord-chiffre bord-chiffre--fort">
         <b id="chiffreAttente">—</b>
-        <span>Courses en attente</span>
+        <span>Demandes à livrer</span>
         <em id="detailAttente">À affecter à un livreur.</em>
       </div>
       <div class="bord-chiffre">
         <b id="chiffreUrgent">—</b>
         <span>Délai bientôt dépassé</span>
-        <em>Moins de trente minutes avant que la course ne s'ouvre aux autres
+        <em>Moins de trente minutes avant que la demande ne s'ouvre aux autres
           distributeurs de la commune.</em>
       </div>
       <div class="bord-chiffre">
@@ -65,17 +65,17 @@
       </div>
       <div class="bord-chiffre">
         <b id="chiffreBoutiques">—</b>
-        <span>Boutiques desservies</span>
+        <span>Revendeurs desservis</span>
         <em id="detailBoutiques">—</em>
       </div>
     </div>
 
     <!-- ── Le carnet ──────────────────────────────────────────────── -->
     <section class="bord-section">
-      <h2>Courses à affecter</h2>
+      <h2>Demandes à livrer</h2>
       <p>
-        Les ruptures qui vous reviennent. Le compte à rebours dit ce qu'il vous
-        reste avant qu'elles ne s'ouvrent aux autres distributeurs qui portent
+        Les demandes qui vous reviennent. Le compte à rebours indique le délai
+        avant qu'elles ne s'ouvrent aux autres distributeurs qui portent
         la même marque dans la commune.
       </p>
       <div id="zoneCarnet">
@@ -97,10 +97,10 @@
 
     <!-- ── Le réseau ──────────────────────────────────────────────── -->
     <section class="bord-section">
-      <h2>Mes boutiques</h2>
+      <h2>Mes revendeurs</h2>
       <p>
         Celles que vous desservez, marque par marque. C'est cette déclaration
-        qui fait qu'une rupture vous parvient dès la première seconde plutôt
+        qui fait qu'une demande vous parvient dès la première seconde plutôt
         qu'après deux heures.
       </p>
       <div id="zoneReseau">
@@ -109,9 +109,9 @@
     </section>
 
     <p class="acces-aide" style="max-width:72ch">
-      Ajouter un livreur ou déclarer une nouvelle boutique se fait depuis
+      Ajouter un livreur ou déclarer un nouveau revendeur se fait depuis
       l'application : le compte d'un livreur se remet en main propre, et une
-      boutique se choisit sur le terrain. Cette page sert à piloter ce qui
+      nouvelle relation se déclare sur le terrain. Cette page sert à piloter ce qui
       existe déjà.
     </p>
 
@@ -121,7 +121,7 @@
 <!-- ── Affectation ──────────────────────────────────────────────── -->
 <dialog id="dialogueAffectation" class="bord-dialogue">
   <form method="dialog">
-    <h2 id="titreAffectation">Affecter à un livreur</h2>
+    <h2 id="titreAffectation">Affecter une demande à un livreur</h2>
     <p id="sousTitreAffectation" class="bord-dialogue-sous"></p>
     <div id="listeLivreurs" class="bord-livreurs"></div>
     <div class="bord-dialogue-pied">

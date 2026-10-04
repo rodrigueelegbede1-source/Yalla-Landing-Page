@@ -170,8 +170,8 @@ function tracerJauge(valeur) {
       + arc(120, 120, 92, 180, 360, 20, '#EDEAE0')
       + '<text x="120" y="112" text-anchor="middle" class="jauge-valeur"'
       + ' style="fill:rgba(8,22,14,.35)">—</text></svg>';
-    pied.textContent = 'Aucune de vos ruptures n’est encore close. L’indicateur '
-      + 'se calcule sur celles qui ont été servies contre celles qui ne l’ont pas été.';
+    pied.textContent = 'Aucune de vos demandes n’est encore clôturée. L’indicateur '
+      + 'se calcule sur celles qui ont été livrées et celles qui ne l’ont pas été.';
     return;
   }
 
@@ -195,7 +195,7 @@ function tracerJauge(valeur) {
     + '</svg>';
 
   pied.innerHTML = 'Calculé sur <b style="font-family:var(--ff-mono);color:var(--ink)">'
-    + `${nombre(closes)}</b> rupture(s) close(s) sur votre catalogue. `
+    + `${nombre(closes)}</b> demande(s) clôturée(s) sur votre catalogue. `
     + (v >= 80 ? 'Le réseau tient sa promesse sur votre marque.'
       : v >= 50 ? 'Tenable, mais une rupture sur deux met trop longtemps.'
         : 'Sous cinquante, vos produits manquent plus souvent qu’ils ne sont servis.');
@@ -213,7 +213,7 @@ function tracerBord() {
   const echappe = Number(b.dont_distributeurs_non_rattaches ?? 0);
   const total = Number(b.chiffre_affaires ?? 0);
   document.getElementById('detailVolume').innerHTML =
-    `<span>${nombre(b.ruptures_closes ?? 0)} rupture(s) close(s)</span>`
+    `<span>${nombre(b.ruptures_closes ?? 0)} demande(s) clôturée(s)</span>`
     // L'écart entre les deux mesures dit au fabricant quelle part de sa
     // distribution lui échappe. C'est l'argument commercial le plus direct du
     // produit, et il ne se voit nulle part ailleurs.
@@ -223,9 +223,9 @@ function tracerBord() {
 
   document.getElementById('tableEmprise').innerHTML = `<tbody>${[
     ['Références au catalogue', b.produits],
-    ['Boutiques qui vous portent', b.boutiques],
+    ['Revendeurs qui vous référencent', b.boutiques],
     ['Distributeurs', b.distributeurs],
-    ['Ruptures ouvertes', b.ruptures_ouvertes],
+    ['Demandes en cours', b.ruptures_ouvertes],
   ].map(([nom, v]) => `<tr>
       <td>${echapper(nom)}</td>
       <td class="num" style="font-size:16px;color:var(--green-800);font-weight:600">${nombre(v)}</td>
@@ -243,7 +243,7 @@ function tracerCommunes() {
 
   if (!etat.ruptures.length) {
     boite.innerHTML = '<div class="vide" style="border:0;padding:20px 0">'
-      + 'Aucune rupture signalée sur votre catalogue à ce jour.</div>';
+      + 'Aucune demande reçue sur votre catalogue à ce jour.</div>';
     return;
   }
 
@@ -279,10 +279,10 @@ function tracerCommunes() {
   }).join('');
 
   boite.innerHTML = `
-    <svg viewBox="0 0 ${L} ${H}" role="img" aria-label="Ruptures par commune">${corps}</svg>
+    <svg viewBox="0 0 ${L} ${H}" role="img" aria-label="Demandes par commune">${corps}</svg>
     <div class="legende" style="flex-direction:row;gap:18px;margin-top:10px">
       <div style="flex:0"><i style="background:${ALERTE}"></i>En cours</div>
-      <div style="flex:0"><i style="background:${VERT}"></i>Closes</div>
+      <div style="flex:0"><i style="background:${VERT}"></i>Livrées</div>
     </div>`;
   void ouvertes;
 }
@@ -292,7 +292,7 @@ function tracerTendus() {
 
   if (!etat.ruptures.length) {
     table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
-      + 'Aucune rupture à ce jour.</td></tr></tbody>';
+      + 'Aucune demande à ce jour.</td></tr></tbody>';
     return;
   }
 
@@ -311,7 +311,7 @@ function tracerTendus() {
   const maxi = Math.max(1, ...rangs.map((r) => r.n));
 
   table.innerHTML = `
-    <thead><tr><th>Référence</th><th class="num">Signalements</th><th class="num">Boutiques</th></tr></thead>
+    <thead><tr><th>Référence</th><th class="num">Demandes</th><th class="num">Revendeurs</th></tr></thead>
     <tbody>${rangs.map((r) => {
       const intensite = 0.14 + (r.n / maxi) * 0.56;
       return `<tr>
@@ -360,8 +360,8 @@ function tracerRuptures() {
     zone.innerHTML = `<div class="vide">
       <b>Rien à afficher</b>
       ${filtreCommune || filtreEtat !== 'ouvertes'
-        ? 'Aucune rupture ne correspond à ce filtre.'
-        : 'Aucune rupture en cours sur votre catalogue. Vos produits sont en rayon.'}
+        ? 'Aucune demande ne correspond à ce filtre.'
+        : 'Aucune demande en cours sur votre catalogue.'}
     </div>`;
     return;
   }
@@ -371,7 +371,7 @@ function tracerRuptures() {
 
   zone.innerHTML = `<div class="table-boite"><table class="table">
     <thead><tr>
-      <th>Produit</th><th>Point de vente</th><th>Commune</th>
+      <th>Produit</th><th>Revendeur</th><th>Commune</th>
       <th>Distributeur</th><th class="num">Attente</th><th>État</th>
     </tr></thead>
     <tbody>${ordonnees.map((r) => {
@@ -384,7 +384,7 @@ function tracerRuptures() {
       return `<tr>
         <td>${echapper(r.produit)}<small>${echapper(r.reference ?? '')}${
           r.quantite_demandee ? ` · ${r.quantite_demandee} carton(s)` : ''}${
-          r.signalement_automatique ? ' · détecté par la caisse' : ''}</small></td>
+          r.signalement_automatique ? ' · transmis automatiquement' : ''}</small></td>
         <td>${echapper(r.point_de_vente)}</td>
         <td>${echapper(r.commune ?? '')}</td>
         <td>${r.distributeur
@@ -392,9 +392,9 @@ function tracerRuptures() {
           : '<span class="etat etat--alerte">Aucun</span>'}</td>
         <td class="num"${tendu ? ' style="color:#9B3218;font-weight:600"' : ''}>${duree(attente)}</td>
         <td>${
-          r.statut === 'resolue' ? '<span class="etat etat--ok">Servie</span>'
-          : r.statut === 'non_servie' ? '<span class="etat etat--alerte">Non servie</span>'
-          : pris ? '<span class="etat etat--ok">Prise en charge</span>'
+          r.statut === 'resolue' ? '<span class="etat etat--ok">Livrée</span>'
+          : r.statut === 'non_servie' ? '<span class="etat etat--alerte">Non livrée</span>'
+          : pris ? '<span class="etat etat--ok">En livraison</span>'
           : r.confirmee_le ? '<span class="etat etat--alerte">En attente</span>'
           : '<span class="etat etat--dort">À confirmer</span>'}</td>
       </tr>`;
@@ -416,8 +416,8 @@ function tracerCatalogue() {
 
   if (!etat.catalogue.length) {
     table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
-      + 'Votre catalogue est vide. Tant qu\'il l\'est, aucun commerçant ne peut '
-      + 'signaler une rupture sur votre marque.</td></tr></tbody>';
+      + 'Votre catalogue est vide. Tant qu\'il l\'est, aucun revendeur ne peut '
+      + 'vous envoyer de demande pour vos références.</td></tr></tbody>';
     return;
   }
 
@@ -428,8 +428,8 @@ function tracerCatalogue() {
 
   table.innerHTML = `
     <thead><tr>
-      <th>Produit</th><th>Catégorie</th><th class="num">Boutiques</th>
-      <th class="num">Ruptures</th><th>État</th><th></th>
+      <th>Produit</th><th>Catégorie</th><th class="num">Revendeurs</th>
+      <th class="num">Demandes</th><th>État</th><th></th>
     </tr></thead>
     <tbody>${ordonnes.map((p) => `<tr>
       <td>${echapper(p.nom)}<small>${echapper(p.reference)}</small></td>
@@ -465,8 +465,8 @@ function ouvrirProduit(produit) {
   document.getElementById('titreProduit').textContent =
     produit ? 'Modifier la référence' : 'Ajouter une référence';
   document.getElementById('sousTitreProduit').textContent = produit
-    ? `${produit.reference} · ${produit.signalements_total ?? 0} signalement(s) à ce jour`
-    : 'Elle sera immédiatement visible des commerçants du réseau.';
+    ? `${produit.reference} · ${produit.signalements_total ?? 0} demande(s) à ce jour`
+    : 'Elle sera immédiatement visible des revendeurs du réseau.';
 
   document.getElementById('produitNom').value = produit?.nom ?? '';
   document.getElementById('produitCategorie').value = produit?.categorie ?? '';
@@ -537,7 +537,7 @@ async function basculerProduit({ basculer: id, actif }) {
 
   if (retirer && !confirm(
     `Retirer « ${produit.nom} » du catalogue ?\n\n`
-    + 'Rien n\'est effacé : ses ruptures passées restent, et vous pouvez la '
+    + 'Rien n\'est effacé : son historique de demandes reste, et vous pouvez la '
     + 'remettre en service à tout moment. Elle cesse simplement d\'apparaître '
     + 'chez les commerçants.',
   )) return;
