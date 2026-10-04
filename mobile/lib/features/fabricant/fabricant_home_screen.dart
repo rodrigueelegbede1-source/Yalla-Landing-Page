@@ -6,7 +6,6 @@ import '../../core/retours_recus_tab.dart';
 import '../../core/supabase.dart';
 import '../../core/theme.dart';
 import '../../core/vignette_produit.dart';
-import '../../core/widgets.dart';
 import 'apercu_tab.dart';
 
 class FabricantHomeScreen extends ConsumerStatefulWidget {
@@ -101,7 +100,7 @@ class _FabricantHomeScreenState extends ConsumerState<FabricantHomeScreen> {
             ),
             clipBehavior: Clip.antiAlias,
             child: IndexedStack(index: _onglet, children: [
-              _ApercuFabricant(future: _apercu(), cle: _cle),
+              FabricantApercuTab(future: _apercu(), cle: _cle),
               _Catalogue(future: _catalogue(), cle: _cle, onAdd: _ajouterProduit),
               _Ruptures(future: _ruptures()),
               RetoursRecusTab(cle: _cle, fabricant: true),
