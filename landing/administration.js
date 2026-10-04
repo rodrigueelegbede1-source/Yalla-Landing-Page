@@ -263,8 +263,8 @@ function tracerJauge(valeur) {
       + '<text x="120" y="112" text-anchor="middle" class="jauge-valeur" '
       + 'style="fill:rgba(8,22,14,.35)">—</text></svg>';
     pied.textContent =
-      'Aucune rupture close pour l’instant. L’indicateur attend le terrain : '
-      + 'il se calcule sur les ruptures servies contre non servies.';
+      'Aucune demande clôturée pour l’instant. L’indicateur attend le terrain : '
+      + 'il se calcule sur les demandes livrées et celles qui ne l’ont pas été.';
     return;
   }
 
@@ -297,7 +297,7 @@ function tracerJauge(valeur) {
       : 'Sous cinquante, le produit ne tient pas sa promesse.';
 
   pied.innerHTML = 'Calculé sur <b style="font-family:var(--ff-mono);color:var(--ink)">'
-    + `${nombre(closes)}</b> rupture(s) close(s). ${lecture}`;
+    + `${nombre(closes)}</b> demande(s) clôturée(s). ${lecture}`;
 }
 
 /* ── L'anneau des ruptures ────────────────────────────────
@@ -310,7 +310,7 @@ function tracerAnneau() {
 
   const parts = [
     { nom: 'À confirmer', valeur: Number(etat.reseau.ruptures_a_confirmer ?? 0), couleur: JAUNE,
-      note: 'Le boutiquier n’a pas encore validé le signalement automatique.' },
+      note: 'Le revendeur n’a pas encore confirmé cette demande.' },
     { nom: 'Ouvertes', valeur: Number(etat.reseau.ruptures_ouvertes ?? 0), couleur: ALERTE,
       note: 'Confirmées, en attente d’un distributeur.' },
     { nom: 'Prises en charge', valeur: Number(etat.reseau.ruptures_prises ?? 0), couleur: VERT,
@@ -336,7 +336,7 @@ function tracerAnneau() {
     }).join('');
 
   boite.innerHTML = `
-    <svg viewBox="0 0 132 132" role="img" aria-label="${total} rupture(s) en cours">
+    <svg viewBox="0 0 132 132" role="img" aria-label="${total} demande(s) en cours">
       ${segments}
       <text x="66" y="66" text-anchor="middle" class="anneau-total">${total}</text>
       <text x="66" y="82" text-anchor="middle" class="anneau-legende">EN COURS</text>
@@ -349,11 +349,11 @@ function tracerAnneau() {
 
   const bloquant = parts[0].valeur;
   pied.textContent = total === 0
-    ? 'Aucune rupture en cours. Toutes les boutiques du réseau sont servies.'
+    ? 'Aucune demande en cours. Tous les revendeurs du réseau sont servis.'
     : bloquant > 0
-      ? `${bloquant} attend${bloquant > 1 ? 'ent' : ''} la confirmation du boutiquier : `
-        + 'tant qu’il n’a pas répondu, aucun distributeur ne les voit.'
-      : 'Toutes les ruptures en cours sont confirmées et visibles des distributeurs.';
+      ? `${bloquant} attend${bloquant > 1 ? 'ent' : ''} la confirmation du revendeur : `
+        + 'elles ne seront visibles des distributeurs qu’après sa confirmation.'
+      : 'Toutes les demandes en cours sont confirmées et visibles des distributeurs.';
 }
 
 /* ── La couverture du réseau ──────────────────────────────
@@ -375,17 +375,17 @@ function tracerCouverture() {
       <div class="objectif-seuil" style="inset-inline-start:calc(100% - 2px)" data-libelle="Objectif"></div>
     </div>
     <div class="objectif-bornes">
-      <span>${nombre(desservies.length)} desservie(s)</span>
+      <span>${nombre(desservies.length)} revendeur(s) desservi(s)</span>
       <span>${part} %</span>
       <span>${nombre(total)} active(s)</span>
     </div>`;
 
   const orphelines = total - desservies.length;
   pied.textContent = total === 0
-    ? 'Aucune boutique active. Le recensement se fait sur le terrain, depuis l’application.'
+    ? 'Aucun revendeur actif. Le recensement se fait sur le terrain, depuis l’application.'
     : orphelines === 0
-      ? 'Chaque boutique active a son distributeur. C’est l’état normal du réseau.'
-      : `${orphelines} boutique(s) que personne ne dessert : leurs ruptures `
+      ? 'Chaque revendeur actif a son distributeur. C’est l’état normal du réseau.'
+      : `${orphelines} revendeur(s) que personne ne dessert : leurs demandes `
         + 'n’apparaîtront qu’après deux heures d’escalade, et pour tout le monde à la fois.';
 }
 
@@ -454,22 +454,22 @@ function tracerActivite() {
 
   boite.innerHTML = `
     <svg viewBox="0 0 ${L} ${H}" role="img"
-         aria-label="Ruptures signalées et résolues sur quatorze jours">
+         aria-label="Demandes reçues et livraisons confirmées sur quatorze jours">
       ${grilles}${barres}${ligne}${dates}
     </svg>
     <div class="legende" style="flex-direction:row;gap:18px;margin-top:10px">
-      <div style="flex:0"><i style="background:${ALERTE}"></i>Signalées</div>
-      <div style="flex:0"><i style="background:${VERT}"></i>Résolues</div>
+      <div style="flex:0"><i style="background:${ALERTE}"></i>Demandes</div>
+      <div style="flex:0"><i style="background:${VERT}"></i>Livraisons</div>
     </div>`;
 
   const signalees = jours.reduce((s, j) => s + Number(j.signalees), 0);
   const resolues = jours.reduce((s, j) => s + Number(j.resolues), 0);
   pied.textContent = signalees === 0 && resolues === 0
-    ? 'Rien n’a bougé sur ces quatorze jours. Le pilote n’a pas encore produit de rupture.'
-    : `${nombre(signalees)} signalée(s) et ${nombre(resolues)} résolue(s) sur la période. `
+    ? 'Rien n’a bougé sur ces quatorze jours. Le pilote n’a pas encore généré de demande.'
+    : `${nombre(signalees)} demande(s) reçue(s) et ${nombre(resolues)} livraison(s) confirmée(s) sur la période. `
       + (resolues >= signalees
         ? 'Le réseau absorbe ce qu’il reçoit.'
-        : 'Le réseau reçoit plus qu’il ne résout : l’écart se creuse.');
+        : 'Le réseau reçoit plus de demandes qu’il ne livre : l’écart se creuse.');
 }
 
 /* ── Le réseau en chiffres ────────────────────────────────
@@ -478,8 +478,8 @@ function tracerActivite() {
 function tracerChiffres() {
   const r = etat.reseau;
   const lignes = [
-    ['Boutiques actives', r.boutiques_actives, r.boutiques_total !== r.boutiques_actives
-      ? `${nombre(r.boutiques_total)} recensée(s) au total` : ''],
+    ['Revendeurs actifs', r.boutiques_actives, r.boutiques_total !== r.boutiques_actives
+      ? `${nombre(r.boutiques_total)} revendeur(s) recensé(s)` : ''],
     ['Distributeurs', r.distributeurs, ''],
     ['Livreurs en ligne', r.livreurs_en_ligne, `${nombre(r.livreurs_actifs)} actif(s) dans les flottes`],
     ['Marques', r.fabricants, `${nombre(r.produits)} référence(s) au catalogue`],
@@ -502,7 +502,7 @@ function tracerCommunes() {
   const actives = etat.boutiques.filter((b) => b.statut === 'actif');
 
   if (!actives.length) {
-    boite.innerHTML = '<div class="vide" style="border:0;padding:20px 0">Aucune boutique active.</div>';
+    boite.innerHTML = '<div class="vide" style="border:0;padding:20px 0">Aucun revendeur actif.</div>';
     return;
   }
 
@@ -537,9 +537,9 @@ function tracerCommunes() {
   }).join('');
 
   boite.innerHTML = `
-    <svg viewBox="0 0 ${L} ${H}" role="img" aria-label="Boutiques actives par commune">${corps}</svg>
+    <svg viewBox="0 0 ${L} ${H}" role="img" aria-label="Revendeurs actifs par commune">${corps}</svg>
     <div class="legende" style="flex-direction:row;gap:18px;margin-top:10px">
-      <div style="flex:0"><i style="background:${VERT}"></i>Desservies</div>
+      <div style="flex:0"><i style="background:${VERT}"></i>Revendeurs desservis</div>
       <div style="flex:0"><i style="background:${ALERTE}"></i>Sans distributeur</div>
     </div>`;
 }
@@ -560,8 +560,8 @@ function tracerCharge() {
 
   table.innerHTML = `
     <thead><tr>
-      <th>Distributeur</th><th class="num">Boutiques</th>
-      <th class="num">Livreurs</th><th class="num">En attente</th>
+      <th>Distributeur</th><th class="num">Revendeurs</th>
+      <th class="num">Livreurs</th><th class="num">Demandes à livrer</th>
     </tr></thead>
     <tbody>${liste.map((d) => {
       const attente = Number(d.courses_en_attente ?? 0);
@@ -608,7 +608,7 @@ function entreesRail() {
         id: b.point_de_vente_id,
         titre: b.nom,
         detail: b.distributeurs ? `Chez ${b.distributeurs}` : 'Personne ne la dessert',
-        marge: Number(b.ruptures_ouvertes ?? 0) > 0 ? `${nombre(b.ruptures_ouvertes)} rupture(s)` : '',
+        marge: Number(b.ruptures_ouvertes ?? 0) > 0 ? `${nombre(b.ruptures_ouvertes)} demande(s)` : '',
         etat: etatBoutique(b),
       });
     }
@@ -623,7 +623,7 @@ function entreesRail() {
       groupes.get(d.fabricant_rattache ? 'Affiliés' : 'Indépendants').push({
         id: d.distributeur_id,
         titre: d.nom,
-        detail: `${nombre(d.boutiques ?? 0)} boutique(s) · ${nombre(d.livreurs ?? 0)} livreur(s)`,
+        detail: `${nombre(d.boutiques ?? 0)} revendeur(s) · ${nombre(d.livreurs ?? 0)} livreur(s)`,
         marge: Number(d.courses_en_attente ?? 0) > 0 ? `${d.courses_en_attente} ⏳` : '',
         etat: etatDistributeur(d),
       });
@@ -657,7 +657,7 @@ function entreesRail() {
     return {
       id: m.fabricant_id,
       titre: m.fabricant_nom,
-      detail: `${nombre(boutiques)} boutique(s) portent cette marque`,
+      detail: `${nombre(boutiques)} revendeur(s) portent cette marque`,
       marge: '',
       etat: boutiques === 0 ? 'dort' : 'ok',
     };
@@ -794,8 +794,8 @@ function tracerCarte() {
 
   if (!p) {
     boite.innerHTML = `<div class="canevas-vide">${filtreCommune
-      ? `Aucune boutique située à ${echapper(filtreCommune)}.`
-      : 'Aucune boutique recensée avec sa position. Le recensement se fait sur '
+      ? `Aucun revendeur situé à ${echapper(filtreCommune)}.`
+      : 'Aucun revendeur recensé avec sa position. Le recensement se fait sur '
         + 'le terrain, depuis l’application : l’agent relève le point sur le pas '
         + 'de la porte, à moins de vingt-cinq mètres.'}</div>`;
     echelle.hidden = true;
@@ -804,7 +804,7 @@ function tracerCarte() {
 
   const n = actives.filter((b) =>
     Number.isFinite(Number(b.latitude)) && Number.isFinite(Number(b.longitude))).length;
-  sous.textContent = `${n} boutique${n > 1 ? 's' : ''} située${n > 1 ? 's' : ''}`
+  sous.textContent = `${n} revendeur${n > 1 ? 's' : ''} situé${n > 1 ? 's' : ''}`
     + (livreursSitues.length ? `, ${livreursSitues.length} livreur(s) localisé(s)` : '')
     + (filtreCommune ? ` à ${filtreCommune}` : '') + '. '
     + 'Position relevée par l’agent recenseur, sur le pas de la porte.';
@@ -855,7 +855,7 @@ function tracerCarte() {
 
   boite.innerHTML =
     `<svg viewBox="0 0 ${p.L} ${p.H}" preserveAspectRatio="xMidYMid meet" role="img"
-          aria-label="Carte des boutiques et des livreurs du réseau">${trame}${marqueurs}${mobiles}</svg>`;
+          aria-label="Carte des revendeurs et des livreurs du réseau">${trame}${marqueurs}${mobiles}</svg>`;
 
   for (const g of boite.querySelectorAll('.lv')) {
     const choisir = () => {
@@ -932,7 +932,7 @@ function tracerTiroir() {
             b.telephone ? ` · <a href="tel:+${echapper(b.telephone)}">${echapper(telephoneLisible(b.telephone))}</a>` : ''}</p>
         </div>
         <div class="tiroir-actions">
-          <button type="button" class="bouton" id="actionAttribuerBoutique">Attribuer à un distributeur</button>
+          <button type="button" class="bouton" id="actionAttribuerBoutique">Rattacher à un distributeur</button>
         </div>
       </div>
       <div class="tiroir-faits">
@@ -940,7 +940,7 @@ function tracerTiroir() {
           ? echapper(b.distributeurs)
           : '<span class="etat etat--alerte">Personne</span>'}</span></div>
         <div><small>Marques</small><span>${echapper(b.marques ?? '—')}</span></div>
-        <div><small>Ruptures ouvertes</small><strong${
+        <div><small>Demandes en cours</small><strong${
           Number(b.ruptures_ouvertes ?? 0) > 0 ? ' data-ton="alerte"' : ''
         }>${nombre(b.ruptures_ouvertes ?? 0)}</strong></div>
         <div><small>Recensée par</small><span>${echapper(b.agent_recenseur ?? '—')}</span></div>
@@ -968,25 +968,25 @@ function tracerTiroir() {
             d.telephone ? ` · <a href="tel:+${echapper(d.telephone)}">${echapper(telephoneLisible(d.telephone))}</a>` : ''}</p>
         </div>
         <div class="tiroir-actions">
-          <button type="button" class="bouton" id="actionAttribuerDist">Lui attribuer une boutique</button>
+          <button type="button" class="bouton" id="actionAttribuerDist">Lui attribuer un revendeur</button>
         </div>
       </div>
       <div class="tiroir-faits">
-        <div><small>Boutiques</small><strong${boutiques === 0 ? ' data-ton="alerte"' : ''}>${nombre(boutiques)}</strong></div>
+        <div><small>Revendeurs</small><strong${boutiques === 0 ? ' data-ton="alerte"' : ''}>${nombre(boutiques)}</strong></div>
         <div><small>Livreurs actifs</small><strong${livreurs === 0 ? ' data-ton="alerte"' : ''}>${nombre(livreurs)}</strong></div>
         <div><small>En ligne</small><strong>${nombre(d.livreurs_en_ligne ?? 0)}</strong></div>
-        <div><small>Courses en attente</small><strong${
+        <div><small>Demandes à livrer</small><strong${
           Number(d.courses_en_attente ?? 0) > 0 ? ' data-ton="alerte"' : ''
         }>${nombre(d.courses_en_attente ?? 0)}</strong></div>
         <div><small>Auto-distribution</small><span>${d.auto_distribution ? 'Oui' : 'Non'}</span></div>
       </div>
       ${boutiques === 0 ? `<p class="note" style="margin:0">
-        Ce distributeur ne voit aucune boutique, et <b>il ne peut pas en ajouter
+        Ce distributeur ne voit aucun revendeur, et <b>il ne peut pas en ajouter
         lui-même</b> : sa politique ne lui montre que les communes où il opère
-        déjà, et il n'en a aucune. Sa première boutique doit lui être attribuée
+        déjà, et il n'en a aucune. Son premier revendeur doit lui être attribué
         ici, sans quoi il ne commencera jamais.</p>` : ''}
       ${boutiques > 0 && livreurs === 0 ? `<p class="note" style="margin:0">
-        Il voit ses courses et <b>ne peut les affecter à personne</b>. C'est à
+        Il reçoit des demandes et <b>ne peut les affecter à personne</b>. C'est à
         lui d'enrôler un livreur depuis l'application, onglet Flotte : le compte
         se remet en main propre.</p>` : ''}`;
 
@@ -1015,7 +1015,7 @@ function tracerTiroir() {
         </div>
       </div>
       <div class="tiroir-faits">
-        <div><small>Courses en cours</small><strong>${nombre(l.courses_en_cours ?? 0)}</strong></div>
+        <div><small>Livraisons en cours</small><strong>${nombre(l.courses_en_cours ?? 0)}</strong></div>
         <div><small>Livraisons terminées</small><strong>${nombre(l.livraisons_terminees ?? 0)}</strong></div>
         <div><small>Commune approchée</small><span>${echapper(l.commune_approchee ?? '—')}</span></div>
         <div><small>Dernière position</small><strong${
@@ -1045,10 +1045,10 @@ function tracerTiroir() {
       </div>
     </div>
     <div class="tiroir-faits">
-      <div><small>Boutiques la portant</small><strong${
+      <div><small>Revendeurs concernés</small><strong${
         portee.length === 0 ? ' data-ton="alerte"' : ''}>${nombre(portee.length)}</strong></div>
       <div><small>Distributeurs affiliés</small><strong>${nombre(distributeurs.length)}</strong></div>
-      <div><small>Ruptures ouvertes</small><strong>${
+      <div><small>Demandes en cours</small><strong>${
         nombre(portee.reduce((s, b) => s + Number(b.ruptures_ouvertes ?? 0), 0))}</strong></div>
     </div>
     <p class="note" style="margin:0">
@@ -1072,8 +1072,8 @@ function tracerDemandes() {
 
   if (!attente.length) {
     zone.innerHTML = `<div class="vide">
-      <b>Aucune demande en attente</b>
-      Les inscriptions déposées depuis le site apparaissent ici, et personne
+      <b>Aucune inscription à valider</b>
+      Les demandes d’accès déposées depuis le site apparaissent ici, et personne
       n'obtient de compte sans passer par cet écran.
     </div>`;
     return;
@@ -1269,9 +1269,9 @@ async function refuser({ refuser: id, societe }) {
 /* ══ Les anomalies ════════════════════════════════════════ */
 
 const ANOMALIES = {
-  boutique_sans_distributeur: 'Boutique sans distributeur',
+  boutique_sans_distributeur: 'Revendeur sans distributeur',
   distributeur_sans_livreur: 'Distributeur sans livreur',
-  rupture_sans_destinataire: 'Rupture sans destinataire',
+  rupture_sans_destinataire: 'Demande sans destinataire',
 };
 
 function tracerAnomalies() {
@@ -1280,8 +1280,8 @@ function tracerAnomalies() {
   if (!etat.anomalies.length) {
     zone.innerHTML = `<div class="vide">
       <b>Rien à signaler</b>
-      Chaque boutique active a son distributeur, chaque distributeur a son
-      livreur, et chaque rupture a un destinataire.
+      Chaque revendeur actif a son distributeur, chaque distributeur a son
+      livreur, et chaque demande a un destinataire.
     </div>`;
     return;
   }
@@ -1339,7 +1339,7 @@ function ouvrirAttribution(boutiqueId, boutiqueNom, distributeurId, distributeur
 
   if (distributeurId) {
     document.getElementById('sousTitreAttribution').textContent =
-      `Vers ${distributeurNom}. Choisissez la boutique à lui confier.`;
+      `Vers ${distributeurNom}. Choisissez le revendeur à lui rattacher.`;
     selBoutique.disabled = false;
     selBoutique.innerHTML = etat.boutiques.map((b) =>
       `<option value="${echapper(b.point_de_vente_id)}">${echapper(b.nom)} · ${
@@ -1347,7 +1347,7 @@ function ouvrirAttribution(boutiqueId, boutiqueNom, distributeurId, distributeur
         ? ` (chez ${echapper(b.distributeurs)})` : ' (libre)'}</option>`).join('');
   } else {
     document.getElementById('sousTitreAttribution').textContent =
-      `${boutiqueNom}. Choisissez le distributeur qui la desservira.`;
+      `${boutiqueNom}. Choisissez le distributeur qui le desservira.`;
     selBoutique.disabled = true;
     selBoutique.innerHTML =
       `<option value="${echapper(boutiqueId)}">${echapper(boutiqueNom)}</option>`;
@@ -1378,7 +1378,7 @@ document.getElementById('confirmerAttribution').addEventListener('click', async 
     ?? document.getElementById('distributeurChoisi').value;
 
   if (!boutique || !marque || !distributeur) {
-    retour.textContent = 'Il manque la boutique, la marque ou le distributeur.';
+    retour.textContent = 'Il manque le revendeur, la marque ou le distributeur.';
     retour.dataset.ton = 'erreur';
     retour.hidden = false;
     return;
@@ -1406,7 +1406,7 @@ document.getElementById('confirmerAttribution').addEventListener('click', async 
       resultat.repris_a
         ? `${resultat.boutique} passe de ${resultat.repris_a} à ${resultat.distributeur} `
           + `pour ${resultat.marque}.`
-        : `${resultat.boutique} est confiée à ${resultat.distributeur} pour ${resultat.marque}.`,
+        : `${resultat.boutique} est rattaché à ${resultat.distributeur} pour ${resultat.marque}.`,
       'succes');
     await rafraichir();
   } catch (erreur) {
@@ -1447,7 +1447,7 @@ function tracerBandeau() {
 
   document.getElementById('chiffrePoints').textContent = nombre(r.boutiques_actives);
   document.getElementById('detailPoints').innerHTML =
-    `<span>${nombre(r.boutiques_total)} recensée(s)</span>`
+    `<span>${nombre(r.boutiques_total)} recensé(s)</span>`
     + `<span>${nombre(r.distributeurs)} distributeur(s)</span>`;
 
   document.getElementById('chiffreRuptures').textContent = nombre(r.ruptures_ouvertes);
@@ -1471,7 +1471,7 @@ function tracerRupturesRecentes() {
 
   if (!etat.rupturesRecentes.length) {
     table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
-      + 'Aucune rupture en cours. Toutes les boutiques du réseau sont servies.</td></tr></tbody>';
+      + 'Aucune demande en cours. Tous les revendeurs du réseau sont servis.</td></tr></tbody>';
     return;
   }
 
@@ -1481,7 +1481,7 @@ function tracerRupturesRecentes() {
 
   table.innerHTML = `
     <thead><tr>
-      <th>Produit</th><th>Point de vente</th><th>Commune</th>
+      <th>Produit</th><th>Revendeur</th><th>Commune</th>
       <th>Distributeur</th><th class="num">Attente</th><th>État</th>
     </tr></thead>
     <tbody>${ordonnees.map((r) => {
@@ -1576,8 +1576,8 @@ function tracerTableCommunes() {
 
   table.innerHTML = `
     <thead><tr>
-      <th>Commune</th><th class="num">Points</th>
-      <th class="num">Orphelines</th><th class="num">Ruptures</th>
+      <th>Commune</th><th class="num">Revendeurs</th>
+      <th class="num">Sans distributeur</th><th class="num">Demandes</th>
     </tr></thead>
     <tbody>${ordonnees.map((c) => {
       const orphelines = Number(c.points_sans_distributeur ?? 0);
@@ -1618,7 +1618,7 @@ document.getElementById('filtreCommune').addEventListener('change', (e) => {
 function tracerActeurs() {
   const a = etat.acteurs;
   const cartes = [
-    ['Points de vente', a.points_de_vente, a.points_retires, 'retiré(s)'],
+    ['Revendeurs', a.points_de_vente, a.points_retires, 'retiré(s)'],
     ['Fabricants', a.fabricants, a.fabricants_suspendus, 'suspendu(s)'],
     ['Distributeurs', a.distributeurs, a.distributeurs_suspendus, 'suspendu(s)'],
     ['Livreurs', a.livreurs, a.livreurs_ecartes, 'écarté(s)'],
@@ -1646,7 +1646,7 @@ function tracerAttribution() {
 
   table.innerHTML = `
     <thead><tr>
-      <th>Marque</th><th class="num">Points attribués</th>
+      <th>Marque</th><th class="num">Revendeurs rattachés</th>
       <th class="num">Distributeurs</th><th>Périmètre</th>
     </tr></thead>
     <tbody>${etat.attribution.map((a) => {
@@ -1657,7 +1657,7 @@ function tracerAttribution() {
         <td class="num">${nombre(a.distributeurs ?? 0)}</td>
         <td style="white-space:normal">${a.perimetre
           ? echapper(a.perimetre)
-          : '<span class="etat etat--alerte">Aucune boutique</span>'}</td>
+          : '<span class="etat etat--alerte">Aucun revendeur</span>'}</td>
       </tr>`;
     }).join('')}</tbody>`;
 }
@@ -1670,7 +1670,7 @@ function tracerTableActeurs() {
   const lignes = [
     ...etat.boutiques.map((b) => ({
       type: 'point_de_vente', id: b.point_de_vente_id, nom: b.nom,
-      detail: `${b.commune ?? ''} · boutique`, actif: b.statut === 'actif',
+      detail: `${b.commune ?? ''} · revendeur`, actif: b.statut === 'actif',
     })),
     ...etat.distributeurs.map((d) => ({
       type: 'distributeur', id: d.distributeur_id, nom: d.nom,
@@ -1697,7 +1697,7 @@ function tracerTableActeurs() {
     <thead><tr><th>Acteur</th><th>Nature</th><th>État</th><th></th></tr></thead>
     <tbody>${lignes.map((l) => `<tr>
       <td>${echapper(l.nom)}<small>${echapper(l.detail)}</small></td>
-      <td>${echapper({ point_de_vente: 'Point de vente', distributeur: 'Distributeur',
+      <td>${echapper({ point_de_vente: 'Revendeur', distributeur: 'Distributeur',
         livreur: 'Livreur' }[l.type])}</td>
       <td>${l.actif
         ? '<span class="etat etat--ok">En service</span>'
@@ -2021,7 +2021,7 @@ function tracerProduitsTendus() {
 
   if (!etat.produitsTendus.length) {
     table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
-      + 'Aucune rupture signalée à ce jour.</td></tr></tbody>';
+      + 'Aucune demande enregistrée à ce jour.</td></tr></tbody>';
     return;
   }
 
@@ -2032,7 +2032,7 @@ function tracerProduitsTendus() {
 
   table.innerHTML = `
     <thead><tr>
-      <th>Produit</th><th class="num">Signalements</th><th class="num">Boutiques</th>
+      <th>Produit</th><th class="num">Demandes</th><th class="num">Revendeurs</th>
     </tr></thead>
     <tbody>${ordonnes.map((p) => {
       const n = Number(p.signalements);
@@ -2074,7 +2074,7 @@ document.getElementById('exportCsv').addEventListener('click', () => {
   const lignes = [];
 
   lignes.push(['VOLUME LIVRÉ PAR SEMAINE']);
-  lignes.push(['Semaine', 'Montant F CFA', 'Livraisons', 'Ruptures signalées']);
+  lignes.push(['Semaine', 'Montant F CFA', 'Livraisons', 'Demandes reçues']);
   for (const s of etat.semaines) {
     lignes.push([s.semaine, Math.round(Number(s.montant)), s.livraisons, s.ruptures]);
   }
@@ -2090,8 +2090,8 @@ document.getElementById('exportCsv').addEventListener('click', () => {
   }
 
   lignes.push([]);
-  lignes.push(['PRODUITS LES PLUS EN RUPTURE']);
-  lignes.push(['Produit', 'Référence', 'Marque', 'Signalements', 'Boutiques touchées',
+  lignes.push(['PRODUITS LES PLUS DEMANDÉS']);
+  lignes.push(['Produit', 'Référence', 'Marque', 'Demandes', 'Revendeurs concernés',
     'Servies', 'Non servies']);
   for (const p of etat.produitsTendus) {
     lignes.push([p.produit, p.reference ?? '', p.marque, p.signalements,
