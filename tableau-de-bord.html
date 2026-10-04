@@ -30,7 +30,7 @@
   <nav class="console-nav" aria-label="Sections">
     <button type="button" class="console-onglet est-actif" data-volet="tableau">Mon réseau</button>
     <button type="button" class="console-onglet" data-volet="ruptures">
-      Ruptures <span id="compteurRuptures" hidden>0</span>
+      Demandes <span id="compteurRuptures" hidden>0</span>
     </button>
     <button type="button" class="console-onglet" data-volet="catalogue">Mon catalogue</button>
   </nav>
@@ -56,7 +56,7 @@
       <article class="carte c4">
         <header>
           <h3>Taux de service</h3>
-          <small>Part de vos ruptures effectivement servies. C'est l'indicateur que Yalla vous vend.</small>
+          <small>Part de vos demandes effectivement livrées. C'est l'indicateur que Yalla vous vend.</small>
         </header>
         <div class="jauge" id="jaugeService"></div>
         <footer id="piedService">—</footer>
@@ -70,9 +70,9 @@
         <div class="chiffre" id="chiffreVolume">—</div>
         <div class="chiffre-suite" id="detailVolume"></div>
         <footer>
-          Ce montant est celui des réapprovisionnements, pas des ventes en
-          boutique. Ce qu'un commerçant encaisse à son comptoir n'appartient
-          qu'à lui, et ne vous est jamais montré.
+          Ce montant est celui des réapprovisionnements, pas des ventes au
+          détail. Le chiffre d'affaires d'un revendeur lui appartient et ne
+          vous est jamais montré.
         </footer>
       </article>
 
@@ -88,16 +88,16 @@
 
       <article class="carte c7">
         <header>
-          <h3>Vos ruptures par commune</h3>
-          <small>Là où vos produits manquent le plus souvent, donc là où vous perdez des ventes sans le savoir.</small>
+          <h3>Vos demandes par commune</h3>
+          <small>Les communes où les revendeurs expriment le plus de besoins sur vos références.</small>
         </header>
         <div class="graphe" id="grapheCommunes"></div>
       </article>
 
       <article class="carte c5">
         <header>
-          <h3>Vos références les plus tendues</h3>
-          <small>Une vente qui n'a pas lieu ne laisse aucune trace dans vos relevés. Celles-ci, si.</small>
+          <h3>Vos références les plus demandées</h3>
+          <small>Les demandes des revendeurs révèlent où vos références sont les plus recherchées.</small>
         </header>
         <div class="table-boite">
           <table class="table" id="tableTendus"></table>
@@ -107,7 +107,7 @@
     </div>
 
     <p class="note">
-      <b>Vous ne voyez que les ruptures portant sur votre catalogue.</b> Celles
+      <b>Vous ne voyez que les demandes portant sur votre catalogue.</b> Celles
       d'un concurrent ne vous sont jamais transmises, et les vôtres ne lui sont
       jamais montrées. Ce cloisonnement vit dans les politiques de la base, pas
       dans cette page : il s'applique aussi à quiconque interrogerait l'API
@@ -115,15 +115,15 @@
     </p>
   </section>
 
-  <!-- ══ Ruptures ═════════════════════════════════════════ -->
-  <section class="console-volet" id="voletRuptures" aria-label="Ruptures" hidden>
+  <!-- ══ Demandes ══════════════════════════════════════════ -->
+  <section class="console-volet" id="voletRuptures" aria-label="Demandes" hidden>
     <div class="grille">
       <article class="carte c12">
         <header>
-          <h3>Ruptures sur votre catalogue</h3>
+          <h3>Demandes sur votre catalogue</h3>
           <small>
-            Le délai court depuis la confirmation par le commerçant, moment où
-            la course devient réellement en attente.
+            Le délai court depuis la confirmation par le revendeur, moment où
+            la demande devient visible au distributeur.
           </small>
         </header>
 
@@ -137,8 +137,8 @@
             <select id="filtreEtat">
               <option value="ouvertes">En cours</option>
               <option value="toutes">Toutes</option>
-              <option value="resolue">Servies</option>
-              <option value="non_servie">Non servies</option>
+              <option value="resolue">Livrées</option>
+              <option value="non_servie">Non livrées</option>
             </select>
           </div>
         </div>
@@ -171,7 +171,7 @@
 
         <footer>
           Retirer une référence la fait disparaître des écrans sans rien
-          effacer : son historique de ruptures reste, et vous pouvez la remettre
+          effacer : son historique de demandes reste, et vous pouvez la remettre
           en service. C'est pour cela qu'il n'y a pas de suppression.
         </footer>
       </article>
@@ -189,7 +189,7 @@
     <div class="champ">
       <label for="produitNom">Nom du produit</label>
       <input type="text" id="produitNom" maxlength="120" placeholder="Huile de palme 1L">
-      <small>Tel que le commerçant le reconnaîtra en rayon.</small>
+      <small>Tel que le revendeur le retrouvera dans le catalogue.</small>
     </div>
 
     <div class="champ">
@@ -205,7 +205,7 @@
       <input type="text" id="produitReference" maxlength="40" placeholder="Laissez vide pour la générer">
       <small>
         Elle sert au distributeur à retrouver le produit sur un bon de
-        livraison. Laissée vide, elle est fabriquée depuis votre marque et le
+        livraison. Laissée vide, elle est générée à partir de votre marque et du
         nom du produit. Elle ne pourra plus être modifiée ensuite.
       </small>
     </div>
