@@ -68,12 +68,12 @@
         <div class="chiffre-suite" id="detailVolume"></div>
       </article>
       <article class="carte c3">
-        <header><h3>Points de vente actifs</h3></header>
+        <header><h3>Revendeurs actifs</h3></header>
         <div class="chiffre" id="chiffrePoints">—</div>
         <div class="chiffre-suite" id="detailPoints"></div>
       </article>
       <article class="carte c3">
-        <header><h3>Ruptures en cours</h3></header>
+        <header><h3>Demandes en cours</h3></header>
         <div class="chiffre" id="chiffreRuptures">—</div>
         <div class="chiffre-suite" id="detailRuptures"></div>
       </article>
@@ -91,7 +91,7 @@
       <article class="carte c4">
         <header>
           <h3>Taux de service</h3>
-          <small>Part des ruptures effectivement servies, toutes marques confondues.</small>
+          <small>Part des demandes effectivement livrées, toutes marques confondues.</small>
         </header>
         <div class="jauge" id="jaugeService"></div>
         <footer id="piedService">—</footer>
@@ -99,8 +99,8 @@
 
       <article class="carte c4">
         <header>
-          <h3>Ruptures en cours</h3>
-          <small>Où en sont les signalements qui n'ont pas encore été servis.</small>
+          <h3>Demandes en cours</h3>
+          <small>Où en sont les demandes qui n'ont pas encore été livrées.</small>
         </header>
         <div class="anneau" id="anneauRuptures"></div>
         <footer id="piedRuptures">—</footer>
@@ -109,7 +109,7 @@
       <article class="carte c4">
         <header>
           <h3>Couverture du réseau</h3>
-          <small>Boutiques actives qu'un distributeur dessert réellement.</small>
+          <small>Revendeurs actifs desservis par un distributeur.</small>
         </header>
         <div class="objectif" id="objectifCouverture"></div>
         <footer id="piedCouverture">—</footer>
@@ -121,7 +121,7 @@
       <article class="carte c8">
         <header>
           <h3>Rythme du réseau, quatorze jours</h3>
-          <small>Ruptures signalées et ruptures résolues, jour par jour. Les jours creux valent zéro et sont dessinés.</small>
+          <small>Demandes reçues et livraisons confirmées, jour par jour. Les jours creux valent zéro et sont dessinés.</small>
         </header>
         <div class="graphe" id="grapheActivite"></div>
         <footer id="piedActivite">—</footer>
@@ -139,8 +139,8 @@
 
       <article class="carte c7">
         <header>
-          <h3>Boutiques par commune</h3>
-          <small>Desservies contre orphelines. Une commune toute rouge est une commune sans distributeur.</small>
+          <h3>Revendeurs par commune</h3>
+          <small>Revendeurs desservis ou sans distributeur. Une commune toute rouge n’a pas de grossiste assigné.</small>
         </header>
         <div class="graphe" id="grapheCommunes"></div>
       </article>
@@ -148,7 +148,7 @@
       <article class="carte c5">
         <header>
           <h3>Charge des distributeurs</h3>
-          <small>La chaleur marque les courses en attente : plus la cellule est vive, plus il en a sur les bras.</small>
+          <small>La chaleur marque les demandes à livrer : plus la cellule est vive, plus il en a à traiter.</small>
         </header>
         <div class="table-boite">
           <table class="table" id="tableCharge"></table>
@@ -160,8 +160,8 @@
            n'attend personne. -->
       <article class="carte c12">
         <header>
-          <h3>Ruptures récentes</h3>
-          <small>Les plus anciennes d'abord. Le délai compte depuis la confirmation du boutiquier, moment où la course devient réellement en attente.</small>
+          <h3>Demandes récentes</h3>
+          <small>Les plus anciennes d'abord. Le délai compte depuis la confirmation du revendeur, moment où la demande devient visible au distributeur.</small>
         </header>
         <div class="table-boite">
           <table class="table" id="tableRupturesRecentes"></table>
@@ -171,10 +171,10 @@
     </div>
 
     <p class="note">
-      <b>Le chiffre d'affaires présenté mesure les livraisons du réseau.</b>
-      Les ventes au comptoir et les stocks des boutiques restent privés.
-      L'application boutique sert au catalogue, aux signalements et aux échanges
-      avec les partenaires, pas à tenir leur comptabilité.
+      <b>Cette vue suit l'activité de distribution, pas les ventes des revendeurs.</b>
+      Les données commerciales de chaque point de vente restent privées.
+      L'application sert à consulter les catalogues, transmettre les demandes
+      et suivre les livraisons avec les partenaires.
     </p>
   </section>
 
@@ -184,7 +184,7 @@
 
       <aside class="rail">
         <div class="rail-onglets" role="tablist">
-          <button type="button" class="rail-onglet est-actif" data-rail="boutiques">Boutiques</button>
+          <button type="button" class="rail-onglet est-actif" data-rail="boutiques">Revendeurs</button>
           <button type="button" class="rail-onglet" data-rail="distributeurs">Distrib.</button>
           <button type="button" class="rail-onglet" data-rail="livreurs">Livreurs</button>
           <button type="button" class="rail-onglet" data-rail="marques">Marques</button>
@@ -208,7 +208,7 @@
           </div>
           <div id="canevasCarte"></div>
           <div class="canevas-legende">
-            <span><i style="background:#3ED598"></i> Desservie</span>
+            <span><i style="background:#3ED598"></i> Desservi</span>
             <span><i style="background:#FF5C39"></i> Sans distributeur</span>
             <span><i style="background:#FFE500"></i> Livreur</span>
           </div>
@@ -231,7 +231,7 @@
           <article class="carte c6">
             <header>
               <h3>Répartition par commune</h3>
-              <small>Points recensés, boutiques que personne ne dessert, ruptures ouvertes.</small>
+              <small>Revendeurs recensés, acteurs non rattachés et demandes ouvertes.</small>
             </header>
             <div class="table-boite">
               <table class="table" id="tableCommunes"></table>
@@ -250,9 +250,9 @@
 
     <article class="carte c12" style="grid-column:auto">
       <header>
-        <h3>Demandes à confirmer</h3>
+        <h3>Inscriptions à valider</h3>
         <small>
-          Fabricants et distributeurs qui ont demandé à rejoindre le réseau
+          Fabricants et distributeurs qui ont demandé un accès au réseau
           depuis le site. Valider crée le compte et vous remet ses identifiants
           à l'écran, une seule fois : c'est vous qui les transmettez, rien ne
           part par e-mail.
@@ -264,7 +264,7 @@
     <article class="carte c12" style="grid-column:auto">
       <header>
         <h3>Attribution de réseau</h3>
-        <small>Par marque : combien de boutiques la portent, et sur quelles communes.</small>
+        <small>Par marque : combien de revendeurs la portent, et sur quelles communes.</small>
       </header>
       <div class="table-boite">
         <table class="table" id="tableAttribution"></table>
@@ -417,7 +417,7 @@
 
       <article class="carte c5">
         <header>
-          <h3>Produits les plus en rupture</h3>
+          <h3>Produits les plus demandés</h3>
           <small>
             L'information qu'aucun relevé de ventes ne donne à un fabricant :
             une vente qui n'a pas lieu ne laisse aucune trace chez lui.
@@ -436,9 +436,9 @@
       <header>
         <h3>Ce qui ne tourne pas rond</h3>
         <small>
-          Les pannes dont personne ne se plaint : une boutique que nul ne
-          dessert, un distributeur sans livreur, un stock jamais saisi. Elles
-          dégradent le service sans que rien ne le signale.
+          Les pannes dont personne ne se plaint : un revendeur que nul ne
+          dessert, un distributeur sans livreur, une demande sans destinataire.
+          Elles dégradent le service sans que rien ne le signale.
         </small>
       </header>
       <div id="zoneAnomalies" style="display:flex;flex-direction:column;gap:26px"></div>
@@ -450,7 +450,7 @@
 <!-- ══ Valider une demande ════════════════════════════════ -->
 <dialog id="fenetreValidation" class="fenetre">
   <form method="dialog">
-    <h2>Valider la demande</h2>
+    <h2>Valider l'inscription</h2>
     <p id="sousTitreValidation"></p>
 
     <div class="champ" id="champMarque" hidden>
@@ -480,11 +480,11 @@
 <!-- ══ Attribuer une boutique ═════════════════════════════ -->
 <dialog id="fenetreAttribution" class="fenetre">
   <form method="dialog">
-    <h2>Attribuer une boutique</h2>
+    <h2>Attribuer un revendeur</h2>
     <p id="sousTitreAttribution"></p>
 
     <div class="champ">
-      <label for="boutiqueChoisie">Boutique</label>
+      <label for="boutiqueChoisie">Revendeur</label>
       <select id="boutiqueChoisie"></select>
     </div>
 
@@ -496,7 +496,7 @@
     <div class="champ">
       <label for="marqueChoisie">Pour la marque</label>
       <select id="marqueChoisie"></select>
-      <small>C'est le triplet boutique, marque et distributeur qui décide où part une rupture.</small>
+      <small>Ce rattachement associe le revendeur, la marque et le distributeur qui traitera ses demandes.</small>
     </div>
 
     <p class="console-message" id="messageAttribution" role="status" hidden></p>
