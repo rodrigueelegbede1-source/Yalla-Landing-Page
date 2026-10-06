@@ -262,21 +262,15 @@ function arc(cx, cy, r, de, a, epaisseur, couleur) {
    « on est dans le rouge » sans lire le chiffre. Les seuils sont ceux qu'on
    défendra devant un fabricant, 50 et 80. */
 function tracerJauge(valeur) {
-  const boite = document.getElementById('jaugeService');
-  const pied = document.getElementById('piedService');
+  // La maquette n'affiche le taux de service que comme chiffre de KPI,
+  // sans grande jauge dédiée : la carte ronde a été retirée du bas de page,
+  // mais le calcul (et son texte d'accompagnement court) reste utile au pied
+  // de la carte KPI « Taux de service ».
   const kpi = document.getElementById('chiffreService');
   const detailKpi = document.getElementById('detailService');
   const closes = Number(etat.reseau.ruptures_closes ?? 0);
 
   if (valeur === null || valeur === undefined) {
-    boite.innerHTML =
-      '<svg viewBox="0 0 240 150" role="img" aria-label="Taux de service indisponible">'
-      + arc(120, 120, 92, 180, 360, 20, '#E6EBE5')
-      + '<text x="120" y="112" text-anchor="middle" class="jauge-valeur" '
-      + 'style="fill:rgba(8,22,14,.35)">—</text></svg>';
-    pied.textContent =
-      'Aucune demande clôturée pour l’instant. L’indicateur attend le terrain : '
-      + 'il se calcule sur les demandes livrées et celles qui ne l’ont pas été.';
     if (kpi) kpi.textContent = '—';
     if (detailKpi) detailKpi.textContent = 'Aucune demande clôturée';
     return;
@@ -285,35 +279,6 @@ function tracerJauge(valeur) {
   const v = Math.max(0, Math.min(100, Number(valeur)));
   if (kpi) kpi.textContent = `${v} %`;
   if (detailKpi) detailKpi.textContent = `Sur ${nombre(closes)} demande(s) clôturée(s)`;
-  const angle = 180 + (v / 100) * 180;
-  const [ax, ay] = pointCercle(120, 120, 72, angle);
-  const [bx, by] = pointCercle(120, 120, 10, angle + 90);
-  const [cx2, cy2] = pointCercle(120, 120, 10, angle - 90);
-
-  boite.innerHTML =
-    `<svg viewBox="0 0 240 150" role="img" aria-label="Taux de service ${v} %">`
-    + arc(120, 120, 92, 180, 270, 20, ALERTE)
-    + arc(120, 120, 92, 270, 324, 20, JAUNE)
-    + arc(120, 120, 92, 324, 360, 20, VERT)
-    // L'aiguille est un triangle plein : une simple ligne se perd sur les
-    // bandes colorées, qui sont épaisses.
-    + `<path d="M ${ax.toFixed(2)} ${ay.toFixed(2)} L ${bx.toFixed(2)} ${by.toFixed(2)} `
-    + `L ${cx2.toFixed(2)} ${cy2.toFixed(2)} Z" fill="#102A23"/>`
-    + '<circle cx="120" cy="120" r="7" fill="#102A23"/>'
-    + `<text x="120" y="104" text-anchor="middle" class="jauge-valeur">${v}</text>`
-    + '<text x="120" y="120" text-anchor="middle" class="jauge-unite">POUR CENT</text>'
-    + '<text x="26" y="142" class="jauge-borne">0</text>'
-    + '<text x="214" y="142" text-anchor="end" class="jauge-borne">100</text>'
-    + '</svg>';
-
-  // Trois lectures pour un même chiffre. Le taux ne se commente pas tout seul :
-  // 62 % se lit comme un bon résultat si l'on ne sait pas ce qu'on vend.
-  const lecture = v >= 80 ? 'C’est le chiffre qui se défend devant un fabricant.'
-    : v >= 50 ? 'Tenable, mais ce n’est pas encore un argument de vente.'
-      : 'Sous cinquante, le produit ne tient pas sa promesse.';
-
-  pied.innerHTML = 'Calculé sur <b style="font-family:var(--ff-mono);color:var(--ink)">'
-    + `${nombre(closes)}</b> demande(s) clôturée(s). ${lecture}`;
 }
 
 /* ── L'anneau des ruptures ────────────────────────────────
@@ -321,53 +286,42 @@ function tracerJauge(valeur) {
    le boutiquier qui doit répondre ; ouverte, c'est le distributeur qui doit
    prendre ; prise en charge, c'est le livreur qui roule. */
 function tracerAnneau() {
-  const boite = document.getElementById('anneauRuptures');
+  const boite = document.getElementById('demandesEnCoursListe');
   const pied = document.getElementById('piedRuptures');
 
-  const parts = [
-    { nom: 'À confirmer', valeur: Number(etat.reseau.ruptures_a_confirmer ?? 0), couleur: JAUNE,
-      note: 'Le revendeur n’a pas encore confirmé cette demande.' },
-    { nom: 'Ouvertes', valeur: Number(etat.reseau.ruptures_ouvertes ?? 0), couleur: ALERTE,
-      note: 'Confirmées, en attente d’un distributeur.' },
-    { nom: 'Prises en charge', valeur: Number(etat.reseau.ruptures_prises ?? 0), couleur: VERT,
-      note: 'Un livreur est dessus.' },
-  ];
-  const total = parts.reduce((s, p) => s + p.valeur, 0);
+  const enCours = etat.rupturesRecentes.filter((r) => r.statut !== 'prise_en_charge');
+  const total = enCours.length;
 
-  const r = 52;
-  const circonference = 2 * Math.PI * r;
-  let parcouru = 0;
+  if (!total) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0">'
+      + 'Aucune demande en cours. Tous les revendeurs du réseau sont servis.</div>';
+  } else {
+    const ordonnees = [...enCours]
+      .sort((a, b) => Number(b.attente_secondes ?? 0) - Number(a.attente_secondes ?? 0))
+      .slice(0, 6);
 
-  const segments = total === 0
-    ? `<circle cx="66" cy="66" r="${r}" fill="none" stroke="#E6EBE5" stroke-width="20"/>`
-    : parts.filter((p) => p.valeur > 0).map((p) => {
-      const longueur = (p.valeur / total) * circonference;
-      const decalage = -parcouru;
-      parcouru += longueur;
-      // Un liseré blanc de 2px sépare les segments : sans lui, deux couleurs
-      // voisines de valeur proche se lisent comme une seule.
-      return `<circle cx="66" cy="66" r="${r}" fill="none" stroke="${p.couleur}"
-        stroke-width="20" stroke-dasharray="${Math.max(0, longueur - 2).toFixed(2)} ${circonference.toFixed(2)}"
-        stroke-dashoffset="${decalage.toFixed(2)}" transform="rotate(-90 66 66)"/>`;
+    boite.innerHTML = ordonnees.map((r) => {
+      const attente = Number(r.attente_secondes ?? 0);
+      // Deux heures : c'est le seuil d'escalade utilisé partout ailleurs
+      // dans le produit. Au-delà, la barre de progression est pleine.
+      const progression = Math.min(100, Math.round((attente / 7200) * 100));
+      return `<div class="signal-item">
+        <div class="signal-heading">
+          <strong>${echapper(r.produit)} · ${echapper(r.point_de_vente)}</strong>
+          <span class="status${r.confirmee_le ? '' : ''}">${r.confirmee_le ? 'En attente' : 'À confirmer'}</span>
+        </div>
+        <div class="signal-meta"><span>${echapper(r.commune ?? '')}${
+          r.distributeur ? ` · ${echapper(r.distributeur)}` : ' · Sans distributeur'}</span><span>${duree(attente)}</span></div>
+        <div class="signal-meter"><i style="width:${progression}%"></i></div>
+      </div>`;
     }).join('');
+  }
 
-  boite.innerHTML = `
-    <svg viewBox="0 0 132 132" role="img" aria-label="${total} demande(s) en cours">
-      ${segments}
-      <text x="66" y="66" text-anchor="middle" class="anneau-total">${total}</text>
-      <text x="66" y="82" text-anchor="middle" class="anneau-legende">EN COURS</text>
-    </svg>
-    <div class="legende">
-      ${parts.map((p) => `<div>
-        <i style="background:${p.couleur}"></i>${echapper(p.nom)}<b>${nombre(p.valeur)}</b>
-      </div>`).join('')}
-    </div>`;
-
-  const bloquant = parts[0].valeur;
+  const sansPreneur = enCours.filter((r) => r.statut === 'signalee' && !r.distributeur).length;
   pied.textContent = total === 0
     ? 'Aucune demande en cours. Tous les revendeurs du réseau sont servis.'
-    : bloquant > 0
-      ? `${bloquant} attend${bloquant > 1 ? 'ent' : ''} la confirmation du revendeur : `
+    : sansPreneur > 0
+      ? `${sansPreneur} attend${sansPreneur > 1 ? 'ent' : ''} la confirmation du revendeur : `
         + 'elles ne seront visibles des distributeurs qu’après sa confirmation.'
       : 'Toutes les demandes en cours sont confirmées et visibles des distributeurs.';
 }
@@ -377,7 +331,10 @@ function tracerAnneau() {
    produit des ruptures sans destinataire, qui n'existent qu'après deux heures
    d'escalade. C'est la seule barre de cet écran dont l'objectif est absolu. */
 function tracerCouverture() {
-  const boite = document.getElementById('objectifCouverture');
+  const anneau = document.getElementById('anneauCouverture');
+  const valeur = document.getElementById('valeurCouverture');
+  const copie = document.getElementById('texteCouverture');
+  const barres = document.getElementById('communesCouverture');
   const pied = document.getElementById('piedCouverture');
 
   const actives = etat.boutiques.filter((b) => b.statut === 'actif');
@@ -385,16 +342,33 @@ function tracerCouverture() {
   const total = actives.length;
   const part = total === 0 ? 0 : Math.round((desservies.length / total) * 100);
 
-  boite.innerHTML = `
-    <div class="objectif-piste">
-      <div class="objectif-remplissage" style="width:${part}%"></div>
-      <div class="objectif-seuil" style="inset-inline-start:calc(100% - 2px)" data-libelle="Objectif"></div>
-    </div>
-    <div class="objectif-bornes">
-      <span>${nombre(desservies.length)} revendeur(s) desservi(s)</span>
-      <span>${part} %</span>
-      <span>${nombre(total)} active(s)</span>
-    </div>`;
+  anneau.style.background = `conic-gradient(${VERT} 0 ${part}%, #e6ebe5 ${part}% 100%)`;
+  valeur.textContent = `${part} %`;
+  copie.innerHTML = `<strong>${nombre(desservies.length)} revendeur(s) desservi(s)</strong>`
+    + `<p>Sur ${nombre(total)} revendeur(s) actif(s) au total.</p>`;
+
+  const filtres = actives.filter((b) => !filtreCommuneTableau || b.commune === filtreCommuneTableau);
+  const parCommune = new Map();
+  for (const b of filtres) {
+    const cle = b.commune || '—';
+    if (!parCommune.has(cle)) parCommune.set(cle, { desservies: 0, total: 0 });
+    const ligne = parCommune.get(cle);
+    ligne.total += 1;
+    if (b.distributeurs) ligne.desservies += 1;
+  }
+
+  const rangs = [...parCommune.entries()]
+    .map(([commune, v]) => ({ commune, ...v, taux: v.total === 0 ? 0 : Math.round((v.desservies / v.total) * 100) }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 6);
+
+  barres.innerHTML = !rangs.length
+    ? '<div class="vide" style="border:0;padding:8px 0">Aucun revendeur actif.</div>'
+    : rangs.map((r) => `<div class="commune-row">
+        <span>${echapper(r.commune)}</span>
+        <div class="track"><i style="width:${r.taux}%"></i></div>
+        <b>${r.taux} %</b>
+      </div>`).join('');
 
   const orphelines = total - desservies.length;
   pied.textContent = total === 0
@@ -509,89 +483,127 @@ function tracerChiffres() {
     </div>`).join('');
 }
 
-/* ── Les boutiques par commune ────────────────────────────
-   Barres horizontales empilées : le nom d'une commune ivoirienne est long, il
-   se lit en ligne et pas à la verticale sous un histogramme. */
-function tracerCommunes() {
-  const boite = document.getElementById('grapheCommunes');
-  const actives = etat.boutiques.filter((b) => b.statut === 'actif'
-    && (!filtreCommuneTableau || b.commune === filtreCommuneTableau));
-
-  if (!actives.length) {
-    boite.innerHTML = '<div class="vide" style="border:0;padding:20px 0">Aucun revendeur actif.</div>';
-    return;
-  }
-
-  const parCommune = new Map();
-  for (const b of actives) {
-    const cle = b.commune || '—';
-    if (!parCommune.has(cle)) parCommune.set(cle, { desservies: 0, orphelines: 0 });
-    parCommune.get(cle)[b.distributeurs ? 'desservies' : 'orphelines'] += 1;
-  }
-
-  const rangs = [...parCommune.entries()]
-    .map(([commune, v]) => ({ commune, ...v, total: v.desservies + v.orphelines }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 9);
-
-  const maxi = Math.max(1, ...rangs.map((r) => r.total));
-  const L = 560;
-  const hauteurRang = 30;
-  const margeG = 150;
-  const larg = L - margeG - 44;
-  const H = rangs.length * hauteurRang + 8;
-
-  const corps = rangs.map((r, i) => {
-    const yy = i * hauteurRang + 4;
-    const lDesservies = (r.desservies / maxi) * larg;
-    const lOrphelines = (r.orphelines / maxi) * larg;
-    return `
-      <text x="${margeG - 10}" y="${yy + 14}" text-anchor="end" class="graphe-etiquette">${echapper(r.commune)}</text>
-      ${r.desservies ? `<rect x="${margeG}" y="${yy + 3}" width="${lDesservies.toFixed(1)}" height="17" rx="2.5" fill="${VERT}"/>` : ''}
-      ${r.orphelines ? `<rect x="${(margeG + lDesservies).toFixed(1)}" y="${yy + 3}" width="${lOrphelines.toFixed(1)}" height="17" rx="2.5" fill="${ALERTE}"/>` : ''}
-      <text x="${(margeG + lDesservies + lOrphelines + 8).toFixed(1)}" y="${yy + 16}" class="graphe-valeur">${r.total}</text>`;
-  }).join('');
-
-  boite.innerHTML = `
-    <svg viewBox="0 0 ${L} ${H}" role="img" aria-label="Revendeurs actifs par commune">${corps}</svg>
-    <div class="legende" style="flex-direction:row;gap:18px;margin-top:10px">
-      <div style="flex:0"><i style="background:${VERT}"></i>Revendeurs desservis</div>
-      <div style="flex:0"><i style="background:${ALERTE}"></i>Sans distributeur</div>
-    </div>`;
-}
-
 /* ── La charge des distributeurs ──────────────────────────
-   La chaleur encode les courses en attente, et rien d'autre. Une cellule à
-   zéro reste blanche : teinter le vide ferait croire à une quantité. */
+   Pas de coût ni de remise : on affiche la seule donnée réelle, le nombre de
+   demandes à livrer, classée du plus chargé au moins chargé. */
 function tracerCharge() {
-  const table = document.getElementById('tableCharge');
-  const liste = etat.distributeurs;
+  const boite = document.getElementById('chargesApercuListe');
+  const liste = [...etat.distributeurs]
+    .sort((a, b) => Number(b.courses_en_attente ?? 0) - Number(a.courses_en_attente ?? 0));
 
   if (!liste.length) {
-    table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">Aucun distributeur enregistré.</td></tr></tbody>';
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0">Aucun distributeur enregistré.</div>';
     return;
   }
 
   const maxi = Math.max(1, ...liste.map((d) => Number(d.courses_en_attente ?? 0)));
 
-  table.innerHTML = `
-    <thead><tr>
-      <th>Distributeur</th><th class="num">Revendeurs</th>
-      <th class="num">Livreurs</th><th class="num">Demandes à livrer</th>
-    </tr></thead>
-    <tbody>${liste.map((d) => {
-      const attente = Number(d.courses_en_attente ?? 0);
-      const intensite = attente === 0 ? 0 : 0.14 + (attente / maxi) * 0.56;
-      const livreurs = Number(d.livreurs ?? 0);
-      return `<tr>
-        <td>${echapper(d.nom)}<small>${d.fabricant_rattache
-          ? `Affilié · ${echapper(d.fabricant_rattache)}` : 'Indépendant'}</small></td>
-        <td class="num">${nombre(d.boutiques ?? 0)}</td>
-        <td class="num" ${livreurs === 0 ? 'style="color:#D65C52"' : ''}>${nombre(livreurs)}</td>
-        <td class="num"><span class="cellule-chaude"
-          style="background:rgba(255,92,57,${intensite.toFixed(2)})">${nombre(attente)}</span></td>
-      </tr>`;
-    }).join('')}</tbody>`;
+  boite.innerHTML = liste.slice(0, 6).map((d) => {
+    const attente = Number(d.courses_en_attente ?? 0);
+    const livreurs = Number(d.livreurs ?? 0);
+    const largeur = Math.round((attente / maxi) * 100);
+    return `<div class="rank-item">
+      <div class="rank-heading"><strong>${echapper(d.nom)}</strong><span>${nombre(attente)}</span></div>
+      <div class="rank-meter"><i style="width:${largeur}%"></i></div>
+      <div class="rank-sub">${nombre(d.boutiques ?? 0)} revendeur(s) · ${nombre(livreurs)} livreur(s)${
+        livreurs === 0 ? ' · aucun livreur actif' : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Les nouveaux revendeurs, calculés sur le recensement réel ────────── */
+function tracerMetriques() {
+  const cible = document.getElementById('metricNouveaux');
+  if (!cible) return;
+  const seuil = Date.now() - 30 * 24 * 3600 * 1000;
+  const recents = etat.boutiques.filter((b) => b.created_at && new Date(b.created_at).getTime() >= seuil);
+  cible.textContent = nombre(recents.length);
+}
+
+/* ── Prévision et valeur des livraisons ────────────────────
+   Seule la valeur des livraisons confirmées existe réellement (le bandeau de
+   confidentialité l'explique) : le reste est annoncé « non calculable »
+   plutôt qu'inventé, comme le fait déjà le prototype. */
+function tracerPrevision() {
+  const boite = document.getElementById('previsionListe');
+  if (!boite) return;
+  const jours = etat.activite;
+  const aujourdhui = jours.length ? jours[jours.length - 1] : null;
+  const duJour = Number(aujourdhui?.montant ?? 0);
+  const livraisons = Number(aujourdhui?.livraisons ?? 0);
+  const panier = livraisons > 0 ? duJour / livraisons : null;
+  const maxi = Math.max(duJour, 1);
+
+  boite.innerHTML = `
+    <div class="finance-item">
+      <div class="finance-label"><span>CA livré confirmé (estimation logistique)</span><strong>${montant(duJour)}</strong></div>
+      <div class="finance-track"><i style="width:${Math.round((duJour / maxi) * 100)}%"></i></div>
+    </div>
+    <div class="finance-item${panier === null ? ' finance-item--untracked' : ''}">
+      <div class="finance-label"><span>Panier moyen par livraison</span><strong>${
+        panier === null ? '—' : montant(Math.round(panier))}</strong></div>
+      ${panier === null ? '<small>Aucune livraison confirmée aujourd’hui.</small>'
+        : `<div class="finance-track"><i style="width:${Math.min(100, Math.round((panier / maxi) * 100))}%"></i></div>`}
+    </div>
+    <div class="finance-item finance-item--untracked">
+      <div class="finance-label"><span>CA prévisionnel (non clôturé)</span><strong>Non calculable</strong></div>
+      <small>Les demandes en cours n'ont pas de montant tant qu'elles ne sont pas livrées.</small>
+    </div>
+    <div class="finance-item finance-item--untracked">
+      <div class="finance-label"><span>Pipeline pondéré</span><strong>Non suivi</strong></div>
+      <small>Aucun suivi commercial des prospects dans l'application.</small>
+    </div>`;
+}
+
+/* ── Les livreurs les plus actifs, sur l'historique disponible ────────── */
+function tracerLivreursEfficaces() {
+  const boite = document.getElementById('livreursEfficacesListe');
+  if (!boite) return;
+  const classes = [...etat.livreurs]
+    .map((l) => ({ ...l, termine: Number(l.livraisons_terminees ?? 0) }))
+    .filter((l) => l.termine > 0)
+    .sort((a, b) => b.termine - a.termine)
+    .slice(0, 6);
+
+  if (!classes.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0;color:#a9b9ae">'
+      + 'Non suivi : aucune livraison terminée n’est encore enregistrée.</div>';
+    return;
+  }
+
+  const maxi = Math.max(1, ...classes.map((l) => l.termine));
+  boite.innerHTML = classes.map((l) => `<div class="rank-item">
+    <div class="rank-heading"><strong>${echapper(l.nom ?? l.telephone ?? 'Livreur')}</strong><span>${nombre(l.termine)}</span></div>
+    <div class="rank-meter"><i style="width:${Math.round((l.termine / maxi) * 100)}%"></i></div>
+    <div class="rank-sub">Livraisons terminées, historique complet (pas de date ni de distance suivies)</div>
+  </div>`).join('');
+}
+
+/* ── Les produits les plus demandés, aperçu de la liste complète ─────── */
+function tracerProduitsApercu() {
+  const boite = document.getElementById('produitsApercuListe');
+  if (!boite) return;
+
+  if (!etat.produitsTendus.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0;color:#a9b9ae">'
+      + 'Aucune demande enregistrée à ce jour.</div>';
+    return;
+  }
+
+  const ordonnes = [...etat.produitsTendus]
+    .sort((a, b) => Number(b.signalements) - Number(a.signalements))
+    .slice(0, 6);
+  const maxi = Math.max(1, ...ordonnes.map((p) => Number(p.signalements)));
+
+  boite.innerHTML = ordonnes.map((p, i) => {
+    const n = Number(p.signalements);
+    return `<div class="product-row">
+      <span class="product-rank">${i + 1}</span>
+      <span class="product-name">${echapper(p.produit)}<br><small style="opacity:.75">${echapper(p.marque)}</small></span>
+      <div class="product-bar"><i style="width:${Math.round((n / maxi) * 100)}%"></i></div>
+      <span class="product-count">${nombre(n)} demande(s)</span>
+    </div>`;
+  }).join('');
 }
 
 /* ══ Le rail ══════════════════════════════════════════════ */
@@ -1483,46 +1495,33 @@ function tracerBandeau() {
 /* ── Les ruptures récentes ────────────────────────────────── */
 
 function tracerRupturesRecentes() {
-  const table = document.getElementById('tableRupturesRecentes');
+  const boite = document.getElementById('demandesRecentesListe');
 
   if (!etat.rupturesRecentes.length) {
-    table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
-      + 'Aucune demande en cours. Tous les revendeurs du réseau sont servis.</td></tr></tbody>';
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0">'
+      + 'Aucune demande en cours. Tous les revendeurs du réseau sont servis.</div>';
     return;
   }
 
+  // La plus récente d'abord : ce n'est pas la même liste que « Demandes en
+  // cours » (triée par urgence), même source, lecture différente.
   const ordonnees = [...etat.rupturesRecentes]
-    .sort((a, b) => Number(b.attente_secondes ?? 0) - Number(a.attente_secondes ?? 0))
-    .slice(0, 12);
+    .sort((a, b) => Number(a.attente_secondes ?? 0) - Number(b.attente_secondes ?? 0))
+    .slice(0, 8);
 
-  table.innerHTML = `
-    <thead><tr>
-      <th>Produit</th><th>Revendeur</th><th>Commune</th>
-      <th>Distributeur</th><th class="num">Attente</th><th>État</th>
-    </tr></thead>
-    <tbody>${ordonnees.map((r) => {
-      const attente = Number(r.attente_secondes ?? 0);
-      const pris = r.statut === 'prise_en_charge';
-      // Deux heures : c'est le seuil d'escalade. Au-delà, la course est
-      // ouverte aux distributeurs voisins, et le retard devient visible de
-      // tout le monde.
-      const tendu = !pris && attente > 7200;
-      return `<tr>
-        <td>${echapper(r.produit)}<small>${echapper(r.marque ?? '')}${
-          r.quantite_demandee ? ` · ${r.quantite_demandee} carton(s)` : ''}</small></td>
-        <td>${echapper(r.point_de_vente)}</td>
-        <td>${echapper(r.commune ?? '')}</td>
-        <td>${r.distributeur
-          ? echapper(r.distributeur)
-          : '<span class="etat etat--alerte">Aucun</span>'}</td>
-        <td class="num"${tendu ? ' style="color:#D65C52;font-weight:600"' : ''}>${duree(attente)}</td>
-        <td>${pris
-          ? '<span class="etat etat--ok">Prise en charge</span>'
-          : r.confirmee_le
-            ? '<span class="etat etat--alerte">En attente</span>'
-            : '<span class="etat etat--dort">À confirmer</span>'}</td>
-      </tr>`;
-    }).join('')}</tbody>`;
+  boite.innerHTML = ordonnees.map((r) => {
+    const attente = Number(r.attente_secondes ?? 0);
+    const pris = r.statut === 'prise_en_charge';
+    const point = pris ? 'done' : r.confirmee_le ? 'route' : '';
+    return `<div class="event-item">
+      <span class="event-dot ${point}"></span>
+      <div class="event-main">
+        <strong>${echapper(r.produit)} · ${echapper(r.point_de_vente)}</strong>
+        <span>${echapper(r.commune ?? '')}${r.distributeur ? ` · ${echapper(r.distributeur)}` : ''}</span>
+      </div>
+      <div class="event-value">${duree(attente)}<small>${pris ? 'Prise en charge' : r.confirmee_le ? 'En attente' : 'À confirmer'}</small></div>
+    </div>`;
+  }).join('');
 }
 
 /* Durée courte, dans la forme utilisée partout ailleurs dans le produit. */
@@ -1629,7 +1628,7 @@ function remplirCommunes() {
 
 document.getElementById('filtreCommuneTableau').addEventListener('change', (e) => {
   filtreCommuneTableau = e.target.value;
-  tracerCommunes();
+  tracerCouverture();
 });
 
 // Purement visuel, comme dans le prototype : le rythme affiché reste celui
@@ -2348,9 +2347,12 @@ async function rafraichir() {
     tracerCouverture();
     tracerActivite();
     tracerChiffres();
-    tracerCommunes();
     tracerCharge();
     tracerRupturesRecentes();
+    tracerPrevision();
+    tracerMetriques();
+    tracerLivreursEfficaces();
+    tracerProduitsApercu();
 
     tracerRail();
     tracerCarte();

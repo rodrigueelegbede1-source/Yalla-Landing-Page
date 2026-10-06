@@ -175,56 +175,76 @@
 
     <div class="lower-grid">
 
-      <!-- La jauge. Le taux de service est l'indicateur vendu au fabricant :
-           il a droit à la plus grande carte et à la première place. -->
+      <!-- Même logique que le prototype (anneau + densité par commune),
+           mais calculée sur les boutiques réellement recensées. -->
       <article class="panel">
-        <header>
-          <div><h3>Taux de service</h3><small>Part des demandes effectivement livrées, toutes marques confondues.</small></div>
-        </header>
-        <div class="jauge" id="jaugeService"></div>
-        <footer id="piedService">—</footer>
+        <header><div><h3>Couverture du réseau</h3><small>Revendeurs actifs desservis par un distributeur, par commune.</small></div></header>
+        <div class="coverage-content">
+          <div class="coverage-top">
+            <div class="ring" id="anneauCouverture"><div class="ring-label"><strong id="valeurCouverture">—</strong><span>COUVERTURE</span></div></div>
+            <div class="coverage-copy" id="texteCouverture"></div>
+          </div>
+          <div class="communes" id="communesCouverture"></div>
+        </div>
+        <footer id="piedCouverture">—</footer>
       </article>
 
+      <!-- La même donnée que l'ancien anneau (ruptures en cours), mais
+           détaillée demande par demande : c'est la liste que l'administrateur
+           regarde pour savoir qui relancer. -->
       <article class="panel">
-        <header>
-          <div><h3>Demandes en cours</h3><small>Où en sont les demandes qui n'ont pas encore été livrées.</small></div>
-        </header>
-        <div class="anneau" id="anneauRuptures"></div>
+        <header><div><h3>Demandes en cours</h3><small>Les plus en attente d'abord.</small></div></header>
+        <div class="visual-list" id="demandesEnCoursListe"></div>
         <footer id="piedRuptures">—</footer>
       </article>
 
+      <!-- Le seul chiffre qui existe ici est celui des LIVRAISONS
+           confirmées (voir le bandeau de confidentialité) : pas de CA
+           revendeur, pas de marge. Les lignes sans donnée réelle l'indiquent
+           plutôt que d'inventer un montant. -->
       <article class="panel">
-        <header>
-          <div><h3>Couverture du réseau</h3><small>Revendeurs actifs desservis par un distributeur.</small></div>
-        </header>
-        <div class="objectif" id="objectifCouverture"></div>
-        <footer id="piedCouverture">—</footer>
+        <header><div><h3>Prévision et valeur des livraisons</h3><small>Estimations logistiques du jour, jamais le chiffre d'affaires des revendeurs.</small></div></header>
+        <div class="finance-chart" id="previsionListe"></div>
       </article>
 
     </div>
 
+    <div class="metric-cards">
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Taux de transformation</div><strong>Non suivi</strong><small>Aucun suivi CRM des prospects.</small></article>
+      <article class="mini-card"><div class="mini-label">Nouveaux revendeurs · 30 j</div><strong id="metricNouveaux">—</strong><small>Comptes boutique recensés sur les 30 derniers jours.</small></article>
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Fidélisation / attrition</div><strong>Non suivies</strong><small>Pas d'historique de réachat par revendeur.</small></article>
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Marge commerciale</div><strong>Non suivie</strong><small>Aucun coût de revient ni remise enregistré.</small></article>
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Durée moyenne d'intervention</div><strong>Non suivie</strong><small>Aucun horodatage prise en charge → livraison.</small></article>
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Kilométrage total du jour</div><strong>Non suivi</strong><small>Aucune distance GPS cumulée côté livreur.</small></article>
+    </div>
+
     <div class="last-grid">
-
-      <article class="panel">
-        <header><div><h3>Revendeurs par commune</h3><small>Revendeurs desservis ou sans distributeur.</small></div></header>
-        <div class="graphe" id="grapheCommunes"></div>
-      </article>
-
-      <article class="panel">
-        <header><div><h3>Charge des distributeurs</h3><small>Demandes à livrer, par distributeur.</small></div></header>
-        <div class="table-boite">
-          <table class="table" id="tableCharge"></table>
-        </div>
-      </article>
 
       <!-- Le délai court depuis la confirmation du boutiquier, pas depuis la
            naissance du signalement : une rupture détectée mais non confirmée
            n'attend personne. -->
       <article class="panel">
-        <header><div><h3>Demandes récentes</h3><small>Les plus anciennes d'abord.</small></div></header>
-        <div class="table-boite">
-          <table class="table" id="tableRupturesRecentes"></table>
-        </div>
+        <header><div><h3>Demandes récentes</h3><small>Les plus récentes d'abord.</small></div></header>
+        <div class="visual-list" id="demandesRecentesListe"></div>
+      </article>
+
+      <article class="panel visual-panel">
+        <header><div><h3>Livreurs les plus actifs</h3><small>Classement par livraisons terminées, historique complet.</small></div></header>
+        <div class="visual-list" id="livreursEfficacesListe"></div>
+      </article>
+
+    </div>
+
+    <div class="section-grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+
+      <article class="panel visual-panel">
+        <header><div><h3>Produits les plus demandés</h3><small>Signalements du réseau, toutes marques confondues.</small></div></header>
+        <div class="product-list" id="produitsApercuListe"></div>
+      </article>
+
+      <article class="panel">
+        <header><div><h3>Charges des distributeurs</h3><small>Demandes à livrer, par distributeur.</small></div></header>
+        <div class="visual-list" id="chargesApercuListe"></div>
       </article>
 
     </div>
