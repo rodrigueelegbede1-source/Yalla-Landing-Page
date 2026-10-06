@@ -923,6 +923,40 @@
 
 .demandes{ display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:14px; }
 
+.approbations{ display:flex; flex-direction:column; }
+.approbation{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:start;
+  gap:16px;
+  padding:16px 2px;
+  border-top:1px solid rgba(8,22,14,.09);
+}
+.approbation:first-child{ border-top:0; padding-top:2px; }
+.approbation-contenu{ min-width:0; }
+.approbation-tete{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
+.approbation-tete h4{
+  margin:0;
+  color:var(--green-900);
+  font-family:var(--ff-display);
+  font-size:14px;
+  font-weight:600;
+}
+.approbation-message{
+  margin:8px 0;
+  padding:10px 12px;
+  border-inline-start:2px solid var(--green-500);
+  background:var(--cream-2);
+  color:rgba(8,22,14,.76);
+  font-size:13px;
+  line-height:1.55;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.approbation-meta{ margin:0; color:rgba(8,22,14,.52); font-size:11.5px; line-height:1.5; }
+.approbation-meta strong{ color:rgba(8,22,14,.78); font-weight:600; }
+.approbation-actions{ display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+
 .demande{
   background:var(--white);
   border:1px solid rgba(8,22,14,.09);
@@ -1063,6 +1097,10 @@
   box-shadow:0 34px 76px -32px rgba(6,39,24,.6);
 }
 .fenetre::backdrop{ background:rgba(6,39,24,.55); }
+.fenetre--apercu{ max-width:680px; }
+.fenetre--apercu img{ display:block; max-width:100%; max-height:60vh; margin:0 auto; border-radius:var(--r-sm); object-fit:contain; }
+.fenetre--apercu img[hidden]{ display:none; }
+.fenetre--apercu #statutApercuCommunication{ margin:0; color:rgba(8,22,14,.55); font-size:12px; }
 .fenetre form{ padding:24px; display:flex; flex-direction:column; gap:16px; }
 .fenetre h2{
   font-family:var(--ff-display);
@@ -1160,6 +1198,8 @@
 
 @media (max-width:720px){
   .c3,.c4,.c6{ grid-column:span 12; }
+  .approbation{ grid-template-columns:minmax(0,1fr); }
+  .approbation-actions{ justify-content:flex-start; }
   .console-corps{ padding-inline:16px; }
   .console-marque{ padding-inline:16px; }
   .console-droite{ padding-inline:14px; gap:10px; }

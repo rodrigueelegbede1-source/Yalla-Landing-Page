@@ -159,14 +159,14 @@
 
   if (feedList) {
     const SIGNALS = [
-      { p: 'Lait concentré 400g',  b: 'SUPÉRETTE LA GRÂCE · COCODY' },
-      { p: 'Sucre en morceaux 1kg', b: 'BOUTIQUE AWA · YOPOUGON' },
-      { p: 'Eau minérale 1,5L',     b: 'KIOSQUE ODIENNÉ · TREICHVILLE' },
-      { p: 'Huile végétale 5L',     b: 'ALIMENTATION BÉNÉDICTION · MARCORY' },
-      { p: 'Boisson gazeuse 33cl',  b: 'MAQUIS LE BAOBAB · ABOBO' },
-      { p: 'Riz parfumé 25kg',      b: 'SUPÉRETTE CENTRALE · PLATEAU' },
-      { p: 'Café soluble 100g',     b: 'BOUTIQUE ZANZAN · ADJAMÉ' },
-      { p: 'Savon de ménage',       b: 'KIOSQUE BONHEUR · KOUMASSI' }
+      { p: 'Lait concentré 400g',  b: 'EXEMPLE · COCODY' },
+      { p: 'Sucre en morceaux 1kg', b: 'EXEMPLE · YOPOUGON' },
+      { p: 'Eau minérale 1,5L',     b: 'EXEMPLE · TREICHVILLE' },
+      { p: 'Huile végétale 5L',     b: 'EXEMPLE · MARCORY' },
+      { p: 'Boisson gazeuse 33cl',  b: 'EXEMPLE · ABOBO' },
+      { p: 'Riz parfumé 25kg',      b: 'EXEMPLE · PLATEAU' },
+      { p: 'Café soluble 100g',     b: 'EXEMPLE · ADJAMÉ' },
+      { p: 'Savon de ménage',       b: 'EXEMPLE · KOUMASSI' }
     ];
 
     const MAX = 3;
@@ -304,65 +304,6 @@
     });
   });
 
-
-  /* ─────────────── 14. Formulaire « rejoindre le réseau » ─────────────── */
-  const leadForm = $("#leadForm");
-
-  if (leadForm) {
-    const note = $("#leadNote");
-
-    const RULES = {
-      "f-nom":    v => v.trim().length >= 2      || "Indiquez votre nom",
-      "f-profil": v => v !== ""                  || "Choisissez votre profil",
-      // Numéros ivoiriens : 8 à 15 chiffres une fois les séparateurs retirés.
-      "f-tel":    v => /^[0-9]{8,15}$/.test(v.replace(/[\s.+()\-]/g, "")) || "Numéro invalide",
-    };
-
-    const check = (el) => {
-      const rule = RULES[el.id];
-      if (!rule) return true;
-      const res = rule(el.value);
-      const field = el.closest(".field");
-      const err = field.querySelector(".field__err");
-      const ok = res === true;
-      field.classList.toggle("is-invalid", !ok);
-      if (err) err.textContent = ok ? "" : res;
-      return ok;
-    };
-
-    // On ne valide au fil de la frappe qu'après une première erreur : sinon
-    // le champ passe en rouge dès le premier caractère saisi.
-    Object.keys(RULES).forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener("blur", () => check(el));
-      el.addEventListener("input", () => {
-        if (el.closest(".field").classList.contains("is-invalid")) check(el);
-      });
-    });
-
-    leadForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const champs = Object.keys(RULES).map(id => document.getElementById(id)).filter(Boolean);
-      // On valide tous les champs avant de sortir : l'utilisateur voit d'un coup
-      // tout ce qui bloque, au lieu de les corriger un par un.
-      const invalides = champs.filter(el => !check(el));
-      if (invalides.length) { invalides[0].focus(); return; }
-
-      // L'adresse de contact a été retirée du site tant que la boîte n'existe
-      // pas. Ouvrir une messagerie vers un destinataire inexistant laissait
-      // croire au visiteur que sa demande était partie, alors qu'elle se perdait.
-      //
-      // Le formulaire valide donc la saisie, puis le dit franchement au lieu de
-      // simuler un envoi. À rebrancher sur un mailto ou un POST le jour où un
-      // destinataire réel existe.
-      if (note) {
-        note.textContent = "FORMULAIRE PAS ENCORE RELIÉ — APPELEZ-NOUS EN ATTENDANT";
-        note.classList.add("is-ok");
-      }
-    });
-  }
 
   /* ─────────────── 12. La chaîne : cas de figure et maillons ───────────────
      Trois configurations réelles de la distribution ivoirienne. Le schéma se

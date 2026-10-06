@@ -77,7 +77,7 @@
     <div class="lead__copy">
       <p class="sec-head__eyebrow mono reveal" style="--d:0ms"><span></span>REJOINDRE LE RÉSEAU</p>
       <h2 class="lead__title reveal" style="--d:80ms">Parlons de votre<br><em>activité.</em></h2>
-      <p class="lead__sub reveal" style="--d:160ms">Boutique, marque, distributeur ou livreur&nbsp;: dites-nous qui vous êtes, on revient vers vous avec la marche à suivre.</p>
+      <p class="lead__sub reveal" style="--d:160ms">Fabricants et distributeurs peuvent demander un accès professionnel. Les revendeurs, livreurs et agents recenseurs obtiennent leur compte sur le terrain; appelez-nous pour être orienté.</p>
 
       <ul class="lead__direct reveal" style="--d:240ms">
         <li>
@@ -87,47 +87,17 @@
       </ul>
     </div>
 
-    <form class="lead__form reveal" id="leadForm" style="--d:200ms" novalidate>
-      <div class="field">
-        <label for="f-nom">Nom et prénoms</label>
-        <input id="f-nom" name="nom" type="text" autocomplete="name" required placeholder="Awa Koné">
-        <span class="field__err" data-for="f-nom"></span>
-      </div>
-
-      <div class="field">
-        <label for="f-profil">Vous êtes</label>
-        <div class="select-wrap">
-          <select id="f-profil" name="profil" required>
-            <option value="">Choisissez…</option>
-            <option>Point de vente</option>
-            <option>Fabricant</option>
-            <option>Distributeur</option>
-            <option>Livreur</option>
-            <option>Autre</option>
-          </select>
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <span class="field__err" data-for="f-profil"></span>
-      </div>
-
-      <div class="field">
-        <label for="f-tel">Téléphone</label>
-        <input id="f-tel" name="telephone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="07 00 00 00 00">
-        <span class="field__err" data-for="f-tel"></span>
-      </div>
-
-      <div class="field">
-        <label for="f-msg">Votre message <span class="field__opt">(facultatif)</span></label>
-        <textarea id="f-msg" name="message" rows="3" placeholder="Votre commune, votre activité…"></textarea>
-      </div>
-
-      <button type="submit" class="btn btn--yellow btn--lg lead__submit">
-        <span>Envoyer ma demande</span>
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-
-      <p class="lead__note mono" id="leadNote">VOS COORDONNÉES NE SERVENT QU'À VOUS RECONTACTER</p>
-    </form>
+    <div class="lead__form reveal" style="--d:200ms">
+      <h3>Choisissez votre démarche</h3>
+      <p class="lead__sub">Fabricants et distributeurs peuvent déposer une demande d'accès. Pour les métiers de terrain, le compte est remis par l'agent ou le distributeur.</p>
+      <a href="rejoindre.html#inscription" class="btn btn--yellow btn--lg lead__submit">
+        <span>Demander un accès professionnel</span>
+      </a>
+      <a href="telechargement.html" class="btn btn--dark btn--lg lead__submit">
+        <span>Télécharger l'application Android</span>
+      </a>
+      <p class="lead__note mono">UNE QUESTION SUR LE PILOTE ? APPELEZ LE +225 07 06 30 30 30</p>
+    </div>
   </div>
 </section>
 </main>
@@ -149,13 +119,6 @@
           <span class="logo__word">YALLA</span>
         </a>
         <p class="footer__tag">La distribution de proximité, en temps réel.<br>Abidjan, Côte d'Ivoire.</p>
-        <ul class="socials">
-          <li><a href="#" aria-label="Yalla sur Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5h1.65V3.63C16.4 3.56 15.42 3.5 14.3 3.5c-2.35 0-3.95 1.43-3.95 4.07V9.9H7.6V13h2.75v8h3.15Z"/></svg></a></li>
-          <li><a href="#" aria-label="Yalla sur Instagram"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.8" stroke="currentColor" stroke-width="1.8"/><circle cx="16.9" cy="7.1" r="1.2" fill="currentColor"/></svg></a></li>
-          <li><a href="#" aria-label="Yalla sur LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.94 8.5H3.9V21h3.04V8.5ZM5.42 3a1.77 1.77 0 1 0 0 3.54 1.77 1.77 0 0 0 0-3.54ZM20.1 21h-3.03v-6.1c0-1.45-.03-3.32-2.02-3.32-2.03 0-2.34 1.58-2.34 3.21V21H9.68V8.5h2.9v1.71h.05c.4-.77 1.4-1.58 2.87-1.58 3.07 0 3.64 2.02 3.64 4.65V21Z"/></svg></a></li>
-          <li><a href="#" aria-label="Yalla sur X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.2 3h3.3l-7.2 8.24L21.75 21h-6.6l-4.6-6.02L5.26 21H1.95l7.7-8.8L1.6 3h6.77l4.16 5.5L17.2 3Zm-1.16 16.03h1.83L7.05 4.87H5.09l10.95 14.16Z"/></svg></a></li>
-          <li><a href="#" aria-label="Yalla sur WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.6 2 2.2 6.4 2.2 11.84c0 1.74.46 3.44 1.32 4.94L2.1 22l5.36-1.4a9.8 9.8 0 0 0 4.58 1.16h.01c5.43 0 9.84-4.4 9.84-9.84 0-2.63-1.02-5.1-2.88-6.96A9.77 9.77 0 0 0 12.04 2Zm0 17.99h-.01a8.2 8.2 0 0 1-4.16-1.14l-.3-.18-3.1.81.83-3.02-.2-.31a8.13 8.13 0 0 1-1.25-4.34c0-4.52 3.68-8.2 8.2-8.2a8.15 8.15 0 0 1 8.18 8.2c0 4.52-3.67 8.18-8.19 8.18Zm4.49-6.13c-.25-.13-1.46-.72-1.68-.8-.23-.08-.39-.13-.56.12-.16.25-.64.8-.78.97-.15.16-.29.19-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.7-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.09-.16.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.83-.2-.48-.4-.42-.56-.43h-.47c-.16 0-.43.06-.65.31-.23.25-.86.84-.86 2.05s.88 2.38 1 2.54c.13.17 1.74 2.65 4.2 3.72.59.25 1.05.4 1.4.52.59.18 1.13.16 1.55.1.48-.07 1.46-.6 1.66-1.17.21-.58.21-1.07.15-1.17-.06-.11-.23-.17-.47-.29Z"/></svg></a></li>
-        </ul>
       </div>
 
       <div class="footer__col">
@@ -164,12 +127,11 @@
           <li><a href="tel:+2250706303030">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a1.5 1.5 0 0 1-1.7 1.5C10.5 19.8 4.2 13.5 3.5 5.7A1.5 1.5 0 0 1 5 4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
             +225 07 06 30 30 30</a></li>
-          <li><a href="#">
+          <li><a href="https://maps.google.com/?q=Abidjan%2C+C%C3%B4te+d%27Ivoire">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg>
             Abidjan, Côte d'Ivoire</a></li>
         </ul>
       </div>
-
       <div class="footer__col">
         <h4 class="mono">PLATEFORME</h4>
         <ul class="footer__links footer__links--plain">
@@ -183,10 +145,9 @@
       <div class="footer__col">
         <h4 class="mono">L'APPLICATION</h4>
         <ul class="footer__links footer__links--plain">
-          <li><a href="index.html#telecharger">Télécharger sur iOS</a></li>
           <li><a href="index.html#telecharger">Télécharger sur Android</a></li>
-          <li><a href="contact.html">Devenir partenaire</a></li>
-          <li><a href="contact.html">Support</a></li>
+          <li><a href="rejoindre.html#inscription">Demander un accès</a></li>
+          <li><a href="tel:+2250706303030">Appeler le support</a></li>
         </ul>
       </div>
 

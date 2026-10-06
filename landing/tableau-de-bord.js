@@ -383,8 +383,7 @@ function tracerRuptures() {
       const tendu = !pris && !close && attente > 7200;
       return `<tr>
         <td>${echapper(r.produit)}<small>${echapper(r.reference ?? '')}${
-          r.quantite_demandee ? ` · ${r.quantite_demandee} carton(s)` : ''}${
-          r.signalement_automatique ? ' · transmis automatiquement' : ''}</small></td>
+          r.quantite_demandee ? ` · ${r.quantite_demandee} carton(s)` : ''}</small></td>
         <td>${echapper(r.point_de_vente)}</td>
         <td>${echapper(r.commune ?? '')}</td>
         <td>${r.distributeur

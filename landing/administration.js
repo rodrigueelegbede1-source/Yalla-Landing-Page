@@ -97,6 +97,7 @@ let etat = {
   parFabricant: [],
   produitsTendus: [],
   diffusions: [],
+  soumissions: [],
 };
 
 let railActif = 'boutiques';
@@ -1921,6 +1922,136 @@ function tracerDiffusions() {
     }).join('')}</tbody>`;
 }
 
+/* ══ Communications à valider ════════════════════════════ */
+
+function tracerSoumissions() {
+  const zone = document.getElementById('zoneApprobations');
+  const soumissions = [...etat.soumissions]
+    .sort((a, b) => new Date(a.cree_le) - new Date(b.cree_le));
+
+  if (!soumissions.length) {
+    zone.innerHTML = `<div class="vide">
+      <b>Aucune communication en attente</b>
+      Les contenus soumis par les marques et distributeurs apparaîtront ici avant toute publication.
+    </div>`;
+    return;
+  }
+
+  zone.innerHTML = `<div class="approbations">${soumissions.map((s) => {
+    const date = new Date(s.cree_le);
+    const dateLisible = Number.isNaN(date.getTime()) ? 'Date inconnue'
+      : `${date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })} à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+    return `<article class="approbation">
+      <div class="approbation-contenu">
+        <div class="approbation-tete">
+          <h4>${echapper(s.titre)}</h4>
+          <span class="etat etat--dort">${echapper(TYPES_DIFFUSION[s.type] ?? s.type)}</span>
+        </div>
+        <p class="approbation-message">${echapper(s.message)}</p>
+        <p class="approbation-meta">
+          <strong>${echapper(s.organisation ?? s.emetteur ?? 'Organisation inconnue')}</strong>
+          · ${echapper(s.role_emetteur ?? 'Compte professionnel')}
+          · Soumise le ${echapper(dateLisible)}${s.commune ? ` · ${echapper(s.commune)}` : ''}
+        </p>
+      </div>
+      <div class="approbation-actions">
+        ${s.visuel_url ? `<button type="button" class="bouton bouton--creux"
+          data-apercu="${echapper(s.diffusion_id)}">Voir le visuel</button>` : ''}
+        <button type="button" class="bouton bouton--danger"
+          data-refuser-communication="${echapper(s.diffusion_id)}"
+          data-titre="${echapper(s.titre)}">Refuser</button>
+        <button type="button" class="bouton"
+          data-approuver-communication="${echapper(s.diffusion_id)}"
+          data-titre="${echapper(s.titre)}">Approuver et publier</button>
+      </div>
+    </article>`;
+  }).join('')}</div>`;
+
+  for (const bouton of zone.querySelectorAll('[data-approuver-communication]')) {
+    bouton.addEventListener('click', () => approuverCommunication(bouton.dataset));
+  }
+  for (const bouton of zone.querySelectorAll('[data-refuser-communication]')) {
+    bouton.addEventListener('click', () => refuserCommunication(bouton.dataset));
+  }
+  for (const bouton of zone.querySelectorAll('[data-apercu]')) {
+    bouton.addEventListener('click', () => ouvrirApercuCommunication(
+      soumissions.find((s) => s.diffusion_id === bouton.dataset.apercu)));
+  }
+}
+
+async function approuverCommunication({ approuverCommunication: id, titre }) {
+  if (!confirm(`Approuver et publier « ${titre} » auprès des points de vente ?`)) return;
+  try {
+    const publiee = await interroger('rpc/valider_communication', {
+      method: 'POST',
+      body: JSON.stringify({ p_diffusion_id: id }),
+    });
+    if (!publiee) throw new Error('Cette communication a déjà été traitée.');
+    informer(`« ${titre} » est approuvée et publiée.`, 'succes');
+    await rafraichir();
+  } catch (erreur) {
+    if (erreur.message === 'session') return;
+    informer(erreur.message, 'erreur');
+  }
+}
+
+async function refuserCommunication({ refuserCommunication: id, titre }) {
+  const motif = prompt(`Refuser « ${titre} » ?\n\nMotif, conservé pour le suivi interne.`);
+  if (motif === null) return;
+  try {
+    const refusee = await interroger('rpc/refuser_communication', {
+      method: 'POST',
+      body: JSON.stringify({ p_diffusion_id: id, p_motif: motif.trim() || null }),
+    });
+    if (!refusee) throw new Error('Cette communication a déjà été traitée.');
+    informer(`« ${titre} » a été refusée.`, 'succes');
+    await rafraichir();
+  } catch (erreur) {
+    if (erreur.message === 'session') return;
+    informer(erreur.message, 'erreur');
+  }
+}
+
+async function ouvrirApercuCommunication(soumission) {
+  if (!soumission) return;
+  const fenetre = document.getElementById('fenetreApercuCommunication');
+  const image = document.getElementById('imageApercuCommunication');
+  const statut = document.getElementById('statutApercuCommunication');
+  document.getElementById('titreApercuCommunication').textContent = soumission.titre;
+  document.getElementById('texteApercuCommunication').textContent = soumission.message;
+  image.hidden = true;
+  image.removeAttribute('src');
+  statut.textContent = 'Chargement du visuel privé…';
+  fenetre.showModal();
+
+  try {
+    const chemin = String(soumission.visuel_url).replace(/^\/+/, '');
+    if (chemin.split('/').some((segment) => segment === '..')) {
+      throw new Error('Chemin de visuel invalide.');
+    }
+    const objet = chemin.split('/').map(encodeURIComponent).join('/');
+    const reponse = await fetch(`${URL_BASE}/storage/v1/object/sign/notifications-brouillons/${objet}`, {
+      method: 'POST',
+      headers: {
+        apikey: CLE,
+        Authorization: `Bearer ${jeton}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ expiresIn: 300 }),
+    });
+    const corps = await reponse.json().catch(() => ({}));
+    if (!reponse.ok || !corps.signedURL) throw new Error('Le visuel privé ne peut pas être chargé.');
+    const url = corps.signedURL.startsWith('http') ? corps.signedURL
+      : `${URL_BASE}/storage/v1${corps.signedURL.startsWith('/') ? '' : '/'}${corps.signedURL}`;
+    image.src = url;
+    image.hidden = false;
+    statut.textContent = 'Aperçu temporaire, réservé à cette session.';
+  } catch (erreur) {
+    if (erreur.message === 'session') return;
+    statut.textContent = erreur.message;
+  }
+}
+
 /* ══ Statistiques ═════════════════════════════════════════ */
 
 function tracerSemaines() {
@@ -2112,6 +2243,7 @@ document.getElementById('exportPdf').addEventListener('click', () => window.prin
 function tracerBadges() {
   const demandes = etat.demandes.filter((d) => d.statut === 'en_attente').length;
   const anomalies = etat.anomalies.length;
+  const approbations = etat.soumissions.length;
 
   const bDemandes = document.getElementById('compteurDemandes');
   bDemandes.textContent = demandes;
@@ -2122,6 +2254,11 @@ function tracerBadges() {
   bAnomalies.textContent = anomalies;
   bAnomalies.hidden = anomalies === 0;
   bAnomalies.dataset.urgent = anomalies > 0 ? 'oui' : 'non';
+
+  const bApprobations = document.getElementById('compteurApprobations');
+  bApprobations.textContent = approbations;
+  bApprobations.hidden = approbations === 0;
+  bApprobations.dataset.urgent = approbations > 0 ? 'oui' : 'non';
 }
 
 /* Les quatorze lectures partent ensemble. En série, la page mettrait une
@@ -2147,6 +2284,7 @@ const LECTURES = {
   parFabricant: 'v_supervision_par_fabricant?select=*',
   produitsTendus: 'v_supervision_produits_tendus?select=*',
   diffusions: 'v_diffusions?select=*&order=date_envoi.desc&limit=25',
+  soumissions: 'v_diffusions_a_valider?select=*&order=cree_le.asc',
 };
 
 async function rafraichir() {
@@ -2190,6 +2328,7 @@ async function rafraichir() {
     tracerAttribution();
     tracerTableActeurs();
 
+    tracerSoumissions();
     tracerDiffusions();
 
     tracerSemaines();

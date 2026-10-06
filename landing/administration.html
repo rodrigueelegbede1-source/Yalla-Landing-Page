@@ -36,7 +36,9 @@
     <button type="button" class="console-onglet" data-volet="acteurs">
       Acteurs <span id="compteurDemandes" hidden>0</span>
     </button>
-    <button type="button" class="console-onglet" data-volet="diffusion">Diffusion</button>
+    <button type="button" class="console-onglet" data-volet="diffusion">
+      Diffusion <span id="compteurApprobations" hidden>0</span>
+    </button>
     <button type="button" class="console-onglet" data-volet="statistiques">Statistiques</button>
     <button type="button" class="console-onglet" data-volet="anomalies">
       Anomalies <span id="compteurAnomalies" hidden>0</span>
@@ -300,6 +302,14 @@
 
   <!-- ══ Volet 4 — Diffusion ══════════════════════════════ -->
   <section class="console-volet" id="voletDiffusion" aria-label="Diffusion" hidden>
+    <article class="carte c12" style="grid-column:auto">
+      <header>
+        <h3>Communications à valider</h3>
+        <small>Les notes et visuels envoyés par les fabricants et distributeurs restent privés jusqu’à leur approbation.</small>
+      </header>
+      <div id="zoneApprobations"></div>
+    </article>
+
     <div class="grille">
 
       <article class="carte c5">
@@ -538,6 +548,18 @@
     </div>
     <div class="fenetre-pied">
       <button type="submit" value="ok" class="bouton">C'est noté</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="fenetreApercuCommunication" class="fenetre fenetre--apercu">
+  <form method="dialog">
+    <h2 id="titreApercuCommunication">Aperçu de la communication</h2>
+    <p id="texteApercuCommunication"></p>
+    <img id="imageApercuCommunication" alt="Visuel privé de la communication" hidden>
+    <p id="statutApercuCommunication" role="status"></p>
+    <div class="fenetre-pied">
+      <button type="submit" class="bouton bouton--creux">Fermer</button>
     </div>
   </form>
 </dialog>

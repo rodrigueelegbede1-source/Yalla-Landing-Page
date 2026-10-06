@@ -840,6 +840,7 @@ body.is-locked{ overflow:hidden; }
 }
 .footer__tag{ font-size:14px; color:rgba(246,244,236,.55); line-height:1.55; margin:20px 0 26px; }
 .socials{ display:flex; gap:9px; }
+.socials[hidden]{ display:none; }
 .socials a{
   width:40px; height:40px; border-radius:12px; display:grid; place-items:center;
   border:1px solid rgba(246,244,236,.14); color:rgba(246,244,236,.68);
