@@ -73,6 +73,7 @@ const ALERTE = '#D65C52';
 
 const message = document.getElementById('message');
 const pouls = document.getElementById('pouls');
+const pouls2 = document.getElementById('pouls2');
 
 const fValidation = document.getElementById('fenetreValidation');
 const fAttribution = document.getElementById('fenetreAttribution');
@@ -103,6 +104,7 @@ let etat = {
 let railActif = 'boutiques';
 let filtreRail = '';
 let filtreCommune = '';
+let filtreCommuneTableau = '';
 let selection = null;          // { type, id }
 let demandeEnCours = null;
 let distributeurEnCours = null;
@@ -218,6 +220,13 @@ function ouvrirVolet(nom) {
   for (const onglet of document.querySelectorAll('.console-onglet')) {
     onglet.classList.toggle('est-actif', onglet.dataset.volet === nom);
   }
+  // La barre latérale regroupe plusieurs volets réels sous une même entrée
+  // (« Acteurs du réseau » couvre à la fois Acteurs et Diffusion) : ce bouton
+  // doit rester allumé tant qu'on est sur l'un des deux.
+  for (const bouton of document.querySelectorAll('.console-nav > [data-groupe]')) {
+    const membres = bouton.dataset.groupe.split(',');
+    bouton.classList.toggle('est-actif', membres.includes(nom));
+  }
   history.replaceState(null, '', `#${nom}`);
 }
 
@@ -255,6 +264,8 @@ function arc(cx, cy, r, de, a, epaisseur, couleur) {
 function tracerJauge(valeur) {
   const boite = document.getElementById('jaugeService');
   const pied = document.getElementById('piedService');
+  const kpi = document.getElementById('chiffreService');
+  const detailKpi = document.getElementById('detailService');
   const closes = Number(etat.reseau.ruptures_closes ?? 0);
 
   if (valeur === null || valeur === undefined) {
@@ -266,10 +277,14 @@ function tracerJauge(valeur) {
     pied.textContent =
       'Aucune demande clôturée pour l’instant. L’indicateur attend le terrain : '
       + 'il se calcule sur les demandes livrées et celles qui ne l’ont pas été.';
+    if (kpi) kpi.textContent = '—';
+    if (detailKpi) detailKpi.textContent = 'Aucune demande clôturée';
     return;
   }
 
   const v = Math.max(0, Math.min(100, Number(valeur)));
+  if (kpi) kpi.textContent = `${v} %`;
+  if (detailKpi) detailKpi.textContent = `Sur ${nombre(closes)} demande(s) clôturée(s)`;
   const angle = 180 + (v / 100) * 180;
   const [ax, ay] = pointCercle(120, 120, 72, angle);
   const [bx, by] = pointCercle(120, 120, 10, angle + 90);
@@ -487,12 +502,11 @@ function tracerChiffres() {
     ['Demandes en attente', r.demandes_en_attente, ''],
   ];
 
-  document.getElementById('tableChiffres').innerHTML = `<tbody>${
-    lignes.map(([nom, valeur, detail]) => `<tr>
-      <td>${echapper(nom)}${detail ? `<small>${echapper(detail)}</small>` : ''}</td>
-      <td class="num" style="font-size:16px;color:var(--green-800);font-weight:600">${nombre(valeur)}</td>
-    </tr>`).join('')
-  }</tbody>`;
+  document.getElementById('tableChiffres').innerHTML = lignes.map(([nom, valeur, detail]) => `
+    <div class="network-stat">
+      <strong>${nombre(valeur)}</strong>
+      <span>${echapper(nom)}${detail ? ` · ${echapper(detail)}` : ''}</span>
+    </div>`).join('');
 }
 
 /* ── Les boutiques par commune ────────────────────────────
@@ -500,7 +514,8 @@ function tracerChiffres() {
    se lit en ligne et pas à la verticale sous un histogramme. */
 function tracerCommunes() {
   const boite = document.getElementById('grapheCommunes');
-  const actives = etat.boutiques.filter((b) => b.statut === 'actif');
+  const actives = etat.boutiques.filter((b) => b.statut === 'actif'
+    && (!filtreCommuneTableau || b.commune === filtreCommuneTableau));
 
   if (!actives.length) {
     boite.innerHTML = '<div class="vide" style="border:0;padding:20px 0">Aucun revendeur actif.</div>';
@@ -1605,6 +1620,26 @@ function remplirCommunes() {
   const choixDiffusion = diffusion.value;
   diffusion.innerHTML = `<option value="">Partout</option>${options}`;
   diffusion.value = communes.includes(choixDiffusion) ? choixDiffusion : '';
+
+  const tableau = document.getElementById('filtreCommuneTableau');
+  const choixTableau = tableau.value;
+  tableau.innerHTML = `<option value="">Toutes les communes</option>${options}`;
+  tableau.value = communes.includes(choixTableau) ? choixTableau : '';
+}
+
+document.getElementById('filtreCommuneTableau').addEventListener('change', (e) => {
+  filtreCommuneTableau = e.target.value;
+  tracerCommunes();
+});
+
+// Purement visuel, comme dans le prototype : le rythme affiché reste celui
+// des quatorze derniers jours, aucune vue serveur ne recalcule encore un
+// autre pas de temps.
+for (const bouton of document.querySelectorAll('.periods button')) {
+  bouton.addEventListener('click', () => {
+    for (const b of document.querySelectorAll('.periods button')) b.classList.remove('selected');
+    bouton.classList.add('selected');
+  });
 }
 
 document.getElementById('filtreCommune').addEventListener('change', (e) => {
@@ -2340,9 +2375,11 @@ async function rafraichir() {
     const heure = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     pouls.textContent = `lu à ${heure}`;
     pouls.dataset.etat = 'ok';
+    if (pouls2) { pouls2.textContent = heure; pouls2.dataset.etat = 'ok'; }
   } catch (erreur) {
     if (erreur.message === 'session') return;
     pouls.dataset.etat = 'perdu';
+    if (pouls2) pouls2.dataset.etat = 'perdu';
     informer('Les données n’ont pas pu être rafraîchies. Sur ce réseau, un appel '
       + 'sur dix se coupe : la prochaine tentative part dans trente secondes.', 'erreur');
   }

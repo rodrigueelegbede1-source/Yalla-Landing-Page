@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="supervision.css">
 <link rel="stylesheet" href="demo-theme.css">
+<link rel="stylesheet" href="tableau-demo.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23146B3A'/><path d='M28 30h10l14 30' stroke='%23FFE500' stroke-width='11' fill='none' stroke-linecap='round'/><rect x='52' y='24' width='24' height='24' rx='3' fill='%23FFE500' transform='rotate(-18 64 36)'/><circle cx='50' cy='72' r='8' fill='%23FFE500'/></svg>">
 </head>
 <body class="page-console">
@@ -33,17 +34,25 @@
   <div class="console-barre-contenu">
   <nav class="console-nav" aria-label="Sections">
     <span class="console-nav-caption">Pilotage</span>
-    <button type="button" class="console-onglet est-actif" data-volet="tableau">Tableau de bord</button>
-    <button type="button" class="console-onglet" data-volet="reseau">Carte du réseau</button>
-    <button type="button" class="console-onglet" data-volet="acteurs">
-      Acteurs <span id="compteurDemandes" hidden>0</span>
+    <button type="button" class="console-onglet est-actif" data-volet="tableau" data-groupe="tableau">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" width="16" height="16" style="vertical-align:-3px;margin-inline-end:9px"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Vue d'ensemble
     </button>
-    <button type="button" class="console-onglet" data-volet="diffusion">
-      Diffusion <span id="compteurApprobations" hidden>0</span>
+    <button type="button" class="console-onglet" data-volet="anomalies" data-groupe="anomalies">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" width="16" height="16" style="vertical-align:-3px;margin-inline-end:9px"><path d="M4 5h16M4 12h16M4 19h16"/><circle cx="8" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="10" cy="19" r="1"/></svg>
+      Demandes &amp; livraisons <span id="compteurAnomalies" hidden>0</span>
     </button>
-    <button type="button" class="console-onglet" data-volet="statistiques">Statistiques</button>
-    <button type="button" class="console-onglet" data-volet="anomalies">
-      Anomalies <span id="compteurAnomalies" hidden>0</span>
+    <button type="button" class="console-onglet" data-volet="reseau" data-groupe="reseau">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" width="16" height="16" style="vertical-align:-3px;margin-inline-end:9px"><path d="M3 20V9l9-6 9 6v11h-6v-7H9v7z"/><path d="M7 9h.01M12 9h.01M17 9h.01"/></svg>
+      Revendeurs
+    </button>
+    <button type="button" class="console-onglet" data-volet="acteurs" data-groupe="acteurs,diffusion">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" width="16" height="16" style="vertical-align:-3px;margin-inline-end:9px"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 15c3.3 0 6 2 6 5"/></svg>
+      Acteurs du réseau <span id="compteurDemandes" hidden>0</span><span id="compteurApprobations" hidden>0</span>
+    </button>
+    <button type="button" class="console-onglet" data-volet="statistiques" data-groupe="statistiques">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" width="16" height="16" style="vertical-align:-3px;margin-inline-end:9px"><path d="M4 19V5m0 14h17"/><path d="m7 15 4-4 3 2 6-7"/></svg>
+      Performance
     </button>
   </nav>
 
@@ -65,107 +74,144 @@
   <!-- ══ Volet 1 — Tableau de bord ════════════════════════ -->
   <section class="console-volet tableau-volet" id="voletTableau" aria-label="Tableau de bord">
 
-    <header class="tableau-entete">
+    <div class="topline">
+      <div class="crumb">Yalla <span aria-hidden="true">/</span> <b>Tableau de bord</b></div>
+    </div>
+
+    <header class="tableau-entete heading-row">
       <div>
-        <span class="tableau-sur-titre">Réseau de distribution</span>
+        <span class="tableau-sur-titre">Pilotage du réseau</span>
         <h1>Vue d'ensemble</h1>
-        <p>Demandes, livraisons et couverture en un coup d’œil.</p>
+        <p>Vue agrégée de l’ensemble du réseau.</p>
       </div>
-      <span class="tableau-perimetre">Données de supervision · temps réel</span>
+      <label><span class="tableau-sur-titre" style="display:block;margin:0 0 5px 2px">Espace de travail</span>
+        <select class="role-select" disabled aria-label="Espace de travail actuel">
+          <option>Administrateur · Réseau complet</option>
+        </select>
+      </label>
     </header>
 
-    <!-- Les quatre chiffres du cahier des charges, en bandeau. Celui du
+    <div class="filter-bar">
+      <span class="filter-caption">Période du rythme</span>
+      <div class="periods" role="group" aria-label="Période du graphique">
+        <button type="button" class="selected" data-periode="jour">Aujourd'hui</button>
+        <button type="button" data-periode="semaine">7 jours</button>
+        <button type="button" data-periode="mois">30 jours</button>
+      </div>
+      <span class="filter-divider"></span>
+      <select class="filter-select" id="filtreCommuneTableau" aria-label="Filtrer par commune">
+        <option value="">Toutes les communes</option>
+      </select>
+      <span class="updated">Mis à jour à <span id="pouls2">—</span></span>
+    </div>
+
+    <p class="privacy-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/><path d="m9 12 2 2 4-4"/></svg>
+      <span><b>Respect de la confidentialité :</b> les montants ci-dessous sont des estimations
+      logistiques calculées sur les demandes et les livraisons confirmées, jamais le chiffre
+      d'affaires des revendeurs. Les données commerciales de chaque point de vente restent privées.</span>
+    </p>
+
+    <!-- Les cinq chiffres du cahier des charges, en bandeau. Celui du
          chiffre d'affaires est celui des LIVRAISONS, jamais celui des caisses :
-         voir la note en bas de cet écran. -->
-    <div class="grille">
-      <article class="carte c3">
-        <header><h3>Volume livré aujourd'hui</h3></header>
+         voir la note ci-dessus. -->
+    <div class="kpis">
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Volume livré aujourd'hui</span>
+          <i class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="17.5" cy="19" r="1.5"/></svg></i>
+        </div>
         <div class="chiffre" id="chiffreVolume">—</div>
         <div class="chiffre-suite" id="detailVolume"></div>
       </article>
-      <article class="carte c3">
-        <header><h3>Revendeurs actifs</h3></header>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Revendeurs actifs</span>
+          <i class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 10h18l-2-6H5zM5 10v10h14V10M9 20v-6h6v6"/></svg></i>
+        </div>
         <div class="chiffre" id="chiffrePoints">—</div>
         <div class="chiffre-suite" id="detailPoints"></div>
       </article>
-      <article class="carte c3">
-        <header><h3>Demandes en cours</h3></header>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Demandes en cours</span>
+          <i class="kpi-icon warn"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="m12 3 10 18H2L12 3z"/><path d="M12 9v5m0 3h.01"/></svg></i>
+        </div>
         <div class="chiffre" id="chiffreRuptures">—</div>
         <div class="chiffre-suite" id="detailRuptures"></div>
       </article>
-      <article class="carte c3">
-        <header><h3>Livreurs en course</h3></header>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Livreurs en course</span>
+          <i class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></i>
+        </div>
         <div class="chiffre" id="chiffreLivreurs">—</div>
         <div class="chiffre-suite" id="detailLivreurs"></div>
       </article>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Taux de service</span>
+          <i class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 17 9 12l3 3 8-9"/><path d="M15 6h5v5"/></svg></i>
+        </div>
+        <div class="chiffre" id="chiffreService">—</div>
+        <div class="chiffre-suite" id="detailService"></div>
+      </article>
     </div>
 
-    <div class="grille">
-
-      <!-- La jauge. Le taux de service est l'indicateur vendu au fabricant :
-           il a droit à la plus grande carte et à la première place. -->
-      <article class="carte c4">
-        <header>
-          <h3>Taux de service</h3>
-          <small>Part des demandes effectivement livrées, toutes marques confondues.</small>
-        </header>
-        <div class="jauge" id="jaugeService"></div>
-        <footer id="piedService">—</footer>
-      </article>
-
-      <article class="carte c4">
-        <header>
-          <h3>Demandes en cours</h3>
-          <small>Où en sont les demandes qui n'ont pas encore été livrées.</small>
-        </header>
-        <div class="anneau" id="anneauRuptures"></div>
-        <footer id="piedRuptures">—</footer>
-      </article>
-
-      <article class="carte c4">
-        <header>
-          <h3>Couverture du réseau</h3>
-          <small>Revendeurs actifs desservis par un distributeur.</small>
-        </header>
-        <div class="objectif" id="objectifCouverture"></div>
-        <footer id="piedCouverture">—</footer>
-      </article>
+    <div class="section-grid">
 
       <!-- Le rythme. Une courbe de signalements sans la courbe des
            résolutions ne dit rien : c'est l'écart entre les deux qui
            raconte si le réseau tient la charge. -->
-      <article class="carte c8">
+      <article class="panel visual-panel">
         <header>
-          <h3>Rythme du réseau, quatorze jours</h3>
-          <small>Demandes reçues et livraisons confirmées, jour par jour. Les jours creux valent zéro et sont dessinés.</small>
+          <div><h3>Rythme du réseau, quatorze jours</h3><small>Demandes reçues et livraisons confirmées, jour par jour.</small></div>
         </header>
         <div class="graphe" id="grapheActivite"></div>
         <footer id="piedActivite">—</footer>
       </article>
 
-      <article class="carte c4">
-        <header>
-          <h3>Le réseau en chiffres</h3>
-          <small>Ce qui existe aujourd'hui, à l'instant de la dernière lecture.</small>
-        </header>
-        <div class="table-boite">
-          <table class="table" id="tableChiffres"></table>
-        </div>
+      <article class="panel">
+        <header><div><h3>Le réseau en chiffres</h3><small>Ce qui existe aujourd'hui, à l'instant de la dernière lecture.</small></div></header>
+        <div class="network-grid" id="tableChiffres"></div>
       </article>
 
-      <article class="carte c7">
+    </div>
+
+    <div class="lower-grid">
+
+      <!-- La jauge. Le taux de service est l'indicateur vendu au fabricant :
+           il a droit à la plus grande carte et à la première place. -->
+      <article class="panel">
         <header>
-          <h3>Revendeurs par commune</h3>
-          <small>Revendeurs desservis ou sans distributeur. Une commune toute rouge n’a pas de grossiste assigné.</small>
+          <div><h3>Taux de service</h3><small>Part des demandes effectivement livrées, toutes marques confondues.</small></div>
         </header>
+        <div class="jauge" id="jaugeService"></div>
+        <footer id="piedService">—</footer>
+      </article>
+
+      <article class="panel">
+        <header>
+          <div><h3>Demandes en cours</h3><small>Où en sont les demandes qui n'ont pas encore été livrées.</small></div>
+        </header>
+        <div class="anneau" id="anneauRuptures"></div>
+        <footer id="piedRuptures">—</footer>
+      </article>
+
+      <article class="panel">
+        <header>
+          <div><h3>Couverture du réseau</h3><small>Revendeurs actifs desservis par un distributeur.</small></div>
+        </header>
+        <div class="objectif" id="objectifCouverture"></div>
+        <footer id="piedCouverture">—</footer>
+      </article>
+
+    </div>
+
+    <div class="last-grid">
+
+      <article class="panel">
+        <header><div><h3>Revendeurs par commune</h3><small>Revendeurs desservis ou sans distributeur.</small></div></header>
         <div class="graphe" id="grapheCommunes"></div>
       </article>
 
-      <article class="carte c5">
-        <header>
-          <h3>Charge des distributeurs</h3>
-          <small>La chaleur marque les demandes à livrer : plus la cellule est vive, plus il en a à traiter.</small>
-        </header>
+      <article class="panel">
+        <header><div><h3>Charge des distributeurs</h3><small>Demandes à livrer, par distributeur.</small></div></header>
         <div class="table-boite">
           <table class="table" id="tableCharge"></table>
         </div>
@@ -174,11 +220,8 @@
       <!-- Le délai court depuis la confirmation du boutiquier, pas depuis la
            naissance du signalement : une rupture détectée mais non confirmée
            n'attend personne. -->
-      <article class="carte c12">
-        <header>
-          <h3>Demandes récentes</h3>
-          <small>Les plus anciennes d'abord. Le délai compte depuis la confirmation du revendeur, moment où la demande devient visible au distributeur.</small>
-        </header>
+      <article class="panel">
+        <header><div><h3>Demandes récentes</h3><small>Les plus anciennes d'abord.</small></div></header>
         <div class="table-boite">
           <table class="table" id="tableRupturesRecentes"></table>
         </div>
@@ -186,12 +229,6 @@
 
     </div>
 
-    <p class="note">
-      <b>Cette vue suit l'activité de distribution, pas les ventes des revendeurs.</b>
-      Les données commerciales de chaque point de vente restent privées.
-      L'application sert à consulter les catalogues, transmettre les demandes
-      et suivre les livraisons avec les partenaires.
-    </p>
   </section>
 
   <!-- ══ Volet 2 — Réseau ═════════════════════════════════ -->
@@ -262,6 +299,11 @@
   <!-- ══ Volet 3 — Acteurs du réseau ══════════════════════ -->
   <section class="console-volet" id="voletActeurs" aria-label="Acteurs du réseau" hidden>
 
+    <div class="console-sous-nav" role="tablist" aria-label="Acteurs du réseau, sections">
+      <button type="button" class="console-onglet console-sous-onglet est-actif" data-volet="acteurs">Acteurs</button>
+      <button type="button" class="console-onglet console-sous-onglet" data-volet="diffusion">Diffusion</button>
+    </div>
+
     <div class="grille" id="grilleActeurs"></div>
 
     <article class="carte c12" style="grid-column:auto">
@@ -304,6 +346,12 @@
 
   <!-- ══ Volet 4 — Diffusion ══════════════════════════════ -->
   <section class="console-volet" id="voletDiffusion" aria-label="Diffusion" hidden>
+
+    <div class="console-sous-nav" role="tablist" aria-label="Acteurs du réseau, sections">
+      <button type="button" class="console-onglet console-sous-onglet" data-volet="acteurs">Acteurs</button>
+      <button type="button" class="console-onglet console-sous-onglet est-actif" data-volet="diffusion">Diffusion</button>
+    </div>
+
     <article class="carte c12" style="grid-column:auto">
       <header>
         <h3>Communications à valider</h3>

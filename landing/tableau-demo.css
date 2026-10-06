@@ -1,0 +1,154 @@
+/* ═══════════════════════════════════════════════════════════
+   YALLA — Vue d'ensemble administrateur, calquée au pixel près
+   sur le prototype de démonstration
+   (livrable/Application/2026-10-02_yalla_tableau-de-bord-reseau.html).
+
+   Chargé après demo-theme.css. Ne redéfinit aucun identifiant utilisé
+   par administration.js : les cartes existantes (jauge, anneau,
+   objectif, graphes) gardent leur logique, seule leur coque change.
+   Les classes neuves (kpis, panel, network-grid…) reprennent le nom
+   exact de celles du prototype pour une correspondance visuelle totale.
+   ═══════════════════════════════════════════════════════════ */
+
+#voletTableau{ max-width:1180px; }
+
+/* ── Fil d'Ariane + bandeau de période ── */
+#voletTableau .topline{
+  display:flex; justify-content:space-between; align-items:center;
+  gap:16px; margin-bottom:18px;
+}
+#voletTableau .crumb{ color:rgba(8,22,14,.55); font-size:11px; }
+#voletTableau .crumb b{ color:var(--ink); font-weight:600; }
+#voletTableau .heading-row{
+  display:flex; justify-content:space-between; align-items:end; gap:20px;
+  flex-wrap:wrap;
+}
+#voletTableau .role-select{
+  min-width:230px; padding:10px 12px; border:1px solid #dce4dc;
+  border-radius:6px; color:var(--ink); background:#fff;
+  font-size:11px; font-weight:600; font-family:var(--ff-body);
+}
+#voletTableau .filter-bar{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  margin-top:21px; padding:9px 11px; border:1px solid var(--line,rgba(8,22,14,.08));
+  border-radius:7px; background:#fff; box-shadow:0 3px 12px rgba(23,45,34,.035);
+}
+#voletTableau .filter-caption{
+  padding-right:3px; color:rgba(8,22,14,.55); font-size:10px; font-weight:700;
+  text-transform:uppercase; letter-spacing:.7px;
+}
+#voletTableau .periods{ display:flex; padding:3px; border-radius:5px; background:#f1f4f0; }
+#voletTableau .periods button{
+  padding:6px 10px; border:0; border-radius:4px; color:#77827b;
+  background:transparent; font-size:10px; font-family:var(--ff-body); cursor:pointer;
+}
+#voletTableau .periods button.selected{
+  color:var(--green-950); background:#fff; box-shadow:0 1px 4px #1d30251a; font-weight:700;
+}
+#voletTableau .filter-divider{ width:1px; height:23px; background:var(--line,rgba(8,22,14,.08)); }
+#voletTableau .filter-select{
+  padding:6px 25px 6px 8px; border:0; color:#435149; background:transparent; font-size:10px;
+}
+#voletTableau .updated{ margin-left:auto; color:#88938d; font-size:10px; white-space:nowrap; }
+
+/* ── Bandeau de confidentialité ── */
+#voletTableau .privacy-note{
+  display:flex; gap:8px; align-items:flex-start; margin:14px 0 18px;
+  padding:10px 12px; border-left:3px solid var(--green-700,#146B3A);
+  border-radius:0 5px 5px 0; color:#536258; background:#eaf1e9;
+  font-size:11.5px; line-height:1.5;
+}
+#voletTableau .privacy-note svg{ width:14px; height:14px; flex:none; margin-top:1px; stroke:var(--green-700,#146B3A); }
+
+/* ── Cartes KPI (5 en ligne) ── */
+#voletTableau .kpis{ display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:11px; margin-top:4px; }
+#voletTableau .kpi-top{ display:flex; justify-content:space-between; align-items:center; gap:5px; color:#738077; font-size:10.5px; }
+#voletTableau .kpi-icon{
+  width:25px; height:25px; display:grid; place-items:center; border-radius:5px;
+  color:var(--green-700,#146B3A); background:#eaf4eb;
+}
+#voletTableau .kpi-icon.warn{ color:#b14b42; background:#fbefed; }
+#voletTableau .kpi-icon.blue{ color:#287c90; background:#e8f3f5; }
+#voletTableau .kpi-icon svg{ width:14px; height:14px; stroke:currentColor; }
+#voletTableau .kpi .chiffre{ margin-top:10px; font-family:var(--ff-display); font-weight:800; font-size:24px; line-height:1; }
+#voletTableau .kpi .chiffre-suite{ margin-top:9px; color:#89948d; font-size:10.5px; }
+#voletTableau .kpi .chiffre-suite b{ color:var(--green-700,#146B3A); font-weight:700; }
+
+/* ── Grille à deux colonnes : rythme (sombre) + réseau en chiffres ── */
+#voletTableau .section-grid{
+  display:grid; grid-template-columns:minmax(0,1.55fr) minmax(285px,.92fr);
+  gap:12px; margin-top:13px;
+}
+#voletTableau .panel{
+  min-width:0; border:1px solid var(--line,rgba(8,22,14,.08)); border-radius:7px;
+  background:#fff; box-shadow:0 3px 12px rgba(23,45,34,.035);
+}
+#voletTableau .panel > header, #voletTableau .panel-head{
+  min-height:54px; padding:13px 15px 10px; display:flex;
+  justify-content:space-between; align-items:flex-start; gap:12px;
+}
+#voletTableau .panel h3{ margin:0; font-family:var(--ff-display); font-weight:700; font-size:13px; }
+#voletTableau .panel small{ display:block; margin-top:4px; color:#87928b; font-size:10.5px; }
+#voletTableau .panel footer{
+  padding:0 15px 14px; color:#849087; font-size:10.5px;
+}
+#voletTableau .visual-panel{
+  color:#f5f8f4; border-color:#203e31; background:var(--green-950,#102A23);
+}
+#voletTableau .visual-panel h3{ color:#f5f8f4; }
+#voletTableau .visual-panel small{ color:#9eafa3; }
+#voletTableau .visual-panel footer{ color:#a9b9ae; }
+#voletTableau .visual-panel .legende{ color:#a9b9ae; }
+
+/* ── Réseau en chiffres, en grille 2 colonnes (remplace la table) ── */
+#voletTableau .network-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0; padding:1px 15px 14px; }
+#voletTableau .network-stat{ min-height:61px; padding:10px 8px 7px 0; border-bottom:1px solid #edf0ed; }
+#voletTableau .network-stat:nth-child(odd){ border-right:1px solid #edf0ed; }
+#voletTableau .network-stat:nth-child(even){ padding-left:13px; }
+#voletTableau .network-stat:nth-last-child(-n+2){ border-bottom:0; }
+#voletTableau .network-stat strong{ display:block; font-family:var(--ff-display); font-weight:800; font-size:19px; }
+#voletTableau .network-stat span{ color:#849087; font-size:10px; }
+
+/* ── Seconde rangée : jauge / anneau / couverture, même habillage « panel » ── */
+#voletTableau .lower-grid{
+  display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; margin-top:13px;
+}
+#voletTableau .lower-grid .panel > header{ padding-bottom:4px; }
+#voletTableau .jauge, #voletTableau .anneau, #voletTableau .objectif{ padding:0 15px; }
+#voletTableau .lower-grid footer{ padding-top:6px; }
+
+/* ── Troisième rangée : communes / charge / demandes récentes ── */
+#voletTableau .last-grid{
+  display:grid; grid-template-columns:minmax(0,1.17fr) minmax(0,1fr) minmax(0,1fr);
+  gap:12px; margin-top:13px;
+}
+#voletTableau .last-grid .table-boite{ padding:0 15px 14px; }
+#voletTableau .last-grid .table{ font-size:11px; }
+
+@media (max-width:1180px){
+  #voletTableau .kpis{ grid-template-columns:repeat(3, minmax(0,1fr)); }
+  #voletTableau .section-grid{ grid-template-columns:minmax(0,1.35fr) minmax(250px,.8fr); }
+}
+@media (max-width:980px){
+  #voletTableau .lower-grid, #voletTableau .last-grid{ grid-template-columns:minmax(0,1fr); }
+}
+@media (max-width:760px){
+  #voletTableau .kpis{ grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
+  #voletTableau .section-grid{ grid-template-columns:minmax(0,1fr); }
+  #voletTableau .heading-row{ flex-direction:column; align-items:flex-start; gap:13px; }
+  #voletTableau .role-select{ width:100%; }
+  #voletTableau .filter-bar{ gap:8px; padding:9px; }
+  #voletTableau .updated{ display:none; }
+}
+
+/* ── Sous-onglets de groupe (Acteurs du réseau ⇄ Diffusion) ── */
+.console-sous-nav{
+  display:flex; gap:6px; margin:0 0 16px;
+  padding:3px; width:fit-content; border-radius:7px; background:rgba(255,255,255,.4);
+}
+body.page-console .console-sous-nav{ background:#eaede7; }
+.console-sous-onglet{
+  padding:8px 14px; border:0; border-radius:5px; background:transparent;
+  color:#536258; font-family:var(--ff-body); font-size:12px; font-weight:600; cursor:pointer;
+}
+.console-sous-onglet.est-actif{ color:var(--green-950,#102A23); background:#fff; box-shadow:0 1px 4px rgba(23,45,34,.12); }
