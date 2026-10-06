@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 # Supprime uniquement le réseau de démonstration Yalla.
+#
+# RÈGLE ABSOLUE, ne jamais contourner : le ciblage d'un compte Auth à
+# supprimer doit TOUJOURS passer par une correspondance exacte en base
+# (table utilisateurs, par téléphone ou par id), jamais par l'API
+# d'administration Supabase filtrée sur l'e-mail
+# (GET /auth/v1/admin/users?email=...). Ce filtre est ignoré côté serveur
+# et renvoie la liste complète des comptes : un script qui boucle dessus
+# en supprimant tout ce qui revient supprime TOUT le projet. C'est
+# exactement ce qui a détruit les données réelles de production le
+# 2026-10-06 (voir context/HISTORY.md). Toute réimplémentation future de
+# ce script, dans n'importe quel langage, doit reprendre ce script-ci
+# comme référence et non recoder la logique de zéro.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -32,6 +44,17 @@ IDS="$(psql -w -tA -F '|' -v ON_ERROR_STOP=1 "$CONNEXION" -c "
 if [ -z "$IDS" ]; then
   echo 'Aucun compte de démonstration trouvé.'
   exit 0
+fi
+
+# Garde-fou : jamais plus de comptes ciblés que de numéros de démonstration
+# connus. Si la requête en renvoie davantage, quelque chose ne va pas
+# (filtre trop large, mauvaise liste de numéros) : on arrête plutôt que de
+# supprimer à l'aveugle.
+NB_NUMEROS="$(printf '%s\n' "$NUMEROS" | tr ' ' '\n' | wc -l)"
+NB_IDS="$(printf '%s\n' "$IDS" | wc -l)"
+if [ "$NB_IDS" -gt "$NB_NUMEROS" ]; then
+  echo "Garde-fou déclenché : $NB_IDS comptes trouvés pour $NB_NUMEROS numéros de démonstration attendus. Abandon." >&2
+  exit 1
 fi
 
 echo 'Comptes ciblés :'
