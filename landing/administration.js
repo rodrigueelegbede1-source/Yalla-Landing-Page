@@ -65,11 +65,11 @@ if (!jeton) location.replace('rejoindre.html');
    parce qu'un attribut SVG `fill` ne lit pas une variable CSS de façon fiable
    dans tous les navigateurs, et qu'un graphique à moitié coloré est pire
    qu'un graphique monochrome. */
-const VERT = '#229453';
-const VERT_VIF = '#3ED598';
-const VERT_SOMBRE = '#0E4A2C';
-const JAUNE = '#E8CF00';
-const ALERTE = '#FF5C39';
+const VERT = '#146B3A';
+const VERT_VIF = '#74D18C';
+const VERT_SOMBRE = '#102A23';
+const JAUNE = '#FFE500';
+const ALERTE = '#D65C52';
 
 const message = document.getElementById('message');
 const pouls = document.getElementById('pouls');
@@ -260,7 +260,7 @@ function tracerJauge(valeur) {
   if (valeur === null || valeur === undefined) {
     boite.innerHTML =
       '<svg viewBox="0 0 240 150" role="img" aria-label="Taux de service indisponible">'
-      + arc(120, 120, 92, 180, 360, 20, '#EDEAE0')
+      + arc(120, 120, 92, 180, 360, 20, '#E6EBE5')
       + '<text x="120" y="112" text-anchor="middle" class="jauge-valeur" '
       + 'style="fill:rgba(8,22,14,.35)">—</text></svg>';
     pied.textContent =
@@ -283,8 +283,8 @@ function tracerJauge(valeur) {
     // L'aiguille est un triangle plein : une simple ligne se perd sur les
     // bandes colorées, qui sont épaisses.
     + `<path d="M ${ax.toFixed(2)} ${ay.toFixed(2)} L ${bx.toFixed(2)} ${by.toFixed(2)} `
-    + `L ${cx2.toFixed(2)} ${cy2.toFixed(2)} Z" fill="#0A3D24"/>`
-    + '<circle cx="120" cy="120" r="7" fill="#0A3D24"/>'
+    + `L ${cx2.toFixed(2)} ${cy2.toFixed(2)} Z" fill="#102A23"/>`
+    + '<circle cx="120" cy="120" r="7" fill="#102A23"/>'
     + `<text x="120" y="104" text-anchor="middle" class="jauge-valeur">${v}</text>`
     + '<text x="120" y="120" text-anchor="middle" class="jauge-unite">POUR CENT</text>'
     + '<text x="26" y="142" class="jauge-borne">0</text>'
@@ -324,7 +324,7 @@ function tracerAnneau() {
   let parcouru = 0;
 
   const segments = total === 0
-    ? `<circle cx="66" cy="66" r="${r}" fill="none" stroke="#EDEAE0" stroke-width="20"/>`
+    ? `<circle cx="66" cy="66" r="${r}" fill="none" stroke="#E6EBE5" stroke-width="20"/>`
     : parts.filter((p) => p.valeur > 0).map((p) => {
       const longueur = (p.valeur / total) * circonference;
       const decalage = -parcouru;
@@ -572,7 +572,7 @@ function tracerCharge() {
         <td>${echapper(d.nom)}<small>${d.fabricant_rattache
           ? `Affilié · ${echapper(d.fabricant_rattache)}` : 'Indépendant'}</small></td>
         <td class="num">${nombre(d.boutiques ?? 0)}</td>
-        <td class="num" ${livreurs === 0 ? 'style="color:#9B3218"' : ''}>${nombre(livreurs)}</td>
+        <td class="num" ${livreurs === 0 ? 'style="color:#D65C52"' : ''}>${nombre(livreurs)}</td>
         <td class="num"><span class="cellule-chaude"
           style="background:rgba(255,92,57,${intensite.toFixed(2)})">${nombre(attente)}</span></td>
       </tr>`;
@@ -1500,7 +1500,7 @@ function tracerRupturesRecentes() {
         <td>${r.distributeur
           ? echapper(r.distributeur)
           : '<span class="etat etat--alerte">Aucun</span>'}</td>
-        <td class="num"${tendu ? ' style="color:#9B3218;font-weight:600"' : ''}>${duree(attente)}</td>
+        <td class="num"${tendu ? ' style="color:#D65C52;font-weight:600"' : ''}>${duree(attente)}</td>
         <td>${pris
           ? '<span class="etat etat--ok">Prise en charge</span>'
           : r.confirmee_le
@@ -1585,7 +1585,7 @@ function tracerTableCommunes() {
       return `<tr>
         <td>${echapper(c.commune ?? '—')}</td>
         <td class="num">${nombre(c.points)}</td>
-        <td class="num"${orphelines > 0 ? ' style="color:#9B3218;font-weight:600"' : ''}>${nombre(orphelines)}</td>
+        <td class="num"${orphelines > 0 ? ' style="color:#D65C52;font-weight:600"' : ''}>${nombre(orphelines)}</td>
         <td class="num">${nombre(c.ruptures)}</td>
       </tr>`;
     }).join('')}</tbody>`;
@@ -1654,7 +1654,7 @@ function tracerAttribution() {
       const points = Number(a.points_attribues ?? 0);
       return `<tr>
         <td>${echapper(a.fabricant_nom)}</td>
-        <td class="num"${points === 0 ? ' style="color:#9B3218;font-weight:600"' : ''}>${nombre(points)}</td>
+        <td class="num"${points === 0 ? ' style="color:#D65C52;font-weight:600"' : ''}>${nombre(points)}</td>
         <td class="num">${nombre(a.distributeurs ?? 0)}</td>
         <td style="white-space:normal">${a.perimetre
           ? echapper(a.perimetre)

@@ -1,0 +1,192 @@
+/* ═══════════════════════════════════════════════════════════
+   YALLA — Thème aligné sur le prototype de démonstration
+   (livrable/Application/2026-10-02_yalla_tableau-de-bord-reseau.html)
+
+   Ce fichier ne touche à aucune logique, aucun identifiant utilisé par
+   administration.js / tableau-de-bord.js / distributeur.js : il ne fait
+   que recolorer, repolicer et redisposer ce qui existe déjà, en
+   s'appuyant sur les variables CSS déjà présentes dans styles.css,
+   supervision.css et acces.css. Chargé en dernier, après ces trois
+   fichiers, pour gagner la cascade sans avoir à multiplier les
+   !important.
+
+   Ne s'applique qu'aux écrans professionnels (body.page-console,
+   body.page-acces) : la landing publique (index, faq, contact,
+   téléchargement) garde son identité Sora/Inter actuelle.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Jetons recolorés / repoliciés, portée console + accès ── */
+body.page-console,
+body.page-acces{
+  --green-950:#102A23;
+  --green-900:#182722;
+  --green-800:#182722;
+  --green-700:#146B3A;
+  --cream:#F4F6F2;
+  --cream-2:#EAEDE7;
+  --ink:#182722;
+  --alert:#D65C52;
+  --ok:#74D18C;
+
+  --ff-display:'Manrope', system-ui, sans-serif;
+  --ff-body:'DM Sans', system-ui, sans-serif;
+  --ff-mono:'Manrope', system-ui, sans-serif;
+
+  --r-lg:12px;
+  --r-md:7px;
+  --r-sm:5px;
+}
+
+/* ══ Barre latérale (remplace la barre horizontale du haut) ══
+   Conversion purement visuelle : mêmes éléments, même ordre, aucun
+   attribut data-volet / id touché, donc le script de navigation des
+   onglets continue de fonctionner à l'identique. */
+@media (min-width:761px){
+  body.page-console{ display:block; }
+
+  .console-barre{
+    position:fixed;
+    inset-block:0;
+    inset-inline-start:0;
+    width:224px;
+    flex-direction:column;
+    align-items:stretch;
+    padding:20px 14px;
+    overflow-y:auto;
+    box-shadow:none;
+  }
+  .console-marque{
+    flex-shrink:0;
+    padding:4px 9px 22px;
+    background:transparent;
+  }
+  .console-barre-contenu{
+    display:flex;
+    flex-direction:column;
+    flex:1;
+    min-height:0;
+  }
+  .console-nav{
+    flex-direction:column;
+    align-items:stretch;
+    gap:3px;
+    padding-inline:0;
+    overflow:visible;
+  }
+  .console-nav-caption{
+    margin:4px 10px 8px;
+    color:rgba(255,255,255,.5);
+    font-family:var(--ff-body);
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+  }
+  .console-onglet{
+    min-height:38px;
+    padding:0 11px;
+    border-radius:6px;
+    border-bottom:0;
+    text-align:start;
+    text-transform:none;
+    letter-spacing:0;
+    font-size:12.5px;
+  }
+  .console-onglet.est-actif{
+    background:rgba(255,255,255,.08);
+    border-bottom:0;
+    box-shadow:inset 3px 0 var(--yellow);
+  }
+  .console-droite{
+    margin-inline-start:0;
+    margin-top:auto;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+    padding:16px 9px 0;
+  }
+  .console-qui span{ display:inline; }
+
+  .console-corps{
+    margin-inline-start:224px;
+    max-width:none;
+  }
+
+  /* L'espace fabricant et administrateur partagent la même coque. */
+  body.page-console .console-barre{ background:var(--green-950); }
+}
+
+/* En dessous de 761px, la coque reprend son comportement d'origine
+   (barre horizontale défilante) : rien n'est modifié ici, seules les
+   couleurs/polices du bloc précédent s'appliquent déjà. */
+
+/* ══ Cartes et panneaux : même géométrie que les cartes KPI de la
+   démo (coins moins arrondis, ombre légère plutôt qu'une bordure
+   épaisse, chiffres en Manrope 800) ══ */
+.carte{
+  box-shadow:0 3px 12px rgba(23,45,34,.06);
+  border-color:var(--line, rgba(8,22,14,.08));
+}
+.carte h3{
+  font-weight:700;
+  letter-spacing:0;
+}
+.chiffre,
+.chiffre-suite b{
+  font-weight:800;
+}
+.jauge-valeur,
+.anneau-total,
+.legende b{
+  font-weight:800;
+}
+
+.acces-carte{
+  box-shadow:0 3px 12px rgba(23,45,34,.06);
+}
+.bord-chiffre b{
+  font-family:var(--ff-display);
+  font-weight:800;
+}
+
+/* ══ Barre latérale pour l'espace distributeur (une seule entrée de
+   navigation, mais même coque que l'administrateur et le fabricant) ══ */
+@media (min-width:761px){
+  .page-acces .acces-nav{
+    position:fixed;
+    inset-block:0;
+    inset-inline-start:0;
+    width:224px;
+    flex-direction:column;
+    align-items:stretch;
+    justify-content:flex-start;
+    gap:28px;
+    padding:20px 14px;
+    background:var(--green-950);
+    border-bottom:0;
+  }
+  .page-acces .acces-nav .logo{ color:var(--white); padding:4px 9px 0; }
+  .page-acces .acces-nav .logo__mark{ color:var(--yellow); }
+  .page-acces .bord-outils{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+    margin-top:auto;
+    padding:0 9px;
+  }
+  .page-acces .bord-pouls{
+    color:rgba(255,255,255,.5);
+    background:rgba(255,255,255,.08);
+  }
+  .page-acces .acces-retour{
+    color:rgba(255,255,255,.75);
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:999px;
+    padding:7px 13px;
+  }
+  .page-acces .acces-retour:hover{ background:rgba(255,255,255,.1); color:var(--white); text-decoration:none; }
+  .page-acces .acces-main{
+    margin-inline-start:224px;
+    max-width:none;
+  }
+}

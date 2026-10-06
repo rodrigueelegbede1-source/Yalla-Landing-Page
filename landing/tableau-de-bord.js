@@ -36,9 +36,9 @@ const nomFabricant = sessionStorage.getItem('yalla.nom') || 'Fabricant';
 
 if (!jeton) location.replace('rejoindre.html');
 
-const VERT = '#229453';
-const JAUNE = '#E8CF00';
-const ALERTE = '#FF5C39';
+const VERT = '#146B3A';
+const JAUNE = '#FFE500';
+const ALERTE = '#D65C52';
 
 const message = document.getElementById('message');
 const pouls = document.getElementById('pouls');
@@ -167,7 +167,7 @@ function tracerJauge(valeur) {
 
   if (valeur === null || valeur === undefined) {
     boite.innerHTML = '<svg viewBox="0 0 240 150" role="img" aria-label="Taux de service indisponible">'
-      + arc(120, 120, 92, 180, 360, 20, '#EDEAE0')
+      + arc(120, 120, 92, 180, 360, 20, '#E6EBE5')
       + '<text x="120" y="112" text-anchor="middle" class="jauge-valeur"'
       + ' style="fill:rgba(8,22,14,.35)">—</text></svg>';
     pied.textContent = 'Aucune de vos demandes n’est encore clôturée. L’indicateur '
@@ -186,8 +186,8 @@ function tracerJauge(valeur) {
     + arc(120, 120, 92, 270, 324, 20, JAUNE)
     + arc(120, 120, 92, 324, 360, 20, VERT)
     + `<path d="M ${ax.toFixed(2)} ${ay.toFixed(2)} L ${bx.toFixed(2)} ${by.toFixed(2)} `
-    + `L ${cx2.toFixed(2)} ${cy2.toFixed(2)} Z" fill="#0A3D24"/>`
-    + '<circle cx="120" cy="120" r="7" fill="#0A3D24"/>'
+    + `L ${cx2.toFixed(2)} ${cy2.toFixed(2)} Z" fill="#102A23"/>`
+    + '<circle cx="120" cy="120" r="7" fill="#102A23"/>'
     + `<text x="120" y="104" text-anchor="middle" class="jauge-valeur">${v}</text>`
     + '<text x="120" y="120" text-anchor="middle" class="jauge-unite">POUR CENT</text>'
     + '<text x="26" y="142" class="jauge-borne">0</text>'
@@ -389,7 +389,7 @@ function tracerRuptures() {
         <td>${r.distributeur
           ? echapper(r.distributeur)
           : '<span class="etat etat--alerte">Aucun</span>'}</td>
-        <td class="num"${tendu ? ' style="color:#9B3218;font-weight:600"' : ''}>${duree(attente)}</td>
+        <td class="num"${tendu ? ' style="color:#D65C52;font-weight:600"' : ''}>${duree(attente)}</td>
         <td>${
           r.statut === 'resolue' ? '<span class="etat etat--ok">Livrée</span>'
           : r.statut === 'non_servie' ? '<span class="etat etat--alerte">Non livrée</span>'
@@ -436,7 +436,7 @@ function tracerCatalogue() {
       <td class="num">${nombre(p.boutiques_suivant ?? 0)}</td>
       <td class="num">${nombre(p.signalements_total ?? 0)}${
         Number(p.ruptures_ouvertes ?? 0) > 0
-          ? ` <span style="color:#9B3218">(${p.ruptures_ouvertes} en cours)</span>` : ''}</td>
+          ? ` <span style="color:#D65C52">(${p.ruptures_ouvertes} en cours)</span>` : ''}</td>
       <td>${p.disponible
         ? '<span class="etat etat--ok">En service</span>'
         : '<span class="etat etat--dort">Retirée</span>'}</td>
