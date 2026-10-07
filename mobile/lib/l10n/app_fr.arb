@@ -95,6 +95,31 @@
   "catalogueExplication": "Parcourez les références du réseau et envoyez directement ce dont vous avez besoin.",
   "catalogueVideTitre": "Aucun catalogue disponible",
   "catalogueVideMessage": "Aucun fabricant ne dessert encore votre boutique. Contactez l'agent qui vous a recensé.",
+  "catalogueAucunResultat": "Aucun produit ne correspond à votre recherche.",
+  "autresProduits": "Autres",
+  "produitsCompteur": "{nombre, plural, =1{1 produit} other{{nombre} produits}}",
+  "@produitsCompteur": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "catalogueSansPhotoTitre": "Photos des produits en attente",
+  "catalogueSansPhotoMessage": "Aucun produit ne peut être sélectionné tant que sa photo n'a pas été ajoutée au catalogue.",
+  "produitsSansImage": "{nombre, plural, =1{1 référence masquée : photo manquante.} other{{nombre} références masquées : photos manquantes.}}",
+  "@produitsSansImage": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "voirDetails": "Détails",
+  "referenceProduit": "Référence",
+  "formatProduit": "Format",
+  "descriptionProduit": "Description",
+  "caracteristiquesProduit": "Caractéristiques",
   "dejaDemande": "Déjà demandé",
   "demander": "Demander",
   "demandeEnvoyee": "Demande envoyée",
@@ -319,6 +344,10 @@
   "positionGpsLent": "Le GPS n'accroche pas ici. Sortez devant la boutique, puis reprenez le relevé.",
   "nomTropCourt": "Nom trop court",
   "communeObligatoire": "Commune obligatoire",
+  "espaceWebTitre": "Votre espace se consulte sur le site Yalla",
+  "espaceWebMessage": "Les consoles Fabricant et Administrateur sont accessibles depuis le site professionnel. Connectez-vous avec le même numéro et mot de passe.",
+  "ouvrirEspaceProfessionnel": "Ouvrir l'espace professionnel",
+  "ouvertureImpossible": "Impossible d'ouvrir le site sur cet appareil.",
   "roleEnConstruction": "Interface en construction",
   "roleEnConstructionMessage": "Le rôle « {role} » n'est pas encore disponible dans l'application. La première version couvre les boutiques, les distributeurs, les livreurs et le recensement.",
   "@roleEnConstructionMessage": {
@@ -364,6 +393,7 @@
   "caisseRappelAuto": "Chaque vente qui met un stock à zéro prévient votre distributeur toute seule. Vous n'avez rien à signaler.",
   "confidentialite": "Vos ventes et vos stocks ne sont visibles que de vous. Ni votre distributeur, ni le fabricant n'y ont accès.",
   "ongletMessages": "Messages",
+  "ongletRetours": "Retours",
   "messagesTitre": "Messages du réseau",
   "messagesVideTitre": "Aucun message",
   "messagesVideTexte": "Les consignes de service, les annonces des fabricants et les enquêtes apparaissent ici.",
@@ -391,5 +421,91 @@
       }
     }
   },
-  "ongletAConfirmer": "Confirmer"
+  "ongletAConfirmer": "Confirmer",
+  "communicationAValider": "À valider",
+  "communicationMesSoumissions": "Mes soumissions",
+  "aucuneSoumissionTitre": "Aucun message soumis",
+  "aucuneSoumissionMessage": "Vos publicités et notes d'information apparaîtront ici avec leur statut de validation.",
+  "communicationStatutPubliee": "Publiée",
+  "communicationStatutRefusee": "Refusée",
+  "nouvelleCommunication": "Nouveau message",
+  "aucuneCommunicationAValider": "Aucun message en attente",
+  "aucuneCommunicationAValiderMessage": "Les notes et publicités soumises par les fabricants et distributeurs apparaîtront ici.",
+  "diffusionAdmin": "Nouvelle diffusion",
+  "approbationAdminRequise": "L'administrateur doit valider avant diffusion.",
+  "diffuseeDirectement": "La diffusion part immédiatement aux boutiquiers concernés.",
+  "noteInformation": "Information",
+  "publiciteVisuelle": "Publicité visuelle",
+  "titreCommunication": "Titre",
+  "texteCommunication": "Message aux boutiquiers",
+  "ajouterVisuel": "Ajouter une image",
+  "retirerVisuel": "Retirer l'image",
+  "visuelLimite": "Image vide ou supérieure à 5 Mo.",
+  "communicationChampsObligatoires": "Le titre et le message sont obligatoires.",
+  "publiciteImageObligatoire": "Ajoutez un visuel pour publier une publicité.",
+  "communicationPorteeBoutiques": "Ce message sera proposé aux boutiquiers de votre réseau après approbation.",
+  "soumettrePourApprobation": "Soumettre à l'administrateur",
+  "diffuserMaintenant": "Publier la diffusion",
+  "communicationSoumise": "Message soumis pour validation.",
+  "communicationPubliee": "Message publié.",
+  "communicationRefusee": "Message refusé.",
+  "communicationDejaTraitee": "Ce message a déjà été traité.",
+  "communicationEnAttente": "En attente de validation",
+  "communicationSoumiseLe": "Soumis le {date}",
+  "@communicationSoumiseLe": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "refuserCommunication": "Refuser cette diffusion ?",
+  "motifRefus": "Motif de refus (facultatif)",
+  "approuverPublier": "Approuver et publier",
+  "refuser": "Refuser",
+  "produitsCompteur": "{nombre, plural, =1{1 produit} other{{nombre} produits}}",
+  "@produitsCompteur": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "ongletDemandes": "Demandes",
+  "demandesEnCours": "En cours",
+  "demandesHistorique": "Historique",
+  "demandesActivesVidesTitre": "Aucune demande en cours",
+  "demandesActivesVidesMessage": "Les demandes envoyées depuis le catalogue apparaîtront ici tant qu'elles sont prises en charge.",
+  "demandesHistoriqueVideTitre": "Aucune demande passée",
+  "demandesHistoriqueVideMessage": "Les demandes livrées ou clôturées apparaîtront ici.",
+  "demandeEnAttente": "En attente",
+  "demandeEnCours": "En cours",
+  "demandeTerminee": "Livrée",
+  "demandeNonServie": "Non servie",
+  "demandeDate": "Demandée le {date}",
+  "@demandeDate": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "ongletHistorique": "Historique",
+  "historiqueLivraisonsVideTitre": "Aucune livraison terminée",
+  "historiqueLivraisonsVideMessage": "Vos livraisons et courses annulées apparaîtront ici.",
+  "livraisonTermineeHistorique": "Livrée",
+  "livraisonAnnuleeHistorique": "Annulée",
+  "livraisonDemarreeLe": "Commencée le {date}",
+  "@livraisonDemarreeLe": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "rechercherTournee": "Commerce, gérant ou téléphone",
+  "toutesLesCommunes": "Toutes les communes",
+  "aucunResultatTournee": "Aucun commerce correspondant",
+  "resultatsTournee": "{nombre, plural, =1{1 résultat} other{{nombre} résultats}}",
+  "@resultatsTournee": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  }
 }

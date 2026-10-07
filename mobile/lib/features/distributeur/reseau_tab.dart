@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/format.dart';
+import '../../core/import_catalogue_dialog.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
 
@@ -44,7 +45,8 @@ class _ReseauTabState extends State<ReseauTab> {
   Future<_Reseau> _charger() async {
     // Les deux vues sont sous RLS : elles ne rendent que le réseau de ce
     // distributeur, sans qu'aucun identifiant soit envoyé depuis le téléphone.
-    final marques = await supabase.from('v_mes_marques').select().order('fabricant_nom');
+    final marques =
+        await supabase.from('v_mes_marques').select().order('fabricant_nom');
     final boutiques = await supabase
         .from('v_mon_reseau')
         .select()
@@ -76,7 +78,8 @@ class _ReseauTabState extends State<ReseauTab> {
         'p_point_de_vente_id': choix.pointDeVenteId,
         'p_fabricant_id': choix.fabricantId,
       });
-      _message('Boutique ajoutée à votre réseau. Ses ruptures vous parviendront '
+      _message(
+          'Boutique ajoutée à votre réseau. Ses ruptures vous parviendront '
           'désormais dès la première seconde.');
       await _rafraichir();
     } catch (e) {
@@ -123,43 +126,17 @@ class _ReseauTabState extends State<ReseauTab> {
 
   Future<void> _ajouterProduit() async {
     final marques = List<Map<String, dynamic>>.from(
-      await supabase.from('v_mes_marques').select('fabricant_id, fabricant_nom').order('fabricant_nom'),
+      await supabase
+          .from('v_mes_marques')
+          .select('fabricant_id, fabricant_nom')
+          .order('fabricant_nom'),
     );
     if (!mounted || marques.isEmpty) {
       _message('Aucun catalogue autorisé par un fabricant.');
       return;
     }
-    final nom = TextEditingController();
-    final categorie = TextEditingController(text: 'Boissons');
-    final fabricantId = await showDialog<String>(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: const Text('Fabricant autorisant le produit'),
-        children: marques.map((m) => SimpleDialogOption(
-          onPressed: () => Navigator.pop(context, m['fabricant_id'] as String),
-          child: Text(m['fabricant_nom'] as String? ?? ''),
-        )).toList(),
-      ),
-    );
-    if (fabricantId == null || !mounted) return;
-    final ok = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
-      title: const Text('Ajouter un produit'),
-      content: Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(controller: nom, autofocus: true, decoration: const InputDecoration(labelText: 'Nom du produit')),
-        TextField(controller: categorie, decoration: const InputDecoration(labelText: 'Catégorie')),
-      ]),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-        FilledButton(onPressed: () => Navigator.pop(context, nom.text.trim().length >= 2), child: const Text('Ajouter')),
-      ],
-    ));
-    if (ok != true || !mounted) return;
-    try {
-      await supabase.rpc('enregistrer_produit', params: {
-        'p_nom': nom.text.trim(), 'p_categorie': categorie.text.trim(), 'p_fabricant_id': fabricantId,
-      });
-      _message('Produit ajouté au catalogue autorisé.');
-    } catch (e) { if (mounted) _message(messageErreur(context, e)); }
+    final importe = await ouvrirImportCatalogue(context, marques: marques);
+    if (importe == true && mounted) await _rafraichir();
   }
 
   void _message(String texte) {
@@ -211,7 +188,9 @@ class _ReseauTabState extends State<ReseauTab> {
             // son secteur, pas par ordre alphabétique de boutique.
             final communes = <String, List<Map<String, dynamic>>>{};
             for (final b in reseau.boutiques) {
-              communes.putIfAbsent(b['commune'] as String? ?? '—', () => []).add(b);
+              communes
+                  .putIfAbsent(b['commune'] as String? ?? '—', () => [])
+                  .add(b);
             }
 
             return ListView(
@@ -223,7 +202,7 @@ class _ReseauTabState extends State<ReseauTab> {
                   child: OutlinedButton.icon(
                     onPressed: _ajouterProduit,
                     icon: const Icon(Icons.add_box_outlined),
-                    label: const Text('Ajouter un produit autorisé'),
+                    label: const Text('Importer par fichier'),
                   ),
                 ),
                 Wrap(
@@ -231,7 +210,8 @@ class _ReseauTabState extends State<ReseauTab> {
                   runSpacing: 8,
                   children: reseau.marques
                       .map((m) => Chip(
-                            avatar: const Icon(Icons.local_offer_outlined, size: 16),
+                            avatar: const Icon(Icons.local_offer_outlined,
+                                size: 16),
                             label: Text(
                               '${m['fabricant_nom']} · ${m['boutiques']} boutique(s)',
                               style: const TextStyle(fontSize: 12),
@@ -241,7 +221,8 @@ class _ReseauTabState extends State<ReseauTab> {
                 ),
                 const SizedBox(height: 8),
                 for (final entree in communes.entries) ...[
-                  TitreSection(entree.key, detail: '${entree.value.length} boutique(s)'),
+                  TitreSection(entree.key,
+                      detail: '${entree.value.length} boutique(s)'),
                   ...entree.value.map(
                     (b) => _Boutique(ligne: b, onRetirer: () => _renoncer(b)),
                   ),
@@ -296,7 +277,8 @@ class _Boutique extends StatelessWidget {
 }
 
 class _Revendication {
-  const _Revendication({required this.pointDeVenteId, required this.fabricantId});
+  const _Revendication(
+      {required this.pointDeVenteId, required this.fabricantId});
   final String pointDeVenteId;
   final String fabricantId;
 }
@@ -398,8 +380,7 @@ class _ChoixBoutiqueState extends State<_ChoixBoutique> {
                 final toutes = snap.data ?? const <Map<String, dynamic>>[];
                 final liste = toutes.where((b) {
                   if (_filtre.isEmpty) return true;
-                  final texte =
-                      '${b['nom']} ${b['commune']}'.toLowerCase();
+                  final texte = '${b['nom']} ${b['commune']}'.toLowerCase();
                   return texte.contains(_filtre);
                 }).toList();
 

@@ -11,7 +11,9 @@ import '../../core/comptes.dart';
 import '../../core/format.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
-import '../distributeur/flotte_tab.dart' show afficherIdentifiants, telephoneSaisiValide;
+import '../../l10n/app_localizations.dart';
+import '../distributeur/flotte_tab.dart'
+    show afficherIdentifiants, telephoneSaisiValide;
 import 'inscription_distributeur.dart';
 
 /// L'agent recenseur : inscrire une boutique, sur le pas de sa porte.
@@ -44,6 +46,8 @@ class AgentRecenseurHomeScreen extends ConsumerStatefulWidget {
 class _AgentRecenseurHomeScreenState
     extends ConsumerState<AgentRecenseurHomeScreen> {
   late Future<List<Map<String, dynamic>>> _recensements;
+  String _recherche = '';
+  String? _commune;
 
   @override
   void initState() {
@@ -94,6 +98,7 @@ class _AgentRecenseurHomeScreenState
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(sessionProvider).value;
+    final l = L.of(context);
 
     // LA GRILLE DE TUILES TROUVE ICI SON RÔLE, et c'est le seul.
     //
@@ -122,118 +127,191 @@ class _AgentRecenseurHomeScreenState
           ],
         ),
         enfant: RefreshIndicator(
-        onRefresh: _rafraichir,
-        child: FutureBuilder<List<Map<String, dynamic>>>(
-          future: _recensements,
-          builder: (context, snap) {
-            final liste = snap.data ?? const [];
+          onRefresh: _rafraichir,
+          child: FutureBuilder<List<Map<String, dynamic>>>(
+            future: _recensements,
+            builder: (context, snap) {
+              final liste = snap.data ?? const [];
 
-            // Compte du jour : l'agent est payé au recensement, il doit pouvoir
-            // vérifier son chiffre sans appeler personne.
-            final aujourdhui = DateTime.now();
-            final duJour = liste.where((b) {
-              final d = DateTime.tryParse(b['created_at']?.toString() ?? '');
-              return d != null &&
-                  d.year == aujourdhui.year &&
-                  d.month == aujourdhui.month &&
-                  d.day == aujourdhui.day;
-            }).length;
+              // Compte du jour : l'agent est payé au recensement, il doit pouvoir
+              // vérifier son chiffre sans appeler personne.
+              final aujourdhui = DateTime.now();
+              final duJour = liste.where((b) {
+                final d = DateTime.tryParse(b['created_at']?.toString() ?? '');
+                return d != null &&
+                    d.year == aujourdhui.year &&
+                    d.month == aujourdhui.month &&
+                    d.day == aujourdhui.day;
+              }).length;
+              final communes = liste
+                  .map((b) => b['commune'] as String?)
+                  .whereType<String>()
+                  .toSet()
+                  .toList()
+                ..sort();
+              final requete = _recherche.trim().toLowerCase();
+              final filtres = liste.where((b) {
+                final communeCorrespond =
+                    _commune == null || b['commune'] == _commune;
+                final texte = [
+                  b['nom'],
+                  b['gerant_nom'],
+                  b['telephone'],
+                  b['adresse'],
+                ].whereType<String>().join(' ').toLowerCase();
+                return communeCorrespond &&
+                    (requete.isEmpty || texte.contains(requete));
+              }).toList();
 
-            // LES DEUX TUILES RESTENT VISIBLES QUEL QUE SOIT L'ÉTAT DE LA
-            // LISTE, y compris pendant le chargement et en cas d'erreur
-            // réseau. L'agent est dans la rue avec quelqu'un en face de lui :
-            // une liste qui n'a pas pu se charger ne doit pas l'empêcher
-            // d'inscrire une boutique, puisque l'inscription ne dépend pas de
-            // cette lecture.
-            final actions = GrilleActions(tuiles: [
-              TuileAction(
-                icone: Icons.add_business,
-                libelle: 'Recenser un revendeur',
-                onTap: _recenser,
-              ),
-              TuileAction(
-                icone: Icons.local_shipping_outlined,
-                libelle: 'Inscrire un distributeur',
-                teinte: Jetons.vert500,
-                onTap: _inscrireDistributeur,
-              ),
-            ]);
+              // LES DEUX TUILES RESTENT VISIBLES QUEL QUE SOIT L'ÉTAT DE LA
+              // LISTE, y compris pendant le chargement et en cas d'erreur
+              // réseau. L'agent est dans la rue avec quelqu'un en face de lui :
+              // une liste qui n'a pas pu se charger ne doit pas l'empêcher
+              // d'inscrire une boutique, puisque l'inscription ne dépend pas de
+              // cette lecture.
+              final actions = GrilleActions(tuiles: [
+                TuileAction(
+                  icone: Icons.add_business,
+                  libelle: 'Recenser un revendeur',
+                  onTap: _recenser,
+                ),
+                TuileAction(
+                  icone: Icons.local_shipping_outlined,
+                  libelle: 'Inscrire un distributeur',
+                  teinte: Jetons.vert500,
+                  onTap: _inscrireDistributeur,
+                ),
+              ]);
 
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-              children: [
-                actions,
-                const SizedBox(height: 22),
-
-                if (snap.connectionState == ConnectionState.waiting)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (snap.hasError)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Jetons.alerte.withValues(alpha: .1),
-                      borderRadius: BorderRadius.circular(Jetons.rCarte),
-                    ),
-                    child: Text(messageErreur(context, snap.error!),
-                        style: const TextStyle(fontSize: 13.5, height: 1.45)),
-                  )
-                else if (liste.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Jetons.blanc,
-                      borderRadius: BorderRadius.circular(Jetons.rCarte),
-                      boxShadow: Jetons.ombreCarte,
-                    ),
-                    child: const Column(
-                      children: [
-                        Icon(Icons.storefront_outlined,
-                            size: 40, color: Jetons.vert700),
-                        SizedBox(height: 12),
-                        Text('Aucun revendeur recensé',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600)),
-                        SizedBox(height: 8),
-                        Text(
-                          'Chaque revendeur inscrit accède au catalogue digital '
-                          'et peut signaler ses besoins. Commencez par ceux de '
-                          'votre secteur.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 13.5, height: 1.45),
-                        ),
-                      ],
-                    ),
-                  )
-                else ...[
-                  TitreSection('Ma tournée',
-                      detail: '$duJour aujourd\'hui · ${liste.length} au total'),
-                  ...liste.map((b) => Card(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      child: ListTile(
-                        leading: const Icon(Icons.storefront_outlined),
-                        title: Text(b['nom'] as String? ?? '',
-                            maxLines: 2, overflow: TextOverflow.ellipsis),
-                        subtitle: Text(
-                          '${b['commune']} · ${b['type_activite']}\n'
-                          '${b['gerant_nom'] ?? ''} · ${b['telephone'] ?? ''}',
-                          style: const TextStyle(fontSize: 12, height: 1.4),
-                        ),
-                        isThreeLine: true,
-                        trailing: Etiquette(
-                          texte: (b['statut'] as String? ?? '').toUpperCase(),
-                          couleur:
-                              b['statut'] == 'actif' ? Colors.green : Colors.orange,
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                children: [
+                  actions,
+                  const SizedBox(height: 22),
+                  if (liste.isNotEmpty) ...[
+                    TextField(
+                      onChanged: (valeur) =>
+                          setState(() => _recherche = valeur),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search),
+                        hintText: l.rechercherTournee,
+                        filled: true,
+                        fillColor: Jetons.blanc,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(Jetons.rCarte),
+                          borderSide: BorderSide.none,
                         ),
                       ),
-                    )),
+                    ),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          ChoiceChip(
+                            label: Text(l.toutesLesCommunes),
+                            selected: _commune == null,
+                            onSelected: (_) => setState(() => _commune = null),
+                          ),
+                          ...communes.map((commune) => Padding(
+                                padding:
+                                    const EdgeInsetsDirectional.only(start: 8),
+                                child: ChoiceChip(
+                                  label: Text(commune),
+                                  selected: _commune == commune,
+                                  onSelected: (_) =>
+                                      setState(() => _commune = commune),
+                                ),
+                              )),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (snap.connectionState == ConnectionState.waiting)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (snap.hasError)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Jetons.alerte.withValues(alpha: .1),
+                        borderRadius: BorderRadius.circular(Jetons.rCarte),
+                      ),
+                      child: Text(messageErreur(context, snap.error!),
+                          style: const TextStyle(fontSize: 13.5, height: 1.45)),
+                    )
+                  else if (liste.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Jetons.blanc,
+                        borderRadius: BorderRadius.circular(Jetons.rCarte),
+                        boxShadow: Jetons.ombreCarte,
+                      ),
+                      child: const Column(
+                        children: [
+                          Icon(Icons.storefront_outlined,
+                              size: 40, color: Jetons.vert700),
+                          SizedBox(height: 12),
+                          Text('Aucun revendeur recensé',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600)),
+                          SizedBox(height: 8),
+                          Text(
+                            'Chaque revendeur inscrit accède au catalogue digital '
+                            'et peut signaler ses besoins. Commencez par ceux de '
+                            'votre secteur.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 13.5, height: 1.45),
+                          ),
+                        ],
+                      ),
+                    )
+                  else ...[
+                    TitreSection(l.mesRecensements,
+                        detail:
+                            '$duJour aujourd\'hui · ${liste.length} au total'),
+                    if (filtres.length != liste.length)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(bottom: 8),
+                        child: Text(l.resultatsTournee(filtres.length)),
+                      ),
+                    if (filtres.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 36),
+                        child: Text(
+                          l.aucunResultatTournee,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ...filtres.map((b) => Card(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          child: ListTile(
+                            leading: const Icon(Icons.storefront_outlined),
+                            title: Text(b['nom'] as String? ?? '',
+                                maxLines: 2, overflow: TextOverflow.ellipsis),
+                            subtitle: Text(
+                              '${b['commune']} · ${b['type_activite']}\n'
+                              '${b['gerant_nom'] ?? ''} · ${b['telephone'] ?? ''}',
+                              style: const TextStyle(fontSize: 12, height: 1.4),
+                            ),
+                            isThreeLine: true,
+                            trailing: Etiquette(
+                              texte:
+                                  (b['statut'] as String? ?? '').toUpperCase(),
+                              couleur: b['statut'] == 'actif'
+                                  ? Colors.green
+                                  : Colors.orange,
+                            ),
+                          ),
+                        )),
+                  ],
                 ],
-              ],
-            );
-          },
-        ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -372,7 +450,7 @@ class _FormulaireRecensementState extends State<_FormulaireRecensement> {
     if (p == null) {
       setState(() => _erreur =
           'La position n\'a pas encore été relevée. Elle est indispensable : '
-          'c\'est elle qui décide du livreur le plus proche.');
+              'c\'est elle qui décide du livreur le plus proche.');
       return;
     }
 
@@ -444,7 +522,8 @@ class _FormulaireRecensementState extends State<_FormulaireRecensement> {
                 border: OutlineInputBorder(),
               ),
               items: _types.entries
-                  .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+                  .map((e) =>
+                      DropdownMenuItem(value: e.key, child: Text(e.value)))
                   .toList(),
               onChanged: (v) => setState(() => _typeActivite = v ?? 'boutique'),
             ),
@@ -519,13 +598,16 @@ class _FormulaireRecensementState extends State<_FormulaireRecensement> {
               ),
               child: Text(_motDePasse,
                   style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: 3)),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 3)),
             ),
             if (_erreur != null) ...[
               const SizedBox(height: 16),
               Text(_erreur!,
                   style: TextStyle(
-                      color: Theme.of(context).colorScheme.error, fontSize: 13)),
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 13)),
             ],
             const SizedBox(height: 24),
             FilledButton(
@@ -569,7 +651,9 @@ class _CartePosition extends StatelessWidget {
       return const Card(
         child: ListTile(
           leading: SizedBox(
-              height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2)),
+              height: 22,
+              width: 22,
+              child: CircularProgressIndicator(strokeWidth: 2)),
           title: Text('Relevé de la position en cours'),
           subtitle: Text('Restez devant la boutique.'),
         ),
@@ -583,7 +667,8 @@ class _CartePosition extends StatelessWidget {
           leading: const Icon(Icons.location_off_outlined),
           title: const Text('Position indisponible'),
           subtitle: Text(erreur ?? 'Impossible de relever la position.'),
-          trailing: TextButton(onPressed: onReessayer, child: const Text('Réessayer')),
+          trailing: TextButton(
+              onPressed: onReessayer, child: const Text('Réessayer')),
         ),
       );
     }
@@ -603,7 +688,8 @@ class _CartePosition extends StatelessWidget {
                   'Attendez quelques secondes puis reprenez.',
           style: const TextStyle(fontSize: 12, height: 1.35),
         ),
-        trailing: TextButton(onPressed: onReessayer, child: const Text('Reprendre')),
+        trailing:
+            TextButton(onPressed: onReessayer, child: const Text('Reprendre')),
       ),
     );
   }

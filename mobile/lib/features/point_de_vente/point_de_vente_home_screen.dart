@@ -11,6 +11,7 @@ import '../../core/temps_reel.dart';
 import '../../core/widgets.dart';
 import '../../l10n/app_localizations.dart';
 import 'catalogue_tab.dart';
+import 'demandes_tab.dart';
 import 'messages_tab.dart';
 import 'retours_tab.dart';
 
@@ -25,7 +26,8 @@ class PointDeVenteHomeScreen extends ConsumerStatefulWidget {
       _PointDeVenteHomeScreenState();
 }
 
-class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen> {
+class _PointDeVenteHomeScreenState
+    extends ConsumerState<PointDeVenteHomeScreen> {
   int _onglet = 0;
 
   int _cleRafraichissement = 0;
@@ -109,7 +111,9 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
         entete: SalutationCanevas(
           salutation: l.salutation,
           nom: session?.nom ?? l.appNom,
-            detail: enAttente == 0 ? l.rienEnAttente : l.enAttenteResume(0, _messagesNonLus),
+          detail: enAttente == 0
+              ? l.rienEnAttente
+              : l.enAttenteResume(0, _messagesNonLus),
           actions: [
             PastilleTempsReel(connecte: signal.connecte, surVert: true),
             const BoutonLangue(surVert: true),
@@ -121,34 +125,44 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
           ],
         ),
         enfant: IndexedStack(
-        index: _onglet,
-        children: [
-          CatalogueTab(
-            cle: _cleRafraichissement,
-            onChangement: () => setState(() => _cleRafraichissement++),
-          ),
-          MessagesTab(
-            cle: _cleRafraichissement,
-            onChangement: () => setState(() => _cleRafraichissement++),
-          ),
-          RetoursTab(
-            cle: _cleRafraichissement,
-            onChangement: () => setState(() => _cleRafraichissement++),
-          ),
-        ],
+          index: _onglet,
+          children: [
+            CatalogueTab(
+              cle: _cleRafraichissement,
+              onChangement: () => setState(() => _cleRafraichissement++),
+            ),
+            DemandesTab(
+              cle: _cleRafraichissement,
+              pointDeVenteId: widget.pointDeVenteId,
+              onChangement: () => setState(() => _cleRafraichissement++),
+            ),
+            MessagesTab(
+              cle: _cleRafraichissement,
+              onChangement: () => setState(() => _cleRafraichissement++),
+            ),
+            RetoursTab(
+              cle: _cleRafraichissement,
+              onChangement: () => setState(() => _cleRafraichissement++),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _onglet,
         onDestinationSelected: (i) {
           setState(() => _onglet = i);
-          if (i == 1) _marquerMessagesLus();
+          if (i == 2) _marquerMessagesLus();
         },
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.menu_book_outlined),
             selectedIcon: const Icon(Icons.menu_book),
             label: l.ongletCatalogue,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.receipt_long_outlined),
+            selectedIcon: const Icon(Icons.receipt_long),
+            label: l.ongletDemandes,
           ),
           NavigationDestination(
             icon: Badge(
@@ -166,7 +180,9 @@ class _PointDeVenteHomeScreenState extends ConsumerState<PointDeVenteHomeScreen>
           NavigationDestination(
             icon: const Icon(Icons.chat_bubble_outline),
             selectedIcon: const Icon(Icons.chat_bubble),
-            label: Localizations.localeOf(context).languageCode == 'ar' ? 'الملاحظات' : 'Retours',
+            label: Localizations.localeOf(context).languageCode == 'ar'
+                ? 'الملاحظات'
+                : 'Retours',
           ),
         ],
       ),

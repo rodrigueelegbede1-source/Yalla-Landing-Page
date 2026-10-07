@@ -1,14 +1,13 @@
 name: yalla_mobile
-description: Application mobile Yalla — caisse, signalement de ruptures et livraison pour la distribution de proximité en Côte d'Ivoire.
+description: Application mobile Yalla — catalogue, demandes de réapprovisionnement et livraison pour la distribution de proximité en Côte d'Ivoire.
 publish_to: 'none'
-version: 0.1.0
+version: 0.1.1+2
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
 
-# Périmètre du MVP : trois rôles seulement, Point de vente, Distributeur et
-# Livreur. Les dépendances des rôles hors périmètre ont été retirées, ainsi que
-# celles qui étaient déclarées « en prévision » et n'ont jamais servi.
+# Périmètre mobile : quatre rôles terrain, Point de vente, Distributeur,
+# Livreur et Agent recenseur. Fabricant et Administrateur utilisent le web.
 dependencies:
   flutter:
     sdk: flutter
@@ -42,6 +41,12 @@ dependencies:
   # Formatage des montants en francs CFA et des dates en français.
   # Version imposée par flutter_localizations du SDK courant.
   intl: ^0.20.2
+
+  # Import de catalogues et de médias depuis les fichiers partagés sur Android.
+  archive: ^3.6.1
+  csv: ^6.0.0
+  excel: ^4.0.6
+  file_picker: ^8.1.7
 
 dev_dependencies:
   flutter_test:

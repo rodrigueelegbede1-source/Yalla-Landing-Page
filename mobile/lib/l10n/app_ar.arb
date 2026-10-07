@@ -95,6 +95,31 @@
   "catalogueExplication": "تصفّح مراجع الشبكة وأرسل مباشرة ما تحتاجه.",
   "catalogueVideTitre": "لا يوجد كتالوج",
   "catalogueVideMessage": "لا يخدم متجرك أي مصنّع بعد. تواصل مع المندوب الذي سجّلك.",
+  "catalogueAucunResultat": "لا يوجد منتج يطابق بحثك.",
+  "autresProduits": "أخرى",
+  "produitsCompteur": "{nombre, plural, =1{منتج واحد} =2{منتجان} few{{nombre} منتجات} other{{nombre} منتجًا}}",
+  "@produitsCompteur": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "catalogueSansPhotoTitre": "صور المنتجات قيد الانتظار",
+  "catalogueSansPhotoMessage": "لا يمكن اختيار أي منتج قبل إضافة صورته إلى الكتالوج.",
+  "produitsSansImage": "{nombre, plural, =1{مرجع واحد مخفي: الصورة غير متاحة.} =2{مرجعان مخفيان: الصور غير متاحة.} few{{nombre} مراجع مخفية: الصور غير متاحة.} other{{nombre} مرجعًا مخفيًا: الصور غير متاحة.}}",
+  "@produitsSansImage": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "voirDetails": "التفاصيل",
+  "referenceProduit": "المرجع",
+  "formatProduit": "الحجم",
+  "descriptionProduit": "الوصف",
+  "caracteristiquesProduit": "الخصائص",
   "dejaDemande": "مطلوب سابقًا",
   "demander": "اطلب",
   "demandeEnvoyee": "أُرسل الطلب",
@@ -319,6 +344,10 @@
   "positionGpsLent": "إشارة GPS ضعيفة هنا. اخرج أمام المتجر ثم أعد التحديد.",
   "nomTropCourt": "الاسم قصير جدًا",
   "communeObligatoire": "البلدية مطلوبة",
+  "espaceWebTitre": "مساحتك متاحة على موقع يالا",
+  "espaceWebMessage": "لوحتا المصنّع والمسؤول متاحتان على الموقع المهني. استخدم رقم الهاتف وكلمة المرور نفسيهما.",
+  "ouvrirEspaceProfessionnel": "فتح المساحة المهنية",
+  "ouvertureImpossible": "تعذّر فتح الموقع على هذا الجهاز.",
   "roleEnConstruction": "الواجهة قيد الإنشاء",
   "roleEnConstructionMessage": "الدور «{role}» غير متاح بعد في التطبيق. النسخة الأولى تغطّي المتاجر والموزّعين والموصِّلين والتسجيل.",
   "@roleEnConstructionMessage": {
@@ -364,6 +393,7 @@
   "caisseRappelAuto": "كل عملية بيع تُفرغ المخزون تُنبّه موزّعك من تلقاء نفسها. لا شيء عليك الإبلاغ عنه.",
   "confidentialite": "مبيعاتك ومخزونك مرئيان لك وحدك. لا الموزّع ولا المصنّع يطّلع عليهما.",
   "ongletMessages": "الرسائل",
+  "ongletRetours": "الملاحظات",
   "messagesTitre": "رسائل الشبكة",
   "messagesVideTitre": "لا توجد رسائل",
   "messagesVideTexte": "تظهر هنا تعليمات الخدمة وإعلانات المصنّعين والاستطلاعات.",
@@ -391,5 +421,91 @@
       }
     }
   },
-  "ongletAConfirmer": "التأكيد"
+  "ongletAConfirmer": "التأكيد",
+  "communicationAValider": "بانتظار الاعتماد",
+  "communicationMesSoumissions": "رسائلي المقدّمة",
+  "aucuneSoumissionTitre": "لا توجد رسائل مقدّمة",
+  "aucuneSoumissionMessage": "ستظهر إعلاناتك ومعلوماتك هنا مع حالة اعتمادها.",
+  "communicationStatutPubliee": "نُشرت",
+  "communicationStatutRefusee": "رُفضت",
+  "nouvelleCommunication": "رسالة جديدة",
+  "aucuneCommunicationAValider": "لا توجد رسائل بانتظار الاعتماد",
+  "aucuneCommunicationAValiderMessage": "ستظهر هنا رسائل المصنّعين والموزّعين المقدّمة للنشر.",
+  "diffusionAdmin": "نشر رسالة",
+  "approbationAdminRequise": "يجب اعتماد الرسالة من المسؤول قبل نشرها.",
+  "diffuseeDirectement": "ستصل الرسالة فورًا إلى أصحاب المتاجر المعنيين.",
+  "noteInformation": "معلومة",
+  "publiciteVisuelle": "إعلان مرئي",
+  "titreCommunication": "العنوان",
+  "texteCommunication": "الرسالة إلى أصحاب المتاجر",
+  "ajouterVisuel": "إضافة صورة",
+  "retirerVisuel": "إزالة الصورة",
+  "visuelLimite": "الصورة فارغة أو أكبر من 5 ميغابايت.",
+  "communicationChampsObligatoires": "العنوان والرسالة مطلوبان.",
+  "publiciteImageObligatoire": "أضف صورة لنشر الإعلان.",
+  "communicationPorteeBoutiques": "ستُعرض هذه الرسالة على متاجر شبكتك بعد الاعتماد.",
+  "soumettrePourApprobation": "إرسال إلى المسؤول للاعتماد",
+  "diffuserMaintenant": "نشر الرسالة الآن",
+  "communicationSoumise": "أُرسلت الرسالة للاعتماد.",
+  "communicationPubliee": "نُشرت الرسالة.",
+  "communicationRefusee": "رُفضت الرسالة.",
+  "communicationDejaTraitee": "تمت معالجة هذه الرسالة مسبقًا.",
+  "communicationEnAttente": "بانتظار الاعتماد",
+  "communicationSoumiseLe": "قُدّمت في {date}",
+  "@communicationSoumiseLe": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "refuserCommunication": "رفض هذا النشر؟",
+  "motifRefus": "سبب الرفض (اختياري)",
+  "approuverPublier": "اعتماد ونشر",
+  "refuser": "رفض",
+  "produitsCompteur": "{nombre, plural, =1{منتج واحد} =2{منتجان} few{{nombre} منتجات} other{{nombre} منتجًا}}",
+  "@produitsCompteur": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  },
+  "ongletDemandes": "الطلبات",
+  "demandesEnCours": "قيد التنفيذ",
+  "demandesHistorique": "السجلّ",
+  "demandesActivesVidesTitre": "لا توجد طلبات جارية",
+  "demandesActivesVidesMessage": "ستظهر هنا الطلبات المرسلة من الكتالوج ما دامت قيد المعالجة.",
+  "demandesHistoriqueVideTitre": "لا توجد طلبات سابقة",
+  "demandesHistoriqueVideMessage": "ستظهر هنا الطلبات التي تم تسليمها أو إغلاقها.",
+  "demandeEnAttente": "بانتظار المعالجة",
+  "demandeEnCours": "قيد التنفيذ",
+  "demandeTerminee": "تم التسليم",
+  "demandeNonServie": "لم تُخدم",
+  "demandeDate": "طُلبت في {date}",
+  "@demandeDate": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "ongletHistorique": "السجلّ",
+  "historiqueLivraisonsVideTitre": "لا توجد توصيلات منتهية",
+  "historiqueLivraisonsVideMessage": "ستظهر هنا التوصيلات والطلبات الملغاة.",
+  "livraisonTermineeHistorique": "تم التسليم",
+  "livraisonAnnuleeHistorique": "أُلغيت",
+  "livraisonDemarreeLe": "بدأت في {date}",
+  "@livraisonDemarreeLe": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "rechercherTournee": "المتجر أو المسؤول أو الهاتف",
+  "toutesLesCommunes": "كل البلديات",
+  "aucunResultatTournee": "لا يوجد متجر مطابق",
+  "resultatsTournee": "{nombre, plural, =1{نتيجة واحدة} =2{نتيجتان} few{{nombre} نتائج} other{{nombre} نتيجة}}",
+  "@resultatsTournee": {
+    "placeholders": {
+      "nombre": {
+        "type": "int"
+      }
+    }
+  }
 }

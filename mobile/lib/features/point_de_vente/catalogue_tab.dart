@@ -7,19 +7,9 @@ import '../../core/vignette_produit.dart';
 import '../../core/widgets.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Le catalogue des fabricants qui desservent la boutique, pour signaler un
-/// produit manquant sans tenir d'inventaire.
-///
-/// Le catalogue est le point d'entrée du boutiquier : recherche, repérage
-/// visuel et signalement direct d'un produit manquant. Il permet aussi de
-/// demander une référence qui n'a jamais été suivie dans cette boutique.
-///
-/// LES IMAGES ONT ICI LEUR PLUS GRANDE UTILITÉ. Choisir dans une liste de
-/// trente références en texte seul est lent et source d'erreur. Une vignette,
-/// même sans photo, donne la catégorie par sa couleur et le produit par ses
-/// initiales, ce qui suffit à repérer sans lire.
 class CatalogueTab extends StatefulWidget {
-  const CatalogueTab({super.key, required this.cle, required this.onChangement});
+  const CatalogueTab(
+      {super.key, required this.cle, required this.onChangement});
 
   final int cle;
   final VoidCallback onChangement;
@@ -55,15 +45,17 @@ class _CatalogueTabState extends State<CatalogueTab> {
   }
 
   Future<void> _rafraichir() async {
-    final f = _charger();
-    if (mounted) setState(() => _catalogue = f);
-    await f;
+    final future = _charger();
+    if (mounted) setState(() => _catalogue = future);
+    await future;
   }
 
   Future<void> _demander(Map<String, dynamic> produit) async {
     final l = L.of(context);
     final quantite = await showModalBottomSheet<int>(
       context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
       builder: (_) => _ChoixQuantiteCatalogue(
         nom: produit['produit_nom'] as String? ?? '',
         imageUrl: produit['image_url'] as String?,
@@ -81,9 +73,22 @@ class _CatalogueTabState extends State<CatalogueTab> {
       widget.onChangement();
       await _rafraichir();
     } catch (e) {
-      if (!mounted) return;
-      _message(messageErreur(context, e));
+      if (mounted) _message(messageErreur(context, e));
     }
+  }
+
+  Future<void> _ouvrirFiche(Map<String, dynamic> produit) async {
+    final demander = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _FicheProduit(
+        produit: produit,
+        dejaDemande: produit['deja_demande'] == true,
+        onDemander: () => Navigator.of(context).pop(true),
+      ),
+    );
+    if (demander == true && mounted) await _demander(produit);
   }
 
   void _message(String texte) {
@@ -91,6 +96,21 @@ class _CatalogueTabState extends State<CatalogueTab> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(texte)));
+  }
+
+  String _texteRecherche(Map<String, dynamic> produit) {
+    final caracteristiques = produit['caracteristiques'];
+    final valeursCaracteristiques =
+        caracteristiques is Map ? caracteristiques.values.join(' ') : '';
+    return [
+      produit['produit_nom'],
+      produit['fabricant_nom'],
+      produit['reference'],
+      produit['categorie_nom'],
+      produit['format'],
+      produit['description'],
+      valeursCaracteristiques,
+    ].whereType<Object>().join(' ').toLowerCase();
   }
 
   @override
@@ -120,20 +140,67 @@ class _CatalogueTabState extends State<CatalogueTab> {
           );
         }
 
+        final produits = tout.where((produit) {
+          final image = produit['image_url'] as String?;
+          return image != null && image.trim().isNotEmpty;
+        }).toList();
+        final sansImage = tout.length - produits.length;
+        if (produits.isEmpty) {
+          return EtatVide(
+            icone: Icons.image_not_supported_outlined,
+            titre: l.catalogueSansPhotoTitre,
+            message: l.catalogueSansPhotoMessage,
+          );
+        }
+
         final categories = {
-          for (final p in tout)
-            if (p['categorie_nom'] != null) p['categorie_nom'] as String
+          for (final produit in produits)
+            if ((produit['categorie_nom'] as String?)?.trim().isNotEmpty ==
+                true)
+              produit['categorie_nom'] as String,
         }.toList()
           ..sort();
+        if (produits.any(
+          (produit) =>
+              (produit['categorie_nom'] as String?)?.trim().isNotEmpty != true,
+        )) {
+          categories.add(l.autresProduits);
+          categories.sort();
+        }
 
-        final liste = tout.where((p) {
-          if (_categorie != null && p['categorie_nom'] != _categorie) return false;
-          if (_filtre.isEmpty) return true;
-          final texte =
-              '${p['produit_nom']} ${p['fabricant_nom']} ${p['reference']}'
-                  .toLowerCase();
-          return texte.contains(_filtre);
+        final filtre = _filtre.trim().toLowerCase();
+        final liste = produits.where((produit) {
+          final nomCategorie = (produit['categorie_nom'] as String?)?.trim();
+          final correspondCategorie = _categorie == null ||
+              (_categorie == l.autresProduits
+                  ? nomCategorie == null || nomCategorie.isEmpty
+                  : nomCategorie == _categorie);
+          if (!correspondCategorie) {
+            return false;
+          }
+          return filtre.isEmpty || _texteRecherche(produit).contains(filtre);
         }).toList();
+
+        final parCategorie = <String, List<Map<String, dynamic>>>{};
+        for (final produit in liste) {
+          final categorie = (produit['categorie_nom'] as String?)?.trim();
+          parCategorie
+              .putIfAbsent(
+                categorie == null || categorie.isEmpty
+                    ? l.autresProduits
+                    : categorie,
+                () => [],
+              )
+              .add(produit);
+        }
+        final sections = parCategorie.entries.toList()
+          ..sort((a, b) => a.key.compareTo(b.key));
+        final nombreElements = liste.isEmpty
+            ? 1
+            : sections.fold<int>(
+                0,
+                (total, section) => total + 1 + section.value.length,
+              );
 
         return Column(
           children: [
@@ -144,6 +211,16 @@ class _CatalogueTabState extends State<CatalogueTab> {
                 children: [
                   Text(l.catalogueExplication,
                       style: const TextStyle(fontSize: 12, height: 1.4)),
+                  if (sansImage > 0) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      l.produitsSansImage(sansImage),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   TextField(
                     decoration: InputDecoration(
@@ -152,7 +229,8 @@ class _CatalogueTabState extends State<CatalogueTab> {
                       border: const OutlineInputBorder(),
                       isDense: true,
                     ),
-                    onChanged: (v) => setState(() => _filtre = v.toLowerCase()),
+                    onChanged: (valeur) =>
+                        setState(() => _filtre = valeur.toLowerCase()),
                   ),
                 ],
               ),
@@ -162,7 +240,8 @@ class _CatalogueTabState extends State<CatalogueTab> {
                 height: 48,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
+                  padding:
+                      const EdgeInsetsDirectional.symmetric(horizontal: 16),
                   children: [
                     Padding(
                       padding: const EdgeInsetsDirectional.only(end: 8),
@@ -172,13 +251,13 @@ class _CatalogueTabState extends State<CatalogueTab> {
                         onSelected: (_) => setState(() => _categorie = null),
                       ),
                     ),
-                    ...categories.map((c) => Padding(
+                    ...categories.map((categorie) => Padding(
                           padding: const EdgeInsetsDirectional.only(end: 8),
                           child: ChoiceChip(
-                            label: Text(c),
-                            selected: _categorie == c,
-                            onSelected: (_) => setState(
-                                () => _categorie = _categorie == c ? null : c),
+                            label: Text(categorie),
+                            selected: _categorie == categorie,
+                            onSelected: (_) => setState(() => _categorie =
+                                _categorie == categorie ? null : categorie),
                           ),
                         )),
                   ],
@@ -189,55 +268,40 @@ class _CatalogueTabState extends State<CatalogueTab> {
                 onRefresh: _rafraichir,
                 child: ListView.builder(
                   padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 24),
-                  itemCount: liste.length,
-                  itemBuilder: (context, i) {
-                    final p = liste[i];
-                    final demande = p['deja_demande'] == true;
-                    final reference = p['reference'] as String?;
-
-                    return Card(
-                      margin: const EdgeInsetsDirectional.only(bottom: 8),
-                      child: ListTile(
-                        contentPadding:
-                            const EdgeInsetsDirectional.fromSTEB(12, 6, 8, 6),
-                        leading: VignetteProduit(
-                          nom: p['produit_nom'] as String? ?? '',
-                          imageUrl: p['image_url'] as String?,
-                          categorie: p['categorie_nom'] as String?,
-                          taille: 46,
-                        ),
-                        // DEUX LIGNES AU MAXIMUM, ET LA COUPE PLUTÔT QUE LE
-                        // DÉBORDEMENT. Sans cette borne, un nom long dans une
-                        // colonne étroite s'écrit une lettre par ligne, à la
-                        // verticale, et la liste devient illisible sans qu'une
-                        // seule erreur ne soit levée. C'est arrivé.
-                        //
-                        // La borne ne dépend ni de la police, ni de la largeur
-                        // de l'écran, ni de la taille du bouton voisin : elle
-                        // tient quoi qu'il arrive en amont, ce qu'aucun
-                        // réglage de marge ne garantit.
-                        title: Text(p['produit_nom'] as String? ?? '',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 14, height: 1.25)),
-                        subtitle: Text(
-                          [p['fabricant_nom'], if (reference?.isNotEmpty == true) reference]
-                              .whereType<String>()
-                              .join(' · '),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 11.5),
-                        ),
-                        trailing: demande
-                            ? Text(l.dejaDemande,
-                                style: const TextStyle(fontSize: 11))
-                            : FilledButton.tonal(
-                                onPressed: () => _demander(p),
-                                style: boutonBoutDeLigne,
-                                child: Text(l.demander),
-                              ),
-                      ),
-                    );
+                  itemCount: nombreElements,
+                  itemBuilder: (context, index) {
+                    if (liste.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 56),
+                        child: Center(child: Text(l.catalogueAucunResultat)),
+                      );
+                    }
+                    var position = index;
+                    for (final section in sections) {
+                      if (position == 0) {
+                        return Padding(
+                          padding: const EdgeInsetsDirectional.only(
+                            top: 8,
+                            bottom: 4,
+                          ),
+                          child: TitreSection(
+                            section.key,
+                            detail: l.produitsCompteur(section.value.length),
+                          ),
+                        );
+                      }
+                      position--;
+                      if (position < section.value.length) {
+                        final produit = section.value[position];
+                        return _CarteProduit(
+                          produit: produit,
+                          onOuvrir: () => _ouvrirFiche(produit),
+                          onDemander: () => _demander(produit),
+                        );
+                      }
+                      position -= section.value.length;
+                    }
+                    return const SizedBox.shrink();
                   },
                 ),
               ),
@@ -245,6 +309,284 @@ class _CatalogueTabState extends State<CatalogueTab> {
           ],
         );
       },
+    );
+  }
+}
+
+class _CarteProduit extends StatelessWidget {
+  const _CarteProduit({
+    required this.produit,
+    required this.onOuvrir,
+    required this.onDemander,
+  });
+
+  final Map<String, dynamic> produit;
+  final VoidCallback onOuvrir;
+  final VoidCallback onDemander;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    final demande = produit['deja_demande'] == true;
+    final imageUrl = produit['image_url'] as String? ?? '';
+
+    return Card(
+      margin: const EdgeInsetsDirectional.only(bottom: 12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onOuvrir,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AspectRatio(
+              aspectRatio: 4 / 3,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const ColoredBox(
+                  color: Jetons.creme2,
+                  child: Center(
+                    child: Icon(Icons.broken_image_outlined, size: 34),
+                  ),
+                ),
+                loadingBuilder: (context, child, progress) => progress == null
+                    ? child
+                    : ColoredBox(
+                        color: Jetons.creme2,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: progress.expectedTotalBytes == null
+                                ? null
+                                : progress.cumulativeBytesLoaded /
+                                    progress.expectedTotalBytes!,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(14, 12, 14, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if ((produit['format'] as String?)?.isNotEmpty == true)
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Chip(
+                        visualDensity: VisualDensity.compact,
+                        avatar: const Icon(Icons.straighten, size: 15),
+                        label: Text(produit['format'] as String),
+                      ),
+                    ),
+                  Text(
+                    produit['produit_nom'] as String? ?? '',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    [produit['fabricant_nom'], produit['reference']]
+                        .whereType<String>()
+                        .where((valeur) => valeur.isNotEmpty)
+                        .join(' · '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  if ((produit['description'] as String?)?.isNotEmpty ==
+                      true) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      produit['description'] as String,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12, height: 1.35),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton.icon(
+                          onPressed: onOuvrir,
+                          icon: const Icon(Icons.info_outline, size: 18),
+                          label: Text(l.voirDetails),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: demande
+                            ? OutlinedButton(
+                                onPressed: null,
+                                child: Text(l.dejaDemande),
+                              )
+                            : FilledButton.tonal(
+                                onPressed: onDemander,
+                                style: boutonBoutDeLigne,
+                                child: Text(l.demander),
+                              ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FicheProduit extends StatelessWidget {
+  const _FicheProduit({
+    required this.produit,
+    required this.dejaDemande,
+    required this.onDemander,
+  });
+
+  final Map<String, dynamic> produit;
+  final bool dejaDemande;
+  final VoidCallback onDemander;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = L.of(context);
+    final caracteristiques = produit['caracteristiques'];
+    final details = caracteristiques is Map
+        ? caracteristiques.entries.toList()
+        : const <MapEntry<String, dynamic>>[];
+    final imageUrl = produit['image_url'] as String? ?? '';
+
+    return SafeArea(
+      child: FractionallySizedBox(
+        heightFactor: .9,
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 20),
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: AspectRatio(
+                      aspectRatio: 4 / 3,
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const ColoredBox(
+                          color: Jetons.creme2,
+                          child: Center(
+                            child: Icon(Icons.broken_image_outlined, size: 44),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  if ((produit['categorie_nom'] as String?)?.isNotEmpty == true)
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Chip(
+                        label: Text(produit['categorie_nom'] as String),
+                      ),
+                    ),
+                  Text(
+                    produit['produit_nom'] as String? ?? '',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    produit['fabricant_nom'] as String? ?? '',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  const Divider(height: 24),
+                  _LigneDetailProduit(l.referenceProduit, produit['reference']),
+                  _LigneDetailProduit(l.formatProduit, produit['format']),
+                  _LigneDetailProduit(
+                    l.descriptionProduit,
+                    produit['description'],
+                  ),
+                  if (details.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      l.caracteristiquesProduit,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 4),
+                    ...details.map(
+                      (detail) => _LigneDetailProduit(
+                        detail.key,
+                        detail.value?.toString(),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: dejaDemande
+                    ? OutlinedButton.icon(
+                        onPressed: null,
+                        icon: const Icon(Icons.check_circle_outline),
+                        label: Text(l.dejaDemande),
+                      )
+                    : FilledButton.icon(
+                        onPressed: onDemander,
+                        icon: const Icon(Icons.add_shopping_cart),
+                        label: Text(l.demander),
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LigneDetailProduit extends StatelessWidget {
+  const _LigneDetailProduit(this.libelle, this.valeur);
+
+  final String libelle;
+  final String? valeur;
+
+  @override
+  Widget build(BuildContext context) {
+    if (valeur == null || valeur!.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              libelle,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(valeur!,
+                style: const TextStyle(fontSize: 13, height: 1.4)),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -261,7 +603,8 @@ class _ChoixQuantiteCatalogue extends StatefulWidget {
   final String? categorie;
 
   @override
-  State<_ChoixQuantiteCatalogue> createState() => _ChoixQuantiteCatalogueState();
+  State<_ChoixQuantiteCatalogue> createState() =>
+      _ChoixQuantiteCatalogueState();
 }
 
 class _ChoixQuantiteCatalogueState extends State<_ChoixQuantiteCatalogue> {
@@ -288,9 +631,13 @@ class _ChoixQuantiteCatalogueState extends State<_ChoixQuantiteCatalogue> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(widget.nom,
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w600)),
+                  child: Text(
+                    widget.nom,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -307,10 +654,14 @@ class _ChoixQuantiteCatalogueState extends State<_ChoixQuantiteCatalogue> {
                 ),
                 SizedBox(
                   width: 96,
-                  child: Text('$_quantite',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 34, fontWeight: FontWeight.w700)),
+                  child: Text(
+                    '$_quantite',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
                 IconButton.filledTonal(
                   onPressed: () => setState(() => _quantite++),
@@ -323,11 +674,13 @@ class _ChoixQuantiteCatalogueState extends State<_ChoixQuantiteCatalogue> {
               alignment: WrapAlignment.center,
               spacing: 8,
               children: [1, 2, 5, 10, 20]
-                  .map((n) => ChoiceChip(
-                        label: Text('$n'),
-                        selected: _quantite == n,
-                        onSelected: (_) => setState(() => _quantite = n),
-                      ))
+                  .map(
+                    (nombre) => ChoiceChip(
+                      label: Text('$nombre'),
+                      selected: _quantite == nombre,
+                      onSelected: (_) => setState(() => _quantite = nombre),
+                    ),
+                  )
                   .toList(),
             ),
             const SizedBox(height: 20),

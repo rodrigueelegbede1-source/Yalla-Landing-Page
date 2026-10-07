@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth/auth_providers.dart';
+import '../../core/communications_tabs.dart';
 import '../../core/coque.dart';
 import '../../core/retours_recus_tab.dart';
 import '../../core/theme.dart';
 import '../../core/temps_reel.dart';
 import '../../core/widgets.dart';
+import '../../l10n/app_localizations.dart';
 import 'apercu_tab.dart';
 import 'carnet_tab.dart';
 import 'flotte_tab.dart';
@@ -33,8 +35,10 @@ class DistributeurHomeScreen extends ConsumerStatefulWidget {
       _DistributeurHomeScreenState();
 }
 
-class _DistributeurHomeScreenState extends ConsumerState<DistributeurHomeScreen> {
+class _DistributeurHomeScreenState
+    extends ConsumerState<DistributeurHomeScreen> {
   int _onglet = 0;
+  int _ongletRetours = 0;
 
   /// Rechargements croisés : affecter une course change aussi la flotte, dont
   /// le compteur de courses en cours.
@@ -86,7 +90,7 @@ class _DistributeurHomeScreenState extends ConsumerState<DistributeurHomeScreen>
           index: _onglet,
           children: [
             DistributeurApercuTab(cle: _cleApercu),
-            RetoursRecusTab(cle: _cleApercu, fabricant: false),
+            _retoursEtCommunications(),
             CarnetTab(
               cle: _cleCarnet,
               onChangement: () => setState(() {
@@ -96,6 +100,8 @@ class _DistributeurHomeScreenState extends ConsumerState<DistributeurHomeScreen>
             ),
             FlotteTab(cle: _cleFlotte),
             ReseauTab(cle: _cleReseau),
+            CommunicationsSoumissionTab(
+                onTermine: () => setState(() => _cleApercu++)),
           ],
         ),
       ),
@@ -137,6 +143,35 @@ class _DistributeurHomeScreenState extends ConsumerState<DistributeurHomeScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _retoursEtCommunications() {
+    final l = L.of(context);
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 8),
+          child: SegmentedButton<int>(
+            segments: [
+              ButtonSegment(value: 0, label: Text(l.ongletRetours)),
+              ButtonSegment(value: 1, label: Text(l.ongletMessages)),
+            ],
+            selected: {_ongletRetours},
+            onSelectionChanged: (selection) =>
+                setState(() => _ongletRetours = selection.first),
+          ),
+        ),
+        Expanded(
+          child: IndexedStack(
+            index: _ongletRetours,
+            children: [
+              RetoursRecusTab(cle: _cleApercu, fabricant: false),
+              const CommunicationsSoumissionTab(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -7,7 +7,9 @@ import '../../core/theme.dart';
 import '../../core/format.dart';
 import '../../core/supabase.dart';
 import '../../core/temps_reel.dart';
+import '../../l10n/app_localizations.dart';
 import 'courses_tab.dart';
+import 'historique_livraisons_tab.dart';
 import 'livraison_tab.dart';
 import 'suivi_position.dart';
 
@@ -42,6 +44,7 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
   /// une course abandonnée fait le trajet inverse.
   int _cleCourses = 0;
   int _cleLivraisons = 0;
+  int _cleHistorique = 0;
 
   /// La dernière révision temps réel déjà répercutée, pour ne pas recharger
   /// deux fois le même évènement.
@@ -105,8 +108,7 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
     try {
       await supabase
           .from('livreurs')
-          .update({'en_ligne': valeur})
-          .eq('id', widget.livreurId);
+          .update({'en_ligne': valeur}).eq('id', widget.livreurId);
     } catch (e) {
       if (!mounted) return;
       setState(() => _enLigne = !valeur);
@@ -131,6 +133,7 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
         setState(() {
           _cleCourses++;
           _cleLivraisons++;
+          _cleHistorique++;
         });
       });
     }
@@ -207,8 +210,12 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
                   ),
                   LivraisonTab(
                     cle: _cleLivraisons,
-                    onChangement: () => setState(() => _cleCourses++),
+                    onChangement: () => setState(() {
+                      _cleCourses++;
+                      _cleHistorique++;
+                    }),
                   ),
+                  HistoriqueLivraisonsTab(cle: _cleHistorique),
                 ],
               ),
             ),
@@ -218,16 +225,21 @@ class _LivreurHomeScreenState extends ConsumerState<LivreurHomeScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _onglet,
         onDestinationSelected: (i) => setState(() => _onglet = i),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.near_me_outlined),
-            selectedIcon: Icon(Icons.near_me),
-            label: 'À proximité',
+            icon: const Icon(Icons.near_me_outlined),
+            selectedIcon: const Icon(Icons.near_me),
+            label: L.of(context).ongletAProximite,
           ),
           NavigationDestination(
-            icon: Icon(Icons.local_shipping_outlined),
-            selectedIcon: Icon(Icons.local_shipping),
-            label: 'Mes livraisons',
+            icon: const Icon(Icons.local_shipping_outlined),
+            selectedIcon: const Icon(Icons.local_shipping),
+            label: L.of(context).ongletMesCourses,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.history_outlined),
+            selectedIcon: const Icon(Icons.history),
+            label: L.of(context).ongletHistorique,
           ),
         ],
       ),
@@ -251,7 +263,8 @@ class _BandeauSuivi extends StatelessWidget {
     if (!enLigne && suivi.etat == EtatSuivi.arrete) {
       return const _Bandeau(
         icone: Icons.toggle_off_outlined,
-        texte: 'Vous êtes hors service. Mettez-vous en ligne pour recevoir des courses.',
+        texte:
+            'Vous êtes hors service. Mettez-vous en ligne pour recevoir des courses.',
         couleur: Colors.blueGrey,
       );
     }
@@ -280,7 +293,8 @@ class _BandeauSuivi extends StatelessWidget {
       case EtatSuivi.premierPlan:
         return _Bandeau(
           icone: Icons.my_location_outlined,
-          texte: 'Suivi actif, mais seulement application ouverte. Téléphone en '
+          texte:
+              'Suivi actif, mais seulement application ouverte. Téléphone en '
               'poche, votre distributeur ne vous verra plus avancer.',
           couleur: Colors.orange,
           action: 'Activer en fond',
@@ -329,7 +343,8 @@ class _Bandeau extends StatelessWidget {
             Icon(icone, size: 18, color: couleur),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(texte, style: const TextStyle(fontSize: 12, height: 1.35)),
+              child: Text(texte,
+                  style: const TextStyle(fontSize: 12, height: 1.35)),
             ),
             if (action != null)
               TextButton(onPressed: onAction, child: Text(action!)),

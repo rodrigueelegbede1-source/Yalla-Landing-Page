@@ -150,7 +150,8 @@ class _EcranMessage extends ConsumerWidget {
                 const SizedBox(height: 24),
                 Text(titre,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
                 Text(message,
                     textAlign: TextAlign.center,

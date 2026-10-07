@@ -2,7 +2,7 @@
   "name": "yalla",
   "version": "0.1.0",
   "private": true,
-  "description": "Yalla — géolocalisation, signalement de ruptures et caisse enregistreuse pour la distribution de proximité en Côte d'Ivoire",
+  "description": "Yalla — catalogue digital et demandes de réapprovisionnement suivies pour la distribution de proximité en Côte d'Ivoire",
   "engines": {
     "node": ">=18"
   },
