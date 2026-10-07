@@ -30,7 +30,13 @@ val signatureDisponible = proprietesSignature.getProperty("storeFile") != null
 
 android {
     namespace = "ci.yalla.yalla_mobile"
-    compileSdk = flutter.compileSdkVersion
+    // 36 et non flutter.compileSdkVersion (34 à ce jour) : le plugin
+    // file_picker, ajouté pour l'import de catalogue, dépend de
+    // flutter_plugin_android_lifecycle qui exige de compiler contre la
+    // version 36 ou plus récente des API Android. Un compileSdk inférieur
+    // échoue avec « CheckAarMetadataWorkAction ». Ne touche pas minSdk/targetSdk,
+    // qui restent ceux de Flutter.
+    compileSdk = 36
     ndkVersion = "28.2.13676358"
 
     compileOptions {
