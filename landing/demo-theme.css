@@ -108,6 +108,7 @@ body.page-acces{
   .console-qui span{ display:inline; }
 
   .console-corps{
+    width:auto;
     margin-inline-start:224px;
     max-width:none;
   }
