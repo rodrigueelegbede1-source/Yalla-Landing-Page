@@ -22,23 +22,63 @@ const CLE = window.YALLA_CONFIG?.cle ?? '';
 const PERIODE_MS = 25000;
 
 const jeton = sessionStorage.getItem('yalla.jeton');
-const nom = sessionStorage.getItem('yalla.nom') || '';
+const nomDistributeur = sessionStorage.getItem('yalla.nom') || 'Distributeur';
 
 if (!jeton) location.replace('rejoindre.html');
 
-const titre = document.getElementById('titreDistributeur');
-const sousTitre = document.getElementById('sousTitreDistributeur');
+const VERT = '#146B3A';
+const JAUNE = '#FFE500';
+const ALERTE = '#D65C52';
+
 const message = document.getElementById('messageBord');
 const chiffres = document.getElementById('chiffres');
 const pouls = document.getElementById('pouls');
 const dialogue = document.getElementById('dialogueAffectation');
 
 let flotteConnue = [];
+let etat = { carnet: [], flotte: [], reseau: [], activite: [] };
+let filtreCommuneTableau = '';
 
 document.getElementById('boutonDeconnexion').addEventListener('click', () => {
   sessionStorage.clear();
   location.replace('rejoindre.html');
 });
+
+/* ══ Navigation ═══════════════════════════════════════════ */
+
+const VOLETS = {
+  tableau: 'voletTableau',
+  operations: 'voletOperations',
+};
+
+function ouvrirVolet(nom) {
+  for (const [cle, id] of Object.entries(VOLETS)) {
+    document.getElementById(id).hidden = cle !== nom;
+  }
+  for (const onglet of document.querySelectorAll('.console-onglet')) {
+    onglet.classList.toggle('est-actif', onglet.dataset.volet === nom);
+  }
+  history.replaceState(null, '', `#${nom}`);
+}
+
+for (const onglet of document.querySelectorAll('.console-onglet')) {
+  onglet.addEventListener('click', () => ouvrirVolet(onglet.dataset.volet));
+}
+
+for (const bouton of document.querySelectorAll('.periods button')) {
+  bouton.addEventListener('click', () => {
+    for (const b of document.querySelectorAll('.periods button')) b.classList.remove('selected');
+    bouton.classList.add('selected');
+  });
+}
+
+const selectCommuneTableau = document.getElementById('filtreCommuneTableau');
+if (selectCommuneTableau) {
+  selectCommuneTableau.addEventListener('change', (e) => {
+    filtreCommuneTableau = e.target.value;
+    tracerCouverture();
+  });
+}
 
 /* ── Outils ────────────────────────────────────────────────── */
 
@@ -50,13 +90,22 @@ function echapper(texte) {
 
 function nombre(valeur) {
   if (valeur === null || valeur === undefined) return '—';
-  return String(valeur).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return String(valeur).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
+function montant(valeur) {
+  const v = Number(valeur ?? 0);
+  if (!Number.isFinite(v)) return '—';
+  if (v >= 1000000) return `${(v / 1000000).toFixed(1).replace('.', ',')} M`;
+  if (v >= 10000) return `${Math.round(v / 1000)} k`;
+  return nombre(Math.round(v));
 }
 
 /* Durée courte, dans la forme utilisée partout ailleurs dans le produit :
    « 1 h 44 », « 12 min », « 45 s ». */
 function duree(secondes) {
-  const s = Math.max(0, Math.round(secondes));
+  const s = Math.max(0, Math.round(Number(secondes ?? 0)));
+  if (s >= 86400) return `${Math.floor(s / 86400)} j`;
   if (s >= 3600) {
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
@@ -346,6 +395,379 @@ async function basculerLivreur({ livreur, actif, nom: nomLivreur }) {
   }
 }
 
+/* ══ Mon réseau ═══════════════════════════════════════════ */
+
+function remplirCommunes() {
+  const communes = [...new Set(etat.reseau.map((b) => b.commune).filter(Boolean))].sort();
+  const options = communes.map((c) => `<option value="${echapper(c)}">${echapper(c)}</option>`).join('');
+  const select = document.getElementById('filtreCommuneTableau');
+  if (!select) return;
+  const choix = select.value;
+  select.innerHTML = `<option value="">Toutes les communes</option>${options}`;
+  select.value = communes.includes(choix) ? choix : '';
+}
+
+function tracerReseauChiffres() {
+  const { carnet, flotte, reseau } = etat;
+  const aAffecter = carnet.filter((c) => c.statut !== 'prise_en_charge');
+  const actifs = flotte.filter((l) => l.actif === true);
+  const enLigne = actifs.filter((l) => etatLivreur(l).texte === 'En ligne');
+  const marques = new Set(reseau.map((b) => b.fabricant_nom));
+  const pdv = new Set(reseau.map((b) => b.point_de_vente_id));
+
+  const optionEspace = document.getElementById('optionEspaceDistributeur');
+  if (optionEspace) optionEspace.textContent = `Distributeur · ${nomDistributeur}`;
+
+  document.getElementById('chiffreATraiter').textContent = nombre(aAffecter.length);
+  document.getElementById('detailATraiter').textContent = aAffecter.length
+    ? 'À affecter à un livreur.'
+    : 'Rien en attente : vos revendeurs sont servis.';
+
+  document.getElementById('chiffrePdv').textContent = nombre(pdv.size);
+  document.getElementById('detailPdv').textContent = `${nombre(marques.size)} marque(s) représentée(s)`;
+
+  document.getElementById('chiffreMarques').textContent = nombre(marques.size);
+  document.getElementById('detailMarques').textContent = `Sur ${nombre(pdv.size)} revendeur(s)`;
+
+  document.getElementById('chiffreLivreurs').textContent = nombre(enLigne.length);
+  document.getElementById('detailLivreurs').textContent =
+    `${nombre(actifs.length)} livreur(s) actif(s) dans la flotte`;
+
+  const jours = etat.activite;
+  const aujourdhui = jours.length ? jours[jours.length - 1] : null;
+  const livraisonsAuj = Number(aujourdhui?.livraisons ?? 0);
+  document.getElementById('chiffreLivraisons').textContent = nombre(livraisonsAuj);
+  document.getElementById('detailLivraisons').textContent = 'Vos propres livreurs, aujourd’hui';
+
+  document.getElementById('tableChiffres').innerHTML = [
+    ['Revendeurs desservis', pdv.size, ''],
+    ['Marques distribuées', marques.size, ''],
+    ['Livreurs dans la flotte', flotte.length, `${nombre(actifs.length)} actif(s)`],
+    ['Demandes en cours', aAffecter.length, ''],
+  ].map(([nom2, v, detail]) => `
+    <div class="network-stat">
+      <strong>${nombre(v)}</strong>
+      <span>${echapper(nom2)}${detail ? ` · ${echapper(detail)}` : ''}</span>
+    </div>`).join('');
+}
+
+/* ── Le rythme, sur ce que le distributeur peut légitimement voir : les
+   demandes visibles dans son périmètre (partagées entre confrères par les
+   politiques de la base) et ses propres livraisons confirmées, qui restent
+   strictement les siennes. ─────────────────────────────────────────────── */
+function tracerActivite() {
+  const boite = document.getElementById('grapheActivite');
+  const pied = document.getElementById('piedActivite');
+  const jours = etat.activite;
+
+  if (!jours.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:20px 0">Pas encore de données.</div>';
+    pied.textContent = '';
+    return;
+  }
+
+  const L = 720;
+  const H = 210;
+  const margeG = 34;
+  const margeD = 10;
+  const margeH = 16;
+  const margeB = 34;
+  const larg = L - margeG - margeD;
+  const haut = H - margeH - margeB;
+
+  const maxi = Math.max(1, ...jours.map((j) => Math.max(Number(j.signalees), Number(j.livraisons))));
+  const plafond = Math.max(2, Math.ceil(maxi / 2) * 2);
+  const pas = larg / jours.length;
+  const y = (v) => margeH + haut - (v / plafond) * haut;
+
+  const grilles = [0, plafond / 2, plafond].map((v) =>
+    `<line x1="${margeG}" y1="${y(v).toFixed(1)}" x2="${L - margeD}" y2="${y(v).toFixed(1)}" class="graphe-grille"/>`
+    + `<text x="${margeG - 7}" y="${(y(v) + 3.5).toFixed(1)}" text-anchor="end" class="graphe-axe">${v}</text>`).join('');
+
+  const barres = jours.map((j, i) => {
+    const v = Number(j.signalees);
+    const hauteur = (v / plafond) * haut;
+    const x = margeG + i * pas + pas * 0.22;
+    const l = pas * 0.56;
+    return `<rect x="${x.toFixed(1)}" y="${y(v).toFixed(1)}" width="${l.toFixed(1)}"
+      height="${Math.max(0, hauteur).toFixed(1)}" rx="2" fill="${ALERTE}" opacity=".85"/>`;
+  }).join('');
+
+  const points = jours.map((j, i) =>
+    `${(margeG + i * pas + pas / 2).toFixed(1)},${y(Number(j.livraisons)).toFixed(1)}`);
+
+  const ligne = `<polyline points="${points.join(' ')}" fill="none" stroke="${VERT}"
+    stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`
+    + jours.map((j, i) =>
+      `<circle cx="${(margeG + i * pas + pas / 2).toFixed(1)}" cy="${y(Number(j.livraisons)).toFixed(1)}" r="3.2" fill="${VERT}"/>`).join('');
+
+  const etiquettes = jours.map((j, i) => {
+    if (i % Math.ceil(jours.length / 8) !== 0 && i !== jours.length - 1) return '';
+    const d = new Date(j.jour);
+    const texte = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return `<text x="${(margeG + i * pas + pas / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle" class="graphe-axe">${texte}</text>`;
+  }).join('');
+
+  boite.innerHTML = `
+    <svg viewBox="0 0 ${L} ${H}" role="img" aria-label="Demandes et livraisons sur quatorze jours">
+      ${grilles}${barres}${ligne}${etiquettes}
+    </svg>
+    <div class="legende" style="flex-direction:row;gap:18px;margin-top:4px">
+      <div style="flex:0"><i style="background:${ALERTE}"></i>Demandes visibles</div>
+      <div style="flex:0"><i style="background:${VERT}"></i>Vos livraisons</div>
+    </div>`;
+
+  const aujourdhui = jours[jours.length - 1];
+  const total14 = jours.reduce((s, j) => s + Number(j.livraisons), 0);
+  pied.textContent = total14 === 0
+    ? 'Aucune de vos livraisons n’a bougé sur ces quatorze jours.'
+    : `${nombre(aujourdhui.livraisons)} livraison(s) confirmée(s) aujourd’hui par vos livreurs, sur ${nombre(total14)} ces quatorze derniers jours.`;
+}
+
+/* ── Couverture : la part de vos revendeurs avec une demande ouverte en ce
+   moment, et la répartition de ces demandes par commune. ────────────────── */
+function tracerCouverture() {
+  const anneau = document.getElementById('anneauCouverture');
+  const valeur = document.getElementById('valeurCouverture');
+  const copie = document.getElementById('texteCouverture');
+  const barres = document.getElementById('communesCouverture');
+  const pied = document.getElementById('piedCouverture');
+
+  const reseau = etat.reseau;
+  const total = reseau.length;
+  const enAttente = reseau.filter((b) => Number(b.ruptures_ouvertes ?? 0) > 0).length;
+  const part = total === 0 ? 0 : Math.min(100, Math.round((enAttente / total) * 100));
+
+  anneau.style.background = `conic-gradient(${ALERTE} 0 ${part}%, #e6ebe5 ${part}% 100%)`;
+  valeur.textContent = `${part} %`;
+  copie.innerHTML = `<strong>${nombre(enAttente)} revendeur(s) en attente</strong>`
+    + `<p>Sur ${nombre(total)} revendeur(s) que vous desservez.</p>`;
+
+  const demandes = etat.carnet.filter((c) => c.statut !== 'prise_en_charge'
+    && (!filtreCommuneTableau || c.commune === filtreCommuneTableau));
+  const parCommune = new Map();
+  for (const c of demandes) {
+    const cle = c.commune || '—';
+    parCommune.set(cle, (parCommune.get(cle) ?? 0) + 1);
+  }
+  const totalDemandes = demandes.length;
+  const rangs = [...parCommune.entries()]
+    .map(([commune, n]) => ({ commune, n, taux: totalDemandes === 0 ? 0 : Math.round((n / totalDemandes) * 100) }))
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 6);
+
+  barres.innerHTML = !rangs.length
+    ? '<div class="vide" style="border:0;padding:8px 0">Aucune demande en cours sur votre réseau.</div>'
+    : rangs.map((r) => `<div class="commune-row">
+        <span>${echapper(r.commune)}</span>
+        <div class="track"><i style="width:${r.taux}%"></i></div>
+        <b>${nombre(r.n)}</b>
+      </div>`).join('');
+
+  pied.textContent = total === 0
+    ? 'Aucun revendeur déclaré pour l’instant.'
+    : enAttente === 0
+      ? 'Aucun de vos revendeurs n’a de demande ouverte pour l’instant.'
+      : `${nombre(enAttente)} revendeur(s) sur ${nombre(total)} attendent une livraison.`;
+}
+
+/* ── Les demandes en cours, les plus en attente d'abord ──────────────── */
+function tracerDemandesEnCours() {
+  const boite = document.getElementById('demandesEnCoursListe');
+  const pied = document.getElementById('piedRuptures');
+
+  const enCours = etat.carnet.filter((c) => c.statut !== 'prise_en_charge');
+  const total = enCours.length;
+
+  if (!total) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0">'
+      + 'Aucune demande en cours. Vos revendeurs sont servis.</div>';
+  } else {
+    const ordonnees = [...enCours]
+      .sort((a, b) => Number(b.anciennete_secondes ?? 0) - Number(a.anciennete_secondes ?? 0))
+      .slice(0, 6);
+
+    boite.innerHTML = ordonnees.map((c) => {
+      const attente = Number(c.anciennete_secondes ?? 0);
+      const progression = Math.min(100, Math.round((attente / 7200) * 100));
+      const elargie = c.cercle === 'elargi';
+      return `<div class="signal-item">
+        <div class="signal-heading">
+          <strong>${echapper(c.produit_nom)} · ${echapper(c.point_de_vente_nom)}</strong>
+          <span class="status">${elargie ? 'Élargie' : 'En attente'}</span>
+        </div>
+        <div class="signal-meta"><span>${echapper(c.commune ?? '')}${
+          c.fabricant_nom ? ` · ${echapper(c.fabricant_nom)}` : ''}</span><span>${duree(attente)}</span></div>
+        <div class="signal-meter"><i style="width:${progression}%"></i></div>
+      </div>`;
+    }).join('');
+  }
+
+  const urgentes = enCours.filter((c) => {
+    const r = Number(c.secondes_avant_escalade ?? 0);
+    return r > 0 && r < 1800;
+  }).length;
+  pied.textContent = total === 0
+    ? 'Aucune demande en cours.'
+    : urgentes > 0
+      ? `${urgentes} demande(s) vont s’ouvrir aux autres distributeurs sous trente minutes.`
+      : 'Aucune demande n’est à moins de trente minutes de l’escalade.';
+}
+
+/* ── Prévision et valeur des livraisons, sur vos seules livraisons ───── */
+function tracerPrevision() {
+  const boite = document.getElementById('previsionListe');
+  const jours = etat.activite;
+  const aujourdhui = jours.length ? jours[jours.length - 1] : null;
+  const duJour = Number(aujourdhui?.montant ?? 0);
+  const livraisons = Number(aujourdhui?.livraisons ?? 0);
+  const panier = livraisons > 0 ? duJour / livraisons : null;
+  const maxi = Math.max(duJour, 1);
+
+  boite.innerHTML = `
+    <div class="finance-item">
+      <div class="finance-label"><span>Livré confirmé aujourd’hui (estimation logistique)</span><strong>${montant(duJour)}</strong></div>
+      <div class="finance-track"><i style="width:${Math.round((duJour / maxi) * 100)}%"></i></div>
+    </div>
+    <div class="finance-item${panier === null ? ' finance-item--untracked' : ''}">
+      <div class="finance-label"><span>Panier moyen par livraison</span><strong>${
+        panier === null ? '—' : montant(Math.round(panier))}</strong></div>
+      ${panier === null ? '<small>Aucune livraison confirmée aujourd’hui.</small>'
+        : `<div class="finance-track"><i style="width:${Math.min(100, Math.round((panier / maxi) * 100))}%"></i></div>`}
+    </div>
+    <div class="finance-item finance-item--untracked">
+      <div class="finance-label"><span>CA prévisionnel (non clôturé)</span><strong>Non calculable</strong></div>
+      <small>Les demandes en cours n'ont pas de montant tant qu'elles ne sont pas livrées.</small>
+    </div>
+    <div class="finance-item finance-item--untracked">
+      <div class="finance-label"><span>Pipeline pondéré</span><strong>Non suivi</strong></div>
+      <small>Aucun suivi commercial des prospects dans l'application.</small>
+    </div>`;
+}
+
+/* ── Les métriques honnêtes : ce qui se calcule vraiment ─────────────── */
+function tracerMetriques() {
+  const enAttente = etat.carnet.filter((c) => c.statut !== 'prise_en_charge');
+  const metricAnciennete = document.getElementById('metricAnciennete');
+  if (!enAttente.length) {
+    metricAnciennete.textContent = '—';
+  } else {
+    const moyenne = enAttente.reduce((s, c) => s + Number(c.anciennete_secondes ?? 0), 0) / enAttente.length;
+    metricAnciennete.textContent = duree(moyenne);
+  }
+
+  const courses = etat.flotte.reduce((s, l) => s + Number(l.courses_en_cours ?? 0), 0);
+  document.getElementById('metricCourses').textContent = nombre(courses);
+}
+
+/* ── Demandes récentes, les plus récentes d'abord ────────────────────── */
+function tracerDemandesRecentes() {
+  const boite = document.getElementById('demandesRecentesListe');
+
+  if (!etat.carnet.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0">'
+      + 'Aucune demande reçue sur votre périmètre à ce jour.</div>';
+    return;
+  }
+
+  const ordonnees = [...etat.carnet]
+    .sort((a, b) => Number(a.anciennete_secondes ?? 0) - Number(b.anciennete_secondes ?? 0))
+    .slice(0, 8);
+
+  boite.innerHTML = ordonnees.map((c) => {
+    const attente = Number(c.anciennete_secondes ?? 0);
+    const pris = c.statut === 'prise_en_charge';
+    const point = pris ? 'route' : '';
+    const libelle = pris ? 'Prise en charge' : c.cercle === 'elargi' ? 'Élargie' : 'En attente';
+    return `<div class="event-item">
+      <span class="event-dot ${point}"></span>
+      <div class="event-main">
+        <strong>${echapper(c.produit_nom)} · ${echapper(c.point_de_vente_nom)}</strong>
+        <span>${echapper(c.commune ?? '')}${c.fabricant_nom ? ` · ${echapper(c.fabricant_nom)}` : ''}</span>
+      </div>
+      <div class="event-value">${duree(attente)}<small>${libelle}</small></div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Les livreurs les plus actifs, sur l'historique complet de la flotte ─ */
+function tracerLivreursActifs() {
+  const boite = document.getElementById('livreursActifsListe');
+  const classes = [...etat.flotte]
+    .filter((l) => Number(l.livraisons_terminees ?? 0) > 0)
+    .sort((a, b) => Number(b.livraisons_terminees) - Number(a.livraisons_terminees))
+    .slice(0, 6);
+
+  if (!classes.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0;color:#a9b9ae">'
+      + 'Non suivi : aucun de vos livreurs n’a encore terminé de livraison.</div>';
+    return;
+  }
+
+  const maxi = Math.max(1, ...classes.map((l) => Number(l.livraisons_terminees)));
+  boite.innerHTML = classes.map((l) => `<div class="rank-item">
+    <div class="rank-heading"><strong>${echapper(l.nom)}</strong><span>${nombre(l.livraisons_terminees)}</span></div>
+    <div class="rank-meter"><i style="width:${Math.round((Number(l.livraisons_terminees) / maxi) * 100)}%"></i></div>
+    <div class="rank-sub">Livraisons terminées, historique complet</div>
+  </div>`).join('');
+}
+
+/* ── Les revendeurs avec le plus de demandes ouvertes ─────────────────── */
+function tracerRevendeursApercu() {
+  const boite = document.getElementById('revendeursApercuListe');
+
+  const ordonnes = [...etat.reseau]
+    .filter((b) => Number(b.ruptures_ouvertes ?? 0) > 0)
+    .sort((a, b) => Number(b.ruptures_ouvertes) - Number(a.ruptures_ouvertes))
+    .slice(0, 6);
+
+  if (!ordonnes.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0;color:#a9b9ae">'
+      + 'Aucune demande ouverte à ce jour.</div>';
+    return;
+  }
+
+  const maxi = Math.max(1, ...ordonnes.map((b) => Number(b.ruptures_ouvertes)));
+
+  boite.innerHTML = ordonnes.map((b, i) => {
+    const n = Number(b.ruptures_ouvertes);
+    return `<div class="product-row">
+      <span class="product-rank">${i + 1}</span>
+      <span class="product-name">${echapper(b.point_de_vente_nom)}<br><small style="opacity:.75">${echapper(b.commune ?? '')}</small></span>
+      <div class="product-bar"><i style="width:${Math.round((n / maxi) * 100)}%"></i></div>
+      <span class="product-count">${nombre(n)} demande(s)</span>
+    </div>`;
+  }).join('');
+}
+
+/* ── Vos marques distribuées, par nombre de revendeurs rattachés ─────── */
+function tracerMarquesApercu() {
+  const boite = document.getElementById('marquesApercuListe');
+
+  const parMarque = new Map();
+  for (const b of etat.reseau) {
+    const cle = b.fabricant_nom || '—';
+    if (!parMarque.has(cle)) parMarque.set(cle, new Set());
+    parMarque.get(cle).add(b.point_de_vente_id);
+  }
+  const classes = [...parMarque.entries()]
+    .map(([nom2, pdv]) => ({ nom: nom2, n: pdv.size }))
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 6);
+
+  if (!classes.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0">Aucune marque déclarée.</div>';
+    return;
+  }
+
+  const maxi = Math.max(1, ...classes.map((m) => m.n));
+  boite.innerHTML = classes.map((m) => `<div class="rank-item">
+    <div class="rank-heading"><strong>${echapper(m.nom)}</strong><span>${nombre(m.n)}</span></div>
+    <div class="rank-meter"><i style="width:${Math.round((m.n / maxi) * 100)}%"></i></div>
+    <div class="rank-sub">Revendeur(s) rattaché(s)</div>
+  </div>`).join('');
+}
+
 /* ── Chargement ────────────────────────────────────────────── */
 
 function rendreChiffres(carnet, flotte, boutiques) {
@@ -380,19 +802,42 @@ function rendreChiffres(carnet, flotte, boutiques) {
 
 async function rafraichir() {
   try {
-    const [carnet, flotte, reseau] = await Promise.all([
+    const [carnet, flotte, reseau, activite] = await Promise.all([
       interroger('v_carnet_distributeur?select=*&order=cercle,date_signalement.desc'),
       interroger('v_ma_flotte?select=*&order=actif.desc,en_ligne.desc,nom'),
       interroger('v_mon_reseau?select=*&order=commune,point_de_vente_nom'),
+      interroger('v_supervision_activite?select=*&order=jour'),
     ]);
 
-    titre.textContent = nom || 'Mon réseau';
-    sousTitre.textContent = 'Tableau de bord distributeur';
+    etat = { carnet, flotte, reseau, activite };
+
+    document.getElementById('nomDistributeur').textContent = nomDistributeur;
+    document.getElementById('initiales').textContent = nomDistributeur
+      .split(/\s+/).filter(Boolean).slice(0, 2).map((m) => m[0].toUpperCase()).join('') || 'D';
+
+    const aAffecter = carnet.filter((c) => c.statut !== 'prise_en_charge');
+    const badge = document.getElementById('compteurOperations');
+    if (badge) {
+      badge.textContent = aAffecter.length;
+      badge.hidden = aAffecter.length === 0;
+    }
 
     rendreChiffres(carnet, flotte, reseau);
     rendreCarnet(carnet);
     rendreFlotte(flotte);
     rendreReseau(reseau);
+
+    remplirCommunes();
+    tracerReseauChiffres();
+    tracerActivite();
+    tracerCouverture();
+    tracerDemandesEnCours();
+    tracerPrevision();
+    tracerMetriques();
+    tracerDemandesRecentes();
+    tracerLivreursActifs();
+    tracerRevendeursApercu();
+    tracerMarquesApercu();
 
     const heure = new Date().toLocaleTimeString('fr-FR', {
       hour: '2-digit',
@@ -400,10 +845,14 @@ async function rafraichir() {
     });
     pouls.textContent = `à jour ${heure}`;
     pouls.dataset.etat = 'ok';
+    const pouls2 = document.getElementById('pouls2');
+    if (pouls2) { pouls2.textContent = heure; pouls2.dataset.etat = 'ok'; }
     message.hidden = true;
   } catch (erreur) {
     if (erreur.message === 'session') return;
     pouls.dataset.etat = 'perdu';
+    const pouls2 = document.getElementById('pouls2');
+    if (pouls2) pouls2.dataset.etat = 'perdu';
     informer(
       'Les données n’ont pas pu être rafraîchies. Sur ce réseau, un appel sur '
       + 'dix se coupe : la prochaine tentative part dans vingt-cinq secondes.',
@@ -413,6 +862,8 @@ async function rafraichir() {
 }
 
 if (jeton) {
+  if (VOLETS[location.hash.slice(1)]) ouvrirVolet(location.hash.slice(1));
+
   rafraichir();
 
   // On suspend le rafraîchissement quand l'onglet passe en arrière-plan :

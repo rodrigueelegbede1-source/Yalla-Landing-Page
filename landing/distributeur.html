@@ -11,42 +11,222 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="supervision.css">
 <link rel="stylesheet" href="acces.css">
 <link rel="stylesheet" href="demo-theme.css">
+<link rel="stylesheet" href="tableau-demo.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23146B3A'/><path d='M28 30h10l14 30' stroke='%23FFE500' stroke-width='11' fill='none' stroke-linecap='round'/><rect x='52' y='24' width='24' height='24' rx='3' fill='%23FFE500' transform='rotate(-18 64 36)'/><circle cx='50' cy='72' r='8' fill='%23FFE500'/></svg>">
 </head>
-<body class="page-acces">
+<body class="page-console">
 
-<a class="skip-link" href="#main">Aller au contenu</a>
+<a class="skip-link" href="#corps">Aller au contenu</a>
 
-<header class="acces-nav">
-  <a class="logo" href="index.html" aria-label="Yalla, accueil">
-    <span class="logo__mark" aria-hidden="true">
-      <svg viewBox="0 0 40 40" fill="none">
-        <path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/>
-        <rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/>
-        <circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/>
-      </svg>
-    </span>
-    <span class="logo__word">YALLA</span>
+<header class="console-barre">
+  <a class="console-marque" href="index.html" aria-label="Yalla, accueil">
+    <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <path d="M9 10h6.2l9.5 19.5" stroke="currentColor" stroke-width="4.2" stroke-linecap="round"/>
+      <rect x="20.5" y="6.5" width="13" height="13" rx="1.6" fill="currentColor" transform="rotate(-19 27 13)"/>
+      <circle cx="17.5" cy="31.5" r="4.2" fill="currentColor"/>
+    </svg>
+    <b>YALLA</b>
   </a>
-  <div class="bord-outils">
-    <span class="bord-pouls" id="pouls" title="Dernière mise à jour">—</span>
-    <button type="button" class="acces-retour" id="boutonDeconnexion">Se déconnecter</button>
+
+  <div class="console-barre-contenu">
+  <nav class="console-nav" aria-label="Sections">
+    <span class="console-nav-caption">Pilotage</span>
+    <button type="button" class="console-onglet est-actif" data-volet="tableau">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" width="16" height="16" style="vertical-align:-3px;margin-inline-end:9px"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Mon réseau
+    </button>
+    <button type="button" class="console-onglet" data-volet="operations">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" width="16" height="16" style="vertical-align:-3px;margin-inline-end:9px"><path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="17.5" cy="19" r="1.5"/></svg>
+      Opérations <span id="compteurOperations" hidden>0</span>
+    </button>
+  </nav>
+
+  <div class="console-droite">
+    <span class="console-pouls" id="pouls" title="Dernière mise à jour">—</span>
+    <span class="console-qui">
+      <span class="console-pastille-qui" id="initiales" aria-hidden="true">—</span>
+      <span id="nomDistributeur">Distributeur</span>
+    </span>
+    <button type="button" class="console-sortie" id="boutonDeconnexion">Quitter</button>
+  </div>
   </div>
 </header>
 
-<main id="main" class="acces-main" style="grid-template-columns:minmax(0,1fr)">
-  <div>
+<main id="corps" class="console-corps">
 
-    <div class="bord-entete">
-      <div>
-        <h1 id="titreDistributeur">Mon réseau</h1>
-        <p id="sousTitreDistributeur">Chargement…</p>
-      </div>
+  <p class="console-message" id="messageBord" role="status" hidden></p>
+
+  <!-- ══ Mon réseau ═══════════════════════════════════════ -->
+  <section class="console-volet tableau-volet" id="voletTableau" aria-label="Mon réseau">
+
+    <div class="topline">
+      <div class="crumb">Yalla <span aria-hidden="true">/</span> <b>Mon réseau</b></div>
     </div>
 
-    <p class="acces-message" id="messageBord" role="status" hidden></p>
+    <header class="tableau-entete heading-row">
+      <div>
+        <span class="tableau-sur-titre">Pilotage de votre distribution</span>
+        <h1>Vue d'ensemble</h1>
+        <p>Ce que vous livrez et desservez, et rien de ce qui appartient à un autre distributeur.</p>
+      </div>
+      <label><span class="tableau-sur-titre" style="display:block;margin:0 0 5px 2px">Espace de travail</span>
+        <select class="role-select" disabled aria-label="Espace de travail actuel">
+          <option id="optionEspaceDistributeur">Distributeur · Votre réseau</option>
+        </select>
+      </label>
+    </header>
+
+    <div class="filter-bar">
+      <span class="filter-caption">Période du rythme</span>
+      <div class="periods" role="group" aria-label="Période du graphique">
+        <button type="button" class="selected" data-periode="jour">Aujourd'hui</button>
+        <button type="button" data-periode="semaine">7 jours</button>
+        <button type="button" data-periode="mois">30 jours</button>
+      </div>
+      <span class="filter-divider"></span>
+      <select class="filter-select" id="filtreCommuneTableau" aria-label="Filtrer par commune">
+        <option value="">Toutes les communes</option>
+      </select>
+      <span class="updated">Mis à jour à <span id="pouls2">—</span></span>
+    </div>
+
+    <p class="privacy-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/><path d="m9 12 2 2 4-4"/></svg>
+      <span><b>Respect de la confidentialité :</b> les montants affichés sont des estimations
+      logistiques sur vos propres livraisons, jamais le chiffre d'affaires de vos revendeurs.
+      Les demandes du rythme quatorze jours sont celles visibles dans votre périmètre (votre
+      commune et votre réseau déclaré), pas uniquement celles qui vous sont déjà assignées :
+      ce cloisonnement vit dans les politiques de la base, pas dans cette page.</span>
+    </p>
+
+    <div class="kpis">
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Demandes à livrer</span>
+          <i class="kpi-icon warn"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 9v4m0 4h.01M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></i>
+        </div>
+        <div class="chiffre" id="chiffreATraiter">—</div>
+        <div class="chiffre-suite" id="detailATraiter"></div>
+      </article>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Revendeurs desservis</span>
+          <i class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 10h18l-2-6H5zM5 10v10h14V10M9 20v-6h6v6"/></svg></i>
+        </div>
+        <div class="chiffre" id="chiffrePdv">—</div>
+        <div class="chiffre-suite" id="detailPdv"></div>
+      </article>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Marques distribuées</span>
+          <i class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="17.5" cy="19" r="1.5"/></svg></i>
+        </div>
+        <div class="chiffre" id="chiffreMarques">—</div>
+        <div class="chiffre-suite" id="detailMarques"></div>
+      </article>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Livreurs en ligne</span>
+          <i class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="17.5" cy="19" r="1.5"/></svg></i>
+        </div>
+        <div class="chiffre" id="chiffreLivreurs">—</div>
+        <div class="chiffre-suite" id="detailLivreurs"></div>
+      </article>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Livraisons confirmées aujourd'hui</span>
+          <i class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 17 9 12l3 3 8-9"/><path d="M15 6h5v5"/></svg></i>
+        </div>
+        <div class="chiffre" id="chiffreLivraisons">—</div>
+        <div class="chiffre-suite" id="detailLivraisons"></div>
+      </article>
+    </div>
+
+    <div class="section-grid">
+
+      <article class="panel visual-panel">
+        <header>
+          <div><h3>Rythme sur votre périmètre, quatorze jours</h3><small>Demandes visibles dans votre périmètre et vos propres livraisons confirmées, jour par jour.</small></div>
+        </header>
+        <div class="graphe" id="grapheActivite"></div>
+        <footer id="piedActivite">—</footer>
+      </article>
+
+      <article class="panel">
+        <header><div><h3>Mon réseau en chiffres</h3><small>Ce qui existe aujourd'hui, à l'instant de la dernière lecture.</small></div></header>
+        <div class="network-grid" id="tableChiffres"></div>
+      </article>
+
+    </div>
+
+    <div class="lower-grid">
+
+      <article class="panel">
+        <header><div><h3>Vos revendeurs en demande</h3><small>Part de votre réseau avec une demande ouverte, par commune.</small></div></header>
+        <div class="coverage-content">
+          <div class="coverage-top">
+            <div class="ring" id="anneauCouverture"><div class="ring-label"><strong id="valeurCouverture">—</strong><span>EN ATTENTE</span></div></div>
+            <div class="coverage-copy" id="texteCouverture"></div>
+          </div>
+          <div class="communes" id="communesCouverture"></div>
+        </div>
+        <footer id="piedCouverture">—</footer>
+      </article>
+
+      <article class="panel">
+        <header><div><h3>Demandes en cours</h3><small>Les plus en attente d'abord.</small></div></header>
+        <div class="visual-list" id="demandesEnCoursListe"></div>
+        <footer id="piedRuptures">—</footer>
+      </article>
+
+      <article class="panel">
+        <header><div><h3>Prévision et valeur des livraisons</h3><small>Estimations logistiques du jour, sur vos seules livraisons.</small></div></header>
+        <div class="finance-chart" id="previsionListe"></div>
+      </article>
+
+    </div>
+
+    <div class="metric-cards">
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Taux de transformation</div><strong>Non suivi</strong><small>Aucun suivi CRM des prospects.</small></article>
+      <article class="mini-card"><div class="mini-label">Ancienneté moyenne des demandes en attente</div><strong id="metricAnciennete">—</strong><small>Depuis le signalement, sur les demandes encore non assignées.</small></article>
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Marge commerciale</div><strong>Non suivie</strong><small>Aucun coût de revient ni remise enregistré.</small></article>
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Fidélisation / attrition</div><strong>Non suivies</strong><small>Pas d'historique de réachat par revendeur.</small></article>
+      <article class="mini-card"><div class="mini-label">Courses actuellement en livraison</div><strong id="metricCourses">—</strong><small>Toutes vos courses affectées, en cours chez vos livreurs.</small></article>
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Kilométrage total du jour</div><strong>Non suivi</strong><small>Aucune distance GPS cumulée côté livreur.</small></article>
+    </div>
+
+    <div class="last-grid">
+
+      <article class="panel">
+        <header><div><h3>Demandes récentes</h3><small>Les plus récentes d'abord.</small></div></header>
+        <div class="visual-list" id="demandesRecentesListe"></div>
+      </article>
+
+      <article class="panel visual-panel">
+        <header><div><h3>Livreurs les plus actifs</h3><small>Classement par livraisons terminées, historique complet.</small></div></header>
+        <div class="visual-list" id="livreursActifsListe"></div>
+      </article>
+
+    </div>
+
+    <div class="section-grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+
+      <article class="panel visual-panel">
+        <header><div><h3>Revendeurs les plus en demande</h3><small>Vos revendeurs avec le plus de demandes ouvertes.</small></div></header>
+        <div class="product-list" id="revendeursApercuListe"></div>
+      </article>
+
+      <article class="panel">
+        <header><div><h3>Vos marques distribuées</h3><small>Classement par nombre de revendeurs rattachés.</small></div></header>
+        <div class="visual-list" id="marquesApercuListe"></div>
+      </article>
+
+    </div>
+
+  </section>
+
+  <!-- ══ Opérations ═══════════════════════════════════════ -->
+  <section class="console-volet" id="voletOperations" aria-label="Opérations" hidden>
+
+  <div style="max-width:1120px">
 
     <div class="bord-chiffres" id="chiffres" hidden>
       <div class="bord-chiffre bord-chiffre--fort">
@@ -118,6 +298,8 @@
     </p>
 
   </div>
+  </section>
+
 </main>
 
 <!-- ── Affectation ──────────────────────────────────────────────── -->
