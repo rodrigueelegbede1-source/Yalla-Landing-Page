@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="supervision.css">
 <link rel="stylesheet" href="demo-theme.css">
+<link rel="stylesheet" href="tableau-demo.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23146B3A'/><path d='M28 30h10l14 30' stroke='%23FFE500' stroke-width='11' fill='none' stroke-linecap='round'/><rect x='52' y='24' width='24' height='24' rx='3' fill='%23FFE500' transform='rotate(-18 64 36)'/><circle cx='50' cy='72' r='8' fill='%23FFE500'/></svg>">
 </head>
 <body class="page-console">
@@ -29,12 +30,21 @@
     <b>YALLA</b>
   </a>
 
+  <div class="console-barre-contenu">
   <nav class="console-nav" aria-label="Sections">
-    <button type="button" class="console-onglet est-actif" data-volet="tableau">Mon réseau</button>
+    <span class="console-nav-caption">Pilotage</span>
+    <button type="button" class="console-onglet est-actif" data-volet="tableau">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" width="16" height="16" style="vertical-align:-3px;margin-inline-end:9px"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Mon réseau
+    </button>
     <button type="button" class="console-onglet" data-volet="ruptures">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" width="16" height="16" style="vertical-align:-3px;margin-inline-end:9px"><path d="M4 5h16M4 12h16M4 19h16"/><circle cx="8" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="10" cy="19" r="1"/></svg>
       Demandes <span id="compteurRuptures" hidden>0</span>
     </button>
-    <button type="button" class="console-onglet" data-volet="catalogue">Mon catalogue</button>
+    <button type="button" class="console-onglet" data-volet="catalogue">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" width="16" height="16" style="vertical-align:-3px;margin-inline-end:9px"><path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="17.5" cy="19" r="1.5"/></svg>
+      Mon catalogue
+    </button>
   </nav>
 
   <div class="console-droite">
@@ -45,6 +55,7 @@
     </span>
     <button type="button" class="console-sortie" id="boutonDeconnexion">Quitter</button>
   </div>
+  </div>
 </header>
 
 <main id="corps" class="console-corps">
@@ -52,69 +63,166 @@
   <p class="console-message" id="message" role="status" hidden></p>
 
   <!-- ══ Mon réseau ═══════════════════════════════════════ -->
-  <section class="console-volet" id="voletTableau" aria-label="Mon réseau">
-    <div class="grille">
+  <section class="console-volet tableau-volet" id="voletTableau" aria-label="Mon réseau">
 
-      <article class="carte c4">
-        <header>
-          <h3>Taux de service</h3>
-          <small>Part de vos demandes effectivement livrées. C'est l'indicateur que Yalla vous vend.</small>
-        </header>
-        <div class="jauge" id="jaugeService"></div>
-        <footer id="piedService">—</footer>
-      </article>
+    <div class="topline">
+      <div class="crumb">Yalla <span aria-hidden="true">/</span> <b>Mon réseau</b></div>
+    </div>
 
-      <article class="carte c4">
-        <header>
-          <h3>Volume livré</h3>
-          <small>Ce que les livraisons Yalla ont fait circuler sur votre catalogue.</small>
-        </header>
+    <header class="tableau-entete heading-row">
+      <div>
+        <span class="tableau-sur-titre">Pilotage de votre marque</span>
+        <h1>Vue d'ensemble</h1>
+        <p>Ce que le réseau fait circuler sur votre catalogue, et rien de ce qui appartient à vos concurrents.</p>
+      </div>
+      <label><span class="tableau-sur-titre" style="display:block;margin:0 0 5px 2px">Espace de travail</span>
+        <select class="role-select" disabled aria-label="Espace de travail actuel">
+          <option id="optionEspaceFabricant">Fabricant · Votre catalogue</option>
+        </select>
+      </label>
+    </header>
+
+    <div class="filter-bar">
+      <span class="filter-caption">Période du rythme</span>
+      <div class="periods" role="group" aria-label="Période du graphique">
+        <button type="button" class="selected" data-periode="jour">Aujourd'hui</button>
+        <button type="button" data-periode="semaine">7 jours</button>
+        <button type="button" data-periode="mois">30 jours</button>
+      </div>
+      <span class="filter-divider"></span>
+      <select class="filter-select" id="filtreCommuneTableau" aria-label="Filtrer par commune">
+        <option value="">Toutes les communes</option>
+      </select>
+      <span class="updated">Mis à jour à <span id="pouls2">—</span></span>
+    </div>
+
+    <p class="privacy-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/><path d="m9 12 2 2 4-4"/></svg>
+      <span><b>Respect de la confidentialité :</b> vous ne voyez que les demandes portant sur
+      votre catalogue, jamais celles d'un concurrent. Les montants affichés sont des estimations
+      logistiques de réapprovisionnement, jamais le chiffre d'affaires de vos revendeurs. Ce
+      cloisonnement vit dans les politiques de la base, pas dans cette page.</span>
+    </p>
+
+    <div class="kpis">
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Volume livré aujourd'hui</span>
+          <i class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="17.5" cy="19" r="1.5"/></svg></i>
+        </div>
         <div class="chiffre" id="chiffreVolume">—</div>
         <div class="chiffre-suite" id="detailVolume"></div>
-        <footer>
-          Ce montant est celui des réapprovisionnements, pas des ventes au
-          détail. Le chiffre d'affaires d'un revendeur lui appartient et ne
-          vous est jamais montré.
-        </footer>
       </article>
-
-      <article class="carte c4">
-        <header>
-          <h3>Emprise sur le réseau</h3>
-          <small>Où vos produits sont réellement suivis.</small>
-        </header>
-        <div class="table-boite">
-          <table class="table" id="tableEmprise"></table>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Revendeurs qui vous référencent</span>
+          <i class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 10h18l-2-6H5zM5 10v10h14V10M9 20v-6h6v6"/></svg></i>
         </div>
+        <div class="chiffre" id="chiffrePoints">—</div>
+        <div class="chiffre-suite" id="detailPoints"></div>
       </article>
-
-      <article class="carte c7">
-        <header>
-          <h3>Vos demandes par commune</h3>
-          <small>Les communes où les revendeurs expriment le plus de besoins sur vos références.</small>
-        </header>
-        <div class="graphe" id="grapheCommunes"></div>
-      </article>
-
-      <article class="carte c5">
-        <header>
-          <h3>Vos références les plus demandées</h3>
-          <small>Les demandes des revendeurs révèlent où vos références sont les plus recherchées.</small>
-        </header>
-        <div class="table-boite">
-          <table class="table" id="tableTendus"></table>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Demandes en cours</span>
+          <i class="kpi-icon warn"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 9v4m0 4h.01M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></i>
         </div>
+        <div class="chiffre" id="chiffreRuptures">—</div>
+        <div class="chiffre-suite" id="detailRuptures"></div>
+      </article>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Références au catalogue</span>
+          <i class="kpi-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 7h11v11H3zM14 11h4l3 3v4h-7z"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="17.5" cy="19" r="1.5"/></svg></i>
+        </div>
+        <div class="chiffre" id="chiffreProduits">—</div>
+        <div class="chiffre-suite" id="detailProduits"></div>
+      </article>
+      <article class="carte kpi">
+        <div class="kpi-top"><span>Taux de service</span>
+          <i class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 17 9 12l3 3 8-9"/><path d="M15 6h5v5"/></svg></i>
+        </div>
+        <div class="chiffre" id="chiffreService">—</div>
+        <div class="chiffre-suite" id="detailService"></div>
+      </article>
+    </div>
+
+    <div class="section-grid">
+
+      <article class="panel visual-panel">
+        <header>
+          <div><h3>Rythme sur votre catalogue, quatorze jours</h3><small>Demandes visibles dans votre périmètre et livraisons confirmées, jour par jour.</small></div>
+        </header>
+        <div class="graphe" id="grapheActivite"></div>
+        <footer id="piedActivite">—</footer>
+      </article>
+
+      <article class="panel">
+        <header><div><h3>Votre catalogue en chiffres</h3><small>Ce qui existe aujourd'hui, à l'instant de la dernière lecture.</small></div></header>
+        <div class="network-grid" id="tableChiffres"></div>
       </article>
 
     </div>
 
-    <p class="note">
-      <b>Vous ne voyez que les demandes portant sur votre catalogue.</b> Celles
-      d'un concurrent ne vous sont jamais transmises, et les vôtres ne lui sont
-      jamais montrées. Ce cloisonnement vit dans les politiques de la base, pas
-      dans cette page : il s'applique aussi à quiconque interrogerait l'API
-      directement.
-    </p>
+    <div class="lower-grid">
+
+      <article class="panel">
+        <header><div><h3>Couverture du réseau</h3><small>Revendeurs vous référençant, par commune.</small></div></header>
+        <div class="coverage-content">
+          <div class="coverage-top">
+            <div class="ring" id="anneauCouverture"><div class="ring-label"><strong id="valeurCouverture">—</strong><span>EN RUPTURE</span></div></div>
+            <div class="coverage-copy" id="texteCouverture"></div>
+          </div>
+          <div class="communes" id="communesCouverture"></div>
+        </div>
+        <footer id="piedCouverture">—</footer>
+      </article>
+
+      <article class="panel">
+        <header><div><h3>Demandes en cours</h3><small>Les plus en attente d'abord.</small></div></header>
+        <div class="visual-list" id="demandesEnCoursListe"></div>
+        <footer id="piedRuptures">—</footer>
+      </article>
+
+      <article class="panel">
+        <header><div><h3>Prévision et valeur des livraisons</h3><small>Estimations logistiques du jour, jamais le chiffre d'affaires des revendeurs.</small></div></header>
+        <div class="finance-chart" id="previsionListe"></div>
+      </article>
+
+    </div>
+
+    <div class="metric-cards">
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Taux de transformation</div><strong>Non suivi</strong><small>Aucun suivi CRM des prospects.</small></article>
+      <article class="mini-card"><div class="mini-label">Nouvelles références · 30 j</div><strong id="metricNouveaux">—</strong><small>Références ajoutées à votre catalogue sur les 30 derniers jours.</small></article>
+      <article class="mini-card"><div class="mini-label">Délai moyen de prise en charge</div><strong id="metricDelai">—</strong><small>Du signalement confirmé à la prise en charge par un livreur.</small></article>
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Marge commerciale</div><strong>Non suivie</strong><small>Aucun coût de revient ni remise enregistré.</small></article>
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Fidélisation / attrition</div><strong>Non suivies</strong><small>Pas d'historique de réachat par revendeur.</small></article>
+      <article class="mini-card mini-card--untracked"><div class="mini-label">Kilométrage total du jour</div><strong>Non suivi</strong><small>Aucune distance GPS cumulée côté livreur.</small></article>
+    </div>
+
+    <div class="last-grid">
+
+      <article class="panel">
+        <header><div><h3>Demandes récentes</h3><small>Les plus récentes d'abord.</small></div></header>
+        <div class="visual-list" id="demandesRecentesListe"></div>
+      </article>
+
+      <article class="panel visual-panel">
+        <header><div><h3>Distributeurs les plus actifs</h3><small>Classement par demandes de votre catalogue traitées, historique complet.</small></div></header>
+        <div class="visual-list" id="distributeursActifsListe"></div>
+      </article>
+
+    </div>
+
+    <div class="section-grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+
+      <article class="panel visual-panel">
+        <header><div><h3>Vos références les plus demandées</h3><small>Les demandes des revendeurs sur votre catalogue.</small></div></header>
+        <div class="product-list" id="produitsApercuListe"></div>
+      </article>
+
+      <article class="panel">
+        <header><div><h3>Charges des distributeurs</h3><small>Demandes de votre catalogue à livrer, par distributeur.</small></div></header>
+        <div class="visual-list" id="chargesApercuListe"></div>
+      </article>
+
+    </div>
+
   </section>
 
   <!-- ══ Demandes ══════════════════════════════════════════ -->

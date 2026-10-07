@@ -44,8 +44,9 @@ const message = document.getElementById('message');
 const pouls = document.getElementById('pouls');
 const fProduit = document.getElementById('fenetreProduit');
 
-let etat = { bord: {}, catalogue: [], ruptures: [] };
+let etat = { bord: {}, catalogue: [], ruptures: [], activite: [] };
 let filtreCommune = '';
+let filtreCommuneTableau = '';
 let filtreEtat = 'ouvertes';
 let produitEnCours = null;
 
@@ -203,135 +204,382 @@ function tracerJauge(valeur) {
 
 /* ══ Mon réseau ═══════════════════════════════════════════ */
 
+function tracerJaugeService(valeur) {
+  const kpi = document.getElementById('chiffreService');
+  const detailKpi = document.getElementById('detailService');
+  const closes = Number(etat.bord.ruptures_closes ?? 0);
+
+  if (valeur === null || valeur === undefined) {
+    kpi.textContent = '—';
+    detailKpi.textContent = 'Aucune demande clôturée';
+    return;
+  }
+  const v = Math.max(0, Math.min(100, Number(valeur)));
+  kpi.textContent = `${v} %`;
+  detailKpi.textContent = `Sur ${nombre(closes)} demande(s) clôturée(s)`;
+}
+
 function tracerBord() {
   const b = etat.bord;
 
-  const volume = document.getElementById('chiffreVolume');
-  volume.textContent = montant(b.chiffre_affaires);
-  volume.title = montantExact(b.chiffre_affaires);
+  const nomDeNomination = b.fabricant_nom || nomFabricant;
+  const optionEspace = document.getElementById('optionEspaceFabricant');
+  if (optionEspace) optionEspace.textContent = `Fabricant · ${nomDeNomination}`;
 
-  const echappe = Number(b.dont_distributeurs_non_rattaches ?? 0);
-  const total = Number(b.chiffre_affaires ?? 0);
-  document.getElementById('detailVolume').innerHTML =
-    `<span>${nombre(b.ruptures_closes ?? 0)} demande(s) clôturée(s)</span>`
-    // L'écart entre les deux mesures dit au fabricant quelle part de sa
-    // distribution lui échappe. C'est l'argument commercial le plus direct du
-    // produit, et il ne se voit nulle part ailleurs.
-    + (echappe > 0
-      ? `<span><b>${montant(echappe)}</b> par des distributeurs qui ne vous sont pas rattachés</span>`
-      : '<span style="opacity:.7">tout est passé par vos distributeurs</span>');
+  document.getElementById('chiffrePoints').textContent = nombre(b.boutiques);
+  document.getElementById('detailPoints').innerHTML =
+    `<span>${nombre(b.distributeurs)} distributeur(s)</span>`;
 
-  document.getElementById('tableEmprise').innerHTML = `<tbody>${[
-    ['Références au catalogue', b.produits],
-    ['Revendeurs qui vous référencent', b.boutiques],
-    ['Distributeurs', b.distributeurs],
-    ['Demandes en cours', b.ruptures_ouvertes],
-  ].map(([nom, v]) => `<tr>
-      <td>${echapper(nom)}</td>
-      <td class="num" style="font-size:16px;color:var(--green-800);font-weight:600">${nombre(v)}</td>
-    </tr>`).join('')}</tbody>`;
+  document.getElementById('chiffreRuptures').textContent = nombre(b.ruptures_ouvertes);
+  const sansDistributeur = etat.ruptures.filter(
+    (r) => (r.statut === 'signalee' || r.statut === 'prise_en_charge') && !r.distributeur).length;
+  document.getElementById('detailRuptures').innerHTML =
+    `<span><b>${nombre(sansDistributeur)}</b> sans distributeur</span>`;
 
-  const cible = total > 0
-    ? `${montantExact(total)} livrés sur votre catalogue.`
-    : 'Aucune livraison terminée pour l’instant.';
-  document.getElementById('chiffreVolume').setAttribute('aria-label', cible);
+  document.getElementById('chiffreProduits').textContent = nombre(b.produits);
+  const actives = etat.catalogue.filter((p) => p.disponible).length;
+  document.getElementById('detailProduits').innerHTML =
+    `<span>${nombre(actives)} en service</span>`;
+
+  document.getElementById('tableChiffres').innerHTML = [
+    ['Revendeurs qui vous référencent', b.boutiques, ''],
+    ['Distributeurs', b.distributeurs, ''],
+    ['Références au catalogue', b.produits, `${nombre(actives)} en service`],
+    ['Demandes en cours', b.ruptures_ouvertes, ''],
+  ].map(([nom2, v, detail]) => `
+    <div class="network-stat">
+      <strong>${nombre(v)}</strong>
+      <span>${echapper(nom2)}${detail ? ` · ${echapper(detail)}` : ''}</span>
+    </div>`).join('');
 }
 
-function tracerCommunes() {
-  const boite = document.getElementById('grapheCommunes');
-  const ouvertes = etat.ruptures.filter((r) => r.statut === 'signalee' && r.confirmee_le);
+/* ── Le rythme, sur ce que le fabricant peut légitimement voir : les demandes
+   visibles dans son périmètre de catalogue et ses propres livraisons
+   confirmées (voir le bandeau de confidentialité). ─────────────────────── */
+function tracerActivite() {
+  const boite = document.getElementById('grapheActivite');
+  const pied = document.getElementById('piedActivite');
+  const jours = etat.activite;
+
+  if (!jours.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:20px 0">Pas encore de données.</div>';
+    pied.textContent = '';
+    return;
+  }
+
+  const L = 720;
+  const H = 210;
+  const margeG = 34;
+  const margeD = 10;
+  const margeH = 16;
+  const margeB = 34;
+  const larg = L - margeG - margeD;
+  const haut = H - margeH - margeB;
+
+  const maxi = Math.max(1, ...jours.map((j) => Math.max(Number(j.signalees), Number(j.resolues))));
+  const plafond = Math.max(2, Math.ceil(maxi / 2) * 2);
+  const pas = larg / jours.length;
+  const y = (v) => margeH + haut - (v / plafond) * haut;
+
+  const grilles = [0, plafond / 2, plafond].map((v) =>
+    `<line x1="${margeG}" y1="${y(v).toFixed(1)}" x2="${L - margeD}" y2="${y(v).toFixed(1)}" class="graphe-grille"/>`
+    + `<text x="${margeG - 7}" y="${(y(v) + 3.5).toFixed(1)}" text-anchor="end" class="graphe-axe">${v}</text>`).join('');
+
+  const barres = jours.map((j, i) => {
+    const v = Number(j.signalees);
+    const hauteur = (v / plafond) * haut;
+    const x = margeG + i * pas + pas * 0.22;
+    const l = pas * 0.56;
+    return `<rect x="${x.toFixed(1)}" y="${y(v).toFixed(1)}" width="${l.toFixed(1)}"
+      height="${Math.max(0, hauteur).toFixed(1)}" rx="2" fill="${ALERTE}" opacity=".85"/>`;
+  }).join('');
+
+  const points = jours.map((j, i) =>
+    `${(margeG + i * pas + pas / 2).toFixed(1)},${y(Number(j.resolues)).toFixed(1)}`);
+
+  const ligne = `<polyline points="${points.join(' ')}" fill="none" stroke="${VERT}"
+    stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`
+    + jours.map((j, i) =>
+      `<circle cx="${(margeG + i * pas + pas / 2).toFixed(1)}" cy="${y(Number(j.resolues)).toFixed(1)}" r="3.2" fill="${VERT}"/>`).join('');
+
+  const etiquettes = jours.map((j, i) => {
+    if (i % Math.ceil(jours.length / 8) !== 0 && i !== jours.length - 1) return '';
+    const d = new Date(j.jour);
+    const texte = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return `<text x="${(margeG + i * pas + pas / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle" class="graphe-axe">${texte}</text>`;
+  }).join('');
+
+  boite.innerHTML = `
+    <svg viewBox="0 0 ${L} ${H}" role="img" aria-label="Demandes et livraisons sur quatorze jours">
+      ${grilles}${barres}${ligne}${etiquettes}
+    </svg>
+    <div class="legende" style="flex-direction:row;gap:18px;margin-top:4px">
+      <div style="flex:0"><i style="background:${ALERTE}"></i>Demandes visibles</div>
+      <div style="flex:0"><i style="background:${VERT}"></i>Livraisons</div>
+    </div>`;
+
+  const aujourdhui = jours[jours.length - 1];
+  const total14 = jours.reduce((s, j) => s + Number(j.signalees), 0);
+  pied.textContent = total14 === 0
+    ? 'Rien n’a bougé sur ces quatorze jours sur votre catalogue.'
+    : `${nombre(aujourdhui.resolues)} livraison(s) confirmée(s) aujourd’hui, sur ${nombre(total14)} demande(s) visibles ces quatorze derniers jours.`;
+}
+
+/* ── Couverture : la part de vos références actuellement en rupture, et la
+   répartition des demandes en cours par commune (pas de roster complet des
+   revendeurs côté fabricant, donc pas de taux de service par commune). ──── */
+function tracerCouverture() {
+  const anneau = document.getElementById('anneauCouverture');
+  const valeur = document.getElementById('valeurCouverture');
+  const copie = document.getElementById('texteCouverture');
+  const barres = document.getElementById('communesCouverture');
+  const pied = document.getElementById('piedCouverture');
+
+  const produits = Number(etat.bord.produits ?? 0);
+  const ouvertes = Number(etat.bord.ruptures_ouvertes ?? 0);
+  const part = produits === 0 ? 0 : Math.min(100, Math.round((ouvertes / produits) * 100));
+
+  anneau.style.background = `conic-gradient(${ALERTE} 0 ${part}%, #e6ebe5 ${part}% 100%)`;
+  valeur.textContent = `${part} %`;
+  copie.innerHTML = `<strong>${nombre(ouvertes)} référence(s) en rupture</strong>`
+    + `<p>Sur ${nombre(produits)} référence(s) à votre catalogue.</p>`;
+
+  const enCours = etat.ruptures.filter(
+    (r) => (r.statut === 'signalee' || r.statut === 'prise_en_charge')
+      && (!filtreCommuneTableau || r.commune === filtreCommuneTableau));
+  const parCommune = new Map();
+  for (const r of enCours) {
+    const cle = r.commune || '—';
+    parCommune.set(cle, (parCommune.get(cle) ?? 0) + 1);
+  }
+  const totalEnCours = enCours.length;
+  const rangs = [...parCommune.entries()]
+    .map(([commune, n]) => ({ commune, n, taux: totalEnCours === 0 ? 0 : Math.round((n / totalEnCours) * 100) }))
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 6);
+
+  barres.innerHTML = !rangs.length
+    ? '<div class="vide" style="border:0;padding:8px 0">Aucune demande en cours sur votre catalogue.</div>'
+    : rangs.map((r) => `<div class="commune-row">
+        <span>${echapper(r.commune)}</span>
+        <div class="track"><i style="width:${r.taux}%"></i></div>
+        <b>${nombre(r.n)}</b>
+      </div>`).join('');
+
+  pied.textContent = produits === 0
+    ? 'Votre catalogue est vide.'
+    : ouvertes === 0
+      ? 'Aucune de vos références n’est en rupture pour l’instant.'
+      : `${nombre(ouvertes)} référence(s) sur ${nombre(produits)} manquent quelque part sur le réseau.`;
+}
+
+/* ── Les demandes en cours, les plus en attente d'abord ──────────────── */
+function tracerDemandesEnCours() {
+  const boite = document.getElementById('demandesEnCoursListe');
+  const pied = document.getElementById('piedRuptures');
+
+  const enCours = etat.ruptures.filter((r) => r.statut !== 'resolue' && r.statut !== 'non_servie' && r.statut !== 'prise_en_charge');
+  const total = enCours.length;
+
+  if (!total) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0">'
+      + 'Aucune demande en cours sur votre catalogue.</div>';
+  } else {
+    const ordonnees = [...enCours]
+      .sort((a, b) => Number(b.attente_secondes ?? 0) - Number(a.attente_secondes ?? 0))
+      .slice(0, 6);
+
+    boite.innerHTML = ordonnees.map((r) => {
+      const attente = Number(r.attente_secondes ?? 0);
+      const progression = Math.min(100, Math.round((attente / 7200) * 100));
+      return `<div class="signal-item">
+        <div class="signal-heading">
+          <strong>${echapper(r.produit)} · ${echapper(r.point_de_vente)}</strong>
+          <span class="status">${r.confirmee_le ? 'En attente' : 'À confirmer'}</span>
+        </div>
+        <div class="signal-meta"><span>${echapper(r.commune ?? '')}${
+          r.distributeur ? ` · ${echapper(r.distributeur)}` : ' · Sans distributeur'}</span><span>${duree(attente)}</span></div>
+        <div class="signal-meter"><i style="width:${progression}%"></i></div>
+      </div>`;
+    }).join('');
+  }
+
+  const sansDistributeur = enCours.filter((r) => r.statut === 'signalee' && !r.distributeur).length;
+  pied.textContent = total === 0
+    ? 'Aucune demande en cours sur votre catalogue.'
+    : sansDistributeur > 0
+      ? `${sansDistributeur} attend${sansDistributeur > 1 ? 'ent' : ''} la confirmation du revendeur.`
+      : 'Toutes les demandes en cours sont confirmées et visibles des distributeurs.';
+}
+
+/* ── Prévision et valeur des livraisons, sur vos seules livraisons ───── */
+function tracerPrevision() {
+  const boite = document.getElementById('previsionListe');
+  const jours = etat.activite;
+  const aujourdhui = jours.length ? jours[jours.length - 1] : null;
+  const duJour = Number(aujourdhui?.montant ?? 0);
+  const livraisons = Number(aujourdhui?.resolues ?? 0);
+  const panier = livraisons > 0 ? duJour / livraisons : null;
+  const maxi = Math.max(duJour, 1);
+
+  boite.innerHTML = `
+    <div class="finance-item">
+      <div class="finance-label"><span>CA livré confirmé (estimation logistique)</span><strong>${montant(duJour)}</strong></div>
+      <div class="finance-track"><i style="width:${Math.round((duJour / maxi) * 100)}%"></i></div>
+    </div>
+    <div class="finance-item${panier === null ? ' finance-item--untracked' : ''}">
+      <div class="finance-label"><span>Panier moyen par livraison</span><strong>${
+        panier === null ? '—' : montant(Math.round(panier))}</strong></div>
+      ${panier === null ? '<small>Aucune livraison confirmée aujourd’hui.</small>'
+        : `<div class="finance-track"><i style="width:${Math.min(100, Math.round((panier / maxi) * 100))}%"></i></div>`}
+    </div>
+    <div class="finance-item finance-item--untracked">
+      <div class="finance-label"><span>CA prévisionnel (non clôturé)</span><strong>Non calculable</strong></div>
+      <small>Les demandes en cours n'ont pas de montant tant qu'elles ne sont pas livrées.</small>
+    </div>
+    <div class="finance-item finance-item--untracked">
+      <div class="finance-label"><span>Pipeline pondéré</span><strong>Non suivi</strong></div>
+      <small>Aucun suivi commercial des prospects dans l'application.</small>
+    </div>`;
+}
+
+/* ── Les métriques honnêtes : ce qui se calcule vraiment ─────────────── */
+function tracerMetriques() {
+  const seuil = Date.now() - 30 * 24 * 3600 * 1000;
+  const recents = etat.catalogue.filter((p) => p.created_at && new Date(p.created_at).getTime() >= seuil);
+  document.getElementById('metricNouveaux').textContent = nombre(recents.length);
+
+  const delai = etat.bord.delai_moyen_prise_en_charge;
+  document.getElementById('metricDelai').textContent =
+    delai === null || delai === undefined ? 'Non suivi' : duree(Number(delai));
+}
+
+/* ── Demandes récentes, les plus récentes d'abord ────────────────────── */
+function tracerDemandesRecentes() {
+  const boite = document.getElementById('demandesRecentesListe');
 
   if (!etat.ruptures.length) {
-    boite.innerHTML = '<div class="vide" style="border:0;padding:20px 0">'
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0">'
       + 'Aucune demande reçue sur votre catalogue à ce jour.</div>';
     return;
   }
 
-  const parCommune = new Map();
-  for (const r of etat.ruptures) {
-    const cle = r.commune || '—';
-    if (!parCommune.has(cle)) parCommune.set(cle, { ouvertes: 0, closes: 0 });
-    parCommune.get(cle)[r.statut === 'signalee' || r.statut === 'prise_en_charge'
-      ? 'ouvertes' : 'closes'] += 1;
-  }
+  const ordonnees = [...etat.ruptures]
+    .sort((a, b) => Number(a.attente_secondes ?? 0) - Number(b.attente_secondes ?? 0))
+    .slice(0, 8);
 
-  const rangs = [...parCommune.entries()]
-    .map(([commune, v]) => ({ commune, ...v, total: v.ouvertes + v.closes }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 9);
-
-  const maxi = Math.max(1, ...rangs.map((r) => r.total));
-  const L = 560;
-  const hauteurRang = 30;
-  const margeG = 150;
-  const larg = L - margeG - 44;
-  const H = rangs.length * hauteurRang + 8;
-
-  const corps = rangs.map((r, i) => {
-    const yy = i * hauteurRang + 4;
-    const lo = (r.ouvertes / maxi) * larg;
-    const lc = (r.closes / maxi) * larg;
-    return `
-      <text x="${margeG - 10}" y="${yy + 14}" text-anchor="end" class="graphe-etiquette">${echapper(r.commune)}</text>
-      ${r.ouvertes ? `<rect x="${margeG}" y="${yy + 3}" width="${lo.toFixed(1)}" height="17" rx="2.5" fill="${ALERTE}"/>` : ''}
-      ${r.closes ? `<rect x="${(margeG + lo).toFixed(1)}" y="${yy + 3}" width="${lc.toFixed(1)}" height="17" rx="2.5" fill="${VERT}"/>` : ''}
-      <text x="${(margeG + lo + lc + 8).toFixed(1)}" y="${yy + 16}" class="graphe-valeur">${r.total}</text>`;
-  }).join('');
-
-  boite.innerHTML = `
-    <svg viewBox="0 0 ${L} ${H}" role="img" aria-label="Demandes par commune">${corps}</svg>
-    <div class="legende" style="flex-direction:row;gap:18px;margin-top:10px">
-      <div style="flex:0"><i style="background:${ALERTE}"></i>En cours</div>
-      <div style="flex:0"><i style="background:${VERT}"></i>Livrées</div>
+  boite.innerHTML = ordonnees.map((r) => {
+    const attente = Number(r.attente_secondes ?? 0);
+    const pris = r.statut === 'prise_en_charge';
+    const point = r.statut === 'resolue' ? 'done' : pris ? 'route' : '';
+    const libelle = r.statut === 'resolue' ? 'Livrée' : r.statut === 'non_servie' ? 'Non livrée'
+      : pris ? 'Prise en charge' : r.confirmee_le ? 'En attente' : 'À confirmer';
+    return `<div class="event-item">
+      <span class="event-dot ${point}"></span>
+      <div class="event-main">
+        <strong>${echapper(r.produit)} · ${echapper(r.point_de_vente)}</strong>
+        <span>${echapper(r.commune ?? '')}${r.distributeur ? ` · ${echapper(r.distributeur)}` : ''}</span>
+      </div>
+      <div class="event-value">${duree(attente)}<small>${libelle}</small></div>
     </div>`;
-  void ouvertes;
+  }).join('');
 }
 
-function tracerTendus() {
-  const table = document.getElementById('tableTendus');
+/* ── Les distributeurs les plus actifs sur votre catalogue ───────────── */
+function tracerDistributeursActifs() {
+  const boite = document.getElementById('distributeursActifsListe');
+  const parDistributeur = new Map();
+  for (const r of etat.ruptures) {
+    if (!r.distributeur || r.statut !== 'resolue') continue;
+    parDistributeur.set(r.distributeur, (parDistributeur.get(r.distributeur) ?? 0) + 1);
+  }
+  const classes = [...parDistributeur.entries()]
+    .map(([nom2, n]) => ({ nom: nom2, n }))
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 6);
 
-  if (!etat.ruptures.length) {
-    table.innerHTML = '<tbody><tr><td style="color:rgba(8,22,14,.5)">'
-      + 'Aucune demande à ce jour.</td></tr></tbody>';
+  if (!classes.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0;color:#a9b9ae">'
+      + 'Non suivi : aucune demande de votre catalogue n’est encore livrée.</div>';
     return;
   }
 
-  const parProduit = new Map();
+  const maxi = Math.max(1, ...classes.map((d) => d.n));
+  boite.innerHTML = classes.map((d) => `<div class="rank-item">
+    <div class="rank-heading"><strong>${echapper(d.nom)}</strong><span>${nombre(d.n)}</span></div>
+    <div class="rank-meter"><i style="width:${Math.round((d.n / maxi) * 100)}%"></i></div>
+    <div class="rank-sub">Demandes de votre catalogue livrées, historique complet</div>
+  </div>`).join('');
+}
+
+/* ── Charges des distributeurs, sur les demandes en cours de votre catalogue ── */
+function tracerChargesApercu() {
+  const boite = document.getElementById('chargesApercuListe');
+  const parDistributeur = new Map();
   for (const r of etat.ruptures) {
-    const cle = r.produit_id;
-    if (!parProduit.has(cle)) {
-      parProduit.set(cle, { produit: r.produit, reference: r.reference, n: 0, boutiques: new Set() });
-    }
-    const e = parProduit.get(cle);
-    e.n += 1;
-    e.boutiques.add(r.point_de_vente);
+    if (!r.distributeur || (r.statut !== 'signalee' && r.statut !== 'prise_en_charge')) continue;
+    parDistributeur.set(r.distributeur, (parDistributeur.get(r.distributeur) ?? 0) + 1);
+  }
+  const classes = [...parDistributeur.entries()]
+    .map(([nom2, n]) => ({ nom: nom2, n }))
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 6);
+
+  if (!classes.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0">Aucune demande en cours chez vos distributeurs.</div>';
+    return;
   }
 
-  const rangs = [...parProduit.values()].sort((a, b) => b.n - a.n).slice(0, 8);
-  const maxi = Math.max(1, ...rangs.map((r) => r.n));
+  const maxi = Math.max(1, ...classes.map((d) => d.n));
+  boite.innerHTML = classes.map((d) => `<div class="rank-item">
+    <div class="rank-heading"><strong>${echapper(d.nom)}</strong><span>${nombre(d.n)}</span></div>
+    <div class="rank-meter"><i style="width:${Math.round((d.n / maxi) * 100)}%"></i></div>
+  </div>`).join('');
+}
 
-  table.innerHTML = `
-    <thead><tr><th>Référence</th><th class="num">Demandes</th><th class="num">Revendeurs</th></tr></thead>
-    <tbody>${rangs.map((r) => {
-      const intensite = 0.14 + (r.n / maxi) * 0.56;
-      return `<tr>
-        <td>${echapper(r.produit)}<small>${echapper(r.reference ?? '')}</small></td>
-        <td class="num"><span class="cellule-chaude"
-          style="background:rgba(255,92,57,${intensite.toFixed(2)})">${nombre(r.n)}</span></td>
-        <td class="num">${nombre(r.boutiques.size)}</td>
-      </tr>`;
-    }).join('')}</tbody>`;
+/* ── Vos références les plus demandées ───────────────────────────────── */
+function tracerProduitsApercu() {
+  const boite = document.getElementById('produitsApercuListe');
+
+  const ordonnes = [...etat.catalogue]
+    .filter((p) => Number(p.signalements_total ?? 0) > 0)
+    .sort((a, b) => Number(b.signalements_total) - Number(a.signalements_total))
+    .slice(0, 6);
+
+  if (!ordonnes.length) {
+    boite.innerHTML = '<div class="vide" style="border:0;padding:12px 0;color:#a9b9ae">'
+      + 'Aucune demande enregistrée à ce jour.</div>';
+    return;
+  }
+
+  const maxi = Math.max(1, ...ordonnes.map((p) => Number(p.signalements_total)));
+
+  boite.innerHTML = ordonnes.map((p, i) => {
+    const n = Number(p.signalements_total);
+    return `<div class="product-row">
+      <span class="product-rank">${i + 1}</span>
+      <span class="product-name">${echapper(p.nom)}<br><small style="opacity:.75">${echapper(p.categorie ?? '')}</small></span>
+      <div class="product-bar"><i style="width:${Math.round((n / maxi) * 100)}%"></i></div>
+      <span class="product-count">${nombre(n)} demande(s)</span>
+    </div>`;
+  }).join('');
 }
 
 /* ══ Ruptures ═════════════════════════════════════════════ */
 
 function remplirCommunes() {
   const communes = [...new Set(etat.ruptures.map((r) => r.commune).filter(Boolean))].sort();
+  const options = communes.map((c) => `<option value="${echapper(c)}">${echapper(c)}</option>`).join('');
+
   const select = document.getElementById('filtreCommune');
   const choix = select.value;
-  select.innerHTML = '<option value="">Toutes communes</option>'
-    + communes.map((c) => `<option value="${echapper(c)}">${echapper(c)}</option>`).join('');
+  select.innerHTML = `<option value="">Toutes communes</option>${options}`;
   select.value = communes.includes(choix) ? choix : '';
+
+  const tableau = document.getElementById('filtreCommuneTableau');
+  const choixTableau = tableau.value;
+  tableau.innerHTML = `<option value="">Toutes les communes</option>${options}`;
+  tableau.value = communes.includes(choixTableau) ? choixTableau : '';
 
   const categories = [...new Set(etat.catalogue.map((p) => p.categorie).filter(Boolean))].sort();
   document.getElementById('listeCategories').innerHTML =
@@ -343,6 +591,21 @@ for (const id of ['filtreCommune', 'filtreEtat']) {
     filtreCommune = document.getElementById('filtreCommune').value;
     filtreEtat = document.getElementById('filtreEtat').value;
     tracerRuptures();
+  });
+}
+
+document.getElementById('filtreCommuneTableau').addEventListener('change', (e) => {
+  filtreCommuneTableau = e.target.value;
+  tracerCouverture();
+});
+
+// Purement visuel, comme dans le prototype : le rythme affiché reste celui
+// des quatorze derniers jours, aucune vue serveur ne recalcule encore un
+// autre pas de temps.
+for (const bouton of document.querySelectorAll('.periods button')) {
+  bouton.addEventListener('click', () => {
+    for (const b of document.querySelectorAll('.periods button')) b.classList.remove('selected');
+    bouton.classList.add('selected');
   });
 }
 
@@ -564,13 +827,14 @@ async function basculerProduit({ basculer: id, actif }) {
 
 async function rafraichir() {
   try {
-    const [bord, catalogue, ruptures] = await Promise.all([
+    const [bord, catalogue, ruptures, activite] = await Promise.all([
       interroger('v_tableau_de_bord_fabricant?select=*'),
       interroger('v_mon_catalogue?select=*'),
       interroger('v_mes_ruptures?select=*&order=date_signalement.desc&limit=400'),
+      interroger('v_supervision_activite?select=*&order=jour'),
     ]);
 
-    etat = { bord: bord[0] ?? {}, catalogue, ruptures };
+    etat = { bord: bord[0] ?? {}, catalogue, ruptures, activite };
 
     const nom = etat.bord.fabricant_nom || nomFabricant;
     document.getElementById('nomFabricant').textContent = nom;
@@ -585,19 +849,30 @@ async function rafraichir() {
     compteur.dataset.urgent = ouvertes > 0 ? 'oui' : 'non';
 
     remplirCommunes();
-    tracerJauge(etat.bord.taux_de_service_pct);
+    tracerJaugeService(etat.bord.taux_de_service_pct);
     tracerBord();
-    tracerCommunes();
-    tracerTendus();
+    tracerActivite();
+    tracerCouverture();
+    tracerDemandesEnCours();
+    tracerPrevision();
+    tracerMetriques();
+    tracerDemandesRecentes();
+    tracerDistributeursActifs();
+    tracerChargesApercu();
+    tracerProduitsApercu();
     tracerRuptures();
     tracerCatalogue();
 
     const heure = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     pouls.textContent = `lu à ${heure}`;
     pouls.dataset.etat = 'ok';
+    const pouls2 = document.getElementById('pouls2');
+    if (pouls2) { pouls2.textContent = heure; pouls2.dataset.etat = 'ok'; }
   } catch (erreur) {
     if (erreur.message === 'session') return;
     pouls.dataset.etat = 'perdu';
+    const pouls2 = document.getElementById('pouls2');
+    if (pouls2) pouls2.dataset.etat = 'perdu';
     informer('Les données n’ont pas pu être rafraîchies. Sur ce réseau, un appel '
       + 'sur dix se coupe : la prochaine tentative part dans trente secondes.', 'erreur');
   }
