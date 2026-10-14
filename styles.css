@@ -269,10 +269,9 @@ body.is-locked{ overflow:hidden; }
   font-size:clamp(38px,5.1vw,66px);
   letter-spacing:-.04em; line-height:1.04; margin-bottom:26px;
 }
-/* Chaque .line est un masque : son contenu doit tenir sur UNE ligne,
-   sinon le rideau de révélation se décale. */
+/* Chaque bloc conserve son masque de révélation, même si le texte se replie. */
 .hero__title .line{ display:block; overflow:hidden; padding-bottom:.08em; }
-.hero__title .line__in{ white-space:nowrap; }
+.hero__title .line__in{ white-space:normal; }
 .js .hero__title .line__in{
   transform:translateY(112%) rotate(3deg);
   transition:transform 1.05s var(--ease); transition-delay:var(--d);
@@ -918,8 +917,6 @@ body.is-locked{ overflow:hidden; }
 
 @media (max-width:560px){
   :root{ --r-lg:20px; --r-md:15px; }
-  /* La plus longue ligne mesure ~7.84x la taille de police et ne peut pas
-     se couper (nowrap) : on garde de la marge sur les écrans de 320px. */
   .hero__title{ font-size:clamp(30px,9.6vw,46px); }
   .hero__cta{ flex-direction:column; align-items:stretch; }
   .hero__cta .btn{ width:100%; }
