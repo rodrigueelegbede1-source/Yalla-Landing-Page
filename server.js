@@ -3,6 +3,7 @@
 const http = require('http');
 const fs   = require('fs');
 const path = require('path');
+const { gzip } = require('zlib');
 
 // Racine servie : le dossier passé en argument, sinon celui du script.
 // Permet de servir la landing (défaut) ou les maquettes sans dupliquer ce fichier.
@@ -17,23 +18,36 @@ const TYPES = {
   '.png' : 'image/png',
   '.jpg' : 'image/jpeg',
   '.jpeg': 'image/jpeg',
-  '.ico' : 'image/x-icon'
+  '.ico' : 'image/x-icon',
+  '.txt' : 'text/plain; charset=utf-8',
+  '.xml' : 'application/xml; charset=utf-8'
 };
 
 http.createServer((req, res) => {
-  const url = decodeURIComponent(req.url.split('?')[0]);
+  let url;
+  try { url = decodeURIComponent(req.url.split('?')[0]); }
+  catch { res.writeHead(400).end('Adresse invalide'); return; }
   const rel = url === '/' ? 'index.html' : url.replace(/^\/+/, '');
-  const file = path.join(ROOT, rel);
+  const file = path.resolve(ROOT, rel);
 
-  // On ne sert rien en dehors du dossier.
-  if (!file.startsWith(ROOT)) { res.writeHead(403).end('Forbidden'); return; }
+  if (!file.startsWith(ROOT + path.sep) || rel.includes('\0')) {
+    res.writeHead(403).end('Accès interdit'); return;
+  }
 
-  fs.readFile(file, (err, buf) => {
-    if (err) { res.writeHead(404, { 'Content-Type': 'text/plain' }).end('404'); return; }
-    res.writeHead(200, {
-      'Content-Type': TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream',
-      'Cache-Control': 'no-store'
-    });
-    res.end(buf);
+  const send = (status, type, buf) => {
+    const headers = { 'Content-Type': type, 'Cache-Control': 'no-store', Vary: 'Accept-Encoding' };
+    if (req.method === 'HEAD') { res.writeHead(status, headers).end(); return; }
+    if (/^(text\/|application\/xml)/.test(type) && /\bgzip\b/.test(req.headers['accept-encoding'] || '')) {
+      gzip(buf, (err, compressed) => {
+        if (err) { res.writeHead(500).end('Erreur de prévisualisation'); return; }
+        res.writeHead(status, { ...headers, 'Content-Encoding': 'gzip' }).end(compressed);
+      });
+    } else res.writeHead(status, headers).end(buf);
+  };
+  const notFound = () => fs.readFile(path.join(ROOT, '404.html'), (err, buf) => {
+    send(404, err ? TYPES['.txt'] : TYPES['.html'], err ? Buffer.from('404') : buf);
   });
-}).listen(PORT, () => console.log(`Yalla → http://localhost:${PORT}  (racine : ${ROOT})`));
+  const type = TYPES[path.extname(file).toLowerCase()];
+  if (!type || rel.split(/[\\/]/).some(part => part.startsWith('.'))) { notFound(); return; }
+  fs.readFile(file, (err, buf) => err ? notFound() : send(200, type, buf));
+}).listen(PORT, '127.0.0.1', () => console.log(`Aperçu → http://127.0.0.1:${PORT}  (racine : ${ROOT})`));

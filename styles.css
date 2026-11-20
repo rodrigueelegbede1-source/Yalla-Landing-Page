@@ -588,7 +588,7 @@ body.is-locked{ overflow:hidden; }
              transform var(--t-fast) var(--ease);
 }
 .chain__case:hover{ border-color:rgba(20,107,58,.34); transform:translateY(-2px); }
-.chain__case-num{ font-size:9px; color:rgba(8,22,14,.38); }
+.chain__case-num{ font-size:9px; color:#46554c; }
 .chain__case-label{ font-size:14px; font-weight:600; letter-spacing:-.01em; }
 .chain__case.is-active{ background:var(--green-900); border-color:var(--green-900); color:var(--cream); }
 .chain__case.is-active .chain__case-num{ color:var(--yellow); }
@@ -1047,7 +1047,10 @@ body.is-locked{ overflow:hidden; }
   transition:border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
 }
 .field textarea{ resize:vertical; min-height:82px; }
-.field input::placeholder, .field textarea::placeholder{ color:rgba(246,244,236,.32); }
+.field input::placeholder, .field textarea::placeholder{ color:#dedcd6; }
+.lead__form[hidden]{ display:none; }
+.lead__note a{ color:var(--cream); text-decoration:underline; }
+.footer__links li > span{ display:inline-flex; gap:9px; align-items:center; color:var(--cream); }
 .field input:focus, .field textarea:focus, .field select:focus{
   outline:none; border-color:var(--yellow); background:rgba(6,26,17,.75);
 }

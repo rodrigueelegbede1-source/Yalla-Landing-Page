@@ -19,10 +19,7 @@
 
   /* ─────────────── 1. Entrée de page ─────────────── */
   const boot = () => document.body.classList.add('is-ready');
-  if (document.readyState === 'complete') requestAnimationFrame(boot);
-  else window.addEventListener('load', () => requestAnimationFrame(boot));
-  // Filet de sécurité : si les polices tardent, on lance quand même.
-  setTimeout(boot, 1200);
+  requestAnimationFrame(boot);
 
   /* ─────────────── 2. Année du footer ─────────────── */
   const year = $('#year');
@@ -309,13 +306,15 @@
   const leadForm = $("#leadForm");
 
   if (leadForm) {
+    leadForm.hidden = false;
     const note = $("#leadNote");
+    const profiles = [...$("#f-profil").options].map(option => option.value).filter(Boolean);
 
     const RULES = {
-      "f-nom":    v => v.trim().length >= 2      || "Indiquez votre nom",
-      "f-profil": v => v !== ""                  || "Choisissez votre profil",
-      // Numéros ivoiriens : 8 à 15 chiffres une fois les séparateurs retirés.
-      "f-tel":    v => /^[0-9]{8,15}$/.test(v.replace(/[\s.+()\-]/g, "")) || "Numéro invalide",
+      "f-nom":    v => (v.trim().length >= 2 && v.length <= 100) || "Indiquez votre nom (2 à 100 caractères)",
+      "f-profil": v => profiles.includes(v) || "Choisissez votre profil",
+      "f-tel":    v => /^\+?[0-9]{8,15}$/.test(v.replace(/[\s.()\-]/g, "")) || "Indiquez un numéro de 8 à 15 chiffres",
+      "f-msg":    v => v.length <= 1200 || "Limitez votre message à 1 200 caractères",
     };
 
     const check = (el) => {
@@ -326,6 +325,7 @@
       const err = field.querySelector(".field__err");
       const ok = res === true;
       field.classList.toggle("is-invalid", !ok);
+      el.setAttribute("aria-invalid", String(!ok));
       if (err) err.textContent = ok ? "" : res;
       return ok;
     };
@@ -343,6 +343,11 @@
 
     leadForm.addEventListener("submit", (e) => {
       e.preventDefault();
+      const data = new FormData(leadForm);
+      if (data.get("website")) {
+        note.textContent = "Le message n’a pas été préparé. Vous pouvez nous joindre par téléphone.";
+        return;
+      }
 
       const champs = Object.keys(RULES).map(id => document.getElementById(id)).filter(Boolean);
       // On valide tous les champs avant de sortir : l'utilisateur voit d'un coup
@@ -350,17 +355,11 @@
       const invalides = champs.filter(el => !check(el));
       if (invalides.length) { invalides[0].focus(); return; }
 
-      // L'adresse de contact a été retirée du site tant que la boîte n'existe
-      // pas. Ouvrir une messagerie vers un destinataire inexistant laissait
-      // croire au visiteur que sa demande était partie, alors qu'elle se perdait.
-      //
-      // Le formulaire valide donc la saisie, puis le dit franchement au lieu de
-      // simuler un envoi. À rebrancher sur un mailto ou un POST le jour où un
-      // destinataire réel existe.
-      if (note) {
-        note.textContent = "FORMULAIRE PAS ENCORE RELIÉ — APPELEZ-NOUS EN ATTENDANT";
-        note.classList.add("is-ok");
-      }
+      const message = ["Bonjour Yalla,", `Nom : ${data.get("nom").trim()}`,
+        `Profil : ${data.get("profil")}`, `Téléphone : ${data.get("telephone").trim()}`,
+        data.get("message").trim()].filter(Boolean).join("\n");
+      window.open(`https://wa.me/2250706303030?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+      note.textContent = "Vérifiez votre message dans WhatsApp avant de l’envoyer.";
     });
   }
 
